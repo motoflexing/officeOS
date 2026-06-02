@@ -74,6 +74,15 @@ export const SettingsPage = () => {
           </div>
         </section>
 
+        <section className="mt-6 rounded-xl border border-white/10 bg-white/[0.035] p-5">
+          <h3 className="text-lg font-semibold text-white">Platform Information</h3>
+          <div className="mt-4 grid gap-3 text-sm">
+            <PlatformInfoRow label="Platform" value="CompanyOS" />
+            <PlatformInfoRow label="Version" value="v0.1 Prototype" />
+            <PlatformInfoRow label="Client Workspace" value="Geekynd Hub" />
+          </div>
+        </section>
+
         <button type="submit" className="btn-primary mt-6">
           Save Settings
         </button>
@@ -101,4 +110,11 @@ const PreferenceToggle = ({
       <span className={`absolute top-1 h-4 w-4 rounded-full bg-white transition ${checked ? 'left-6' : 'left-1'}`} />
     </span>
   </button>
+);
+
+const PlatformInfoRow = ({ label, value }: { label: string; value: string }) => (
+  <div className="flex items-center justify-between gap-4 rounded-lg border border-white/10 bg-ink-950/35 px-4 py-3">
+    <span className="text-slate-500">{label}</span>
+    <span className="font-medium text-slate-200">{value}</span>
+  </div>
 );

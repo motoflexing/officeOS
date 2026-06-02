@@ -1,6 +1,7 @@
 import { ArrowRight, BriefcaseBusiness, ShieldCheck, UserRound } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PoweredBy } from '../components/PoweredBy';
 import { demoCredentials } from '../data/mockData';
 import { useAuth } from '../state/AuthContext';
 import type { Role } from '../types';
@@ -48,6 +49,7 @@ export const LoginPage = () => {
             </div>
             <h1 className="mt-8 text-4xl font-semibold tracking-normal text-white">Geekynd Hub</h1>
             <p className="mt-3 text-lg text-slate-400">Internal Employee Management Platform</p>
+            <PoweredBy variant="badge" />
           </div>
 
           <div className="mt-12 grid gap-3">

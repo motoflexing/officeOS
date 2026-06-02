@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import type { Role } from '../types';
+import { PoweredBy } from './PoweredBy';
 
 const roleItems = {
   Admin: [
@@ -77,10 +78,13 @@ export const Sidebar = ({ role, open, onClose }: { role: Role; open: boolean; on
         ))}
       </nav>
 
-      <div className="mt-auto rounded-xl border border-white/10 bg-white/[0.04] p-4">
-        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">Workspace</p>
-        <p className="mt-2 text-sm font-semibold text-slate-100">Geekynd Digital</p>
-        <p className="mt-1 text-xs text-slate-500">Prototype data saved locally</p>
+      <div className="mt-auto space-y-3">
+        <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">Workspace</p>
+          <p className="mt-2 text-sm font-semibold text-slate-100">Geekynd Digital</p>
+          <p className="mt-1 text-xs text-slate-500">Prototype data saved locally</p>
+        </div>
+        <PoweredBy />
       </div>
     </aside>
   </>
