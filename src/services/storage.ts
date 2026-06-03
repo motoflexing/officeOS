@@ -16,6 +16,8 @@ import type {
   Candidate,
   CompanySettings,
   DailyReport,
+  DirectConversation,
+  DirectMessage,
   Employee,
   Interview,
   JobOpening,
@@ -45,6 +47,14 @@ const write = <T>(key: string, value: T) => {
   localStorage.setItem(key, JSON.stringify(value));
   return value;
 };
+
+const createDirectConversationId = (emails: string[]) =>
+  [...emails]
+    .sort((a, b) => a.localeCompare(b))
+    .map((email) => email.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''))
+    .join('__');
+
+const createId = (prefix: string) => `${prefix}-${Date.now()}-${Math.round(Math.random() * 1000)}`;
 
 const toWorkModePolicy = (mode: CompanySettings['defaultWorkMode']): CompanySettings['workModePolicy'] | undefined => {
   if (mode === 'Office') return 'Office Only';
@@ -169,6 +179,51 @@ export const storage = {
       ? users.map((user) => (user.email === profile.email ? { ...user, ...currentUser } : user))
       : [currentUser, ...users];
     return storage.setWorkspaceUsers(nextUsers);
+  },
+
+  getDirectConversationsForUser: (email: string) =>
+    read<DirectConversation[]>('geekynd:directConversations', [])
+      .filter((conversation) => conversation.participantEmails.includes(email))
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
+  getDirectMessages: (conversationId: string) =>
+    read<DirectMessage[]>(`geekynd:directMessages:${conversationId}`, []).slice(-30),
+  sendDirectMessage: (currentUser: UserProfile, selectedUser: WorkspaceUser, text: string) => {
+    const conversationId = createDirectConversationId([currentUser.email, selectedUser.email]);
+    const now = new Date().toISOString();
+    const participants = [
+      { email: currentUser.email, name: currentUser.name },
+      { email: selectedUser.email, name: selectedUser.name },
+    ].sort((a, b) => a.email.localeCompare(b.email));
+    const conversations = read<DirectConversation[]>('geekynd:directConversations', []);
+    const existingConversation = conversations.find((conversation) => conversation.id === conversationId);
+    const conversation: DirectConversation = {
+      id: conversationId,
+      participantEmails: participants.map((participant) => participant.email),
+      participantNames: participants.map((participant) => participant.name),
+      lastMessage: text,
+      lastMessageAt: now,
+      createdAt: existingConversation?.createdAt || now,
+      updatedAt: now,
+    };
+    const nextConversations = existingConversation
+      ? conversations.map((item) => (item.id === conversationId ? conversation : item))
+      : [conversation, ...conversations];
+    write('geekynd:directConversations', nextConversations);
+
+    const message: DirectMessage = {
+      id: createId('dm'),
+      conversationId,
+      senderEmail: currentUser.email,
+      senderName: currentUser.name,
+      receiverEmail: selectedUser.email,
+      text,
+      createdAt: now,
+    };
+    const messages = read<DirectMessage[]>(`geekynd:directMessages:${conversationId}`, []);
+    const nextMessages = [...messages, message];
+    write(`geekynd:directMessages:${conversationId}`, nextMessages);
+
+    return { conversation, messages: nextMessages.slice(-30) };
   },
 
   getSettings: () => normalizeSettings(read<Partial<CompanySettings>>('geekynd:settings', defaultSettings)),

@@ -32,6 +32,26 @@ export interface WorkspaceUser {
   lastActiveAt?: string;
 }
 
+export interface DirectConversation {
+  id: string;
+  participantEmails: string[];
+  participantNames: string[];
+  lastMessage?: string;
+  lastMessageAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DirectMessage {
+  id: string;
+  conversationId: string;
+  senderEmail: string;
+  senderName: string;
+  receiverEmail: string;
+  text: string;
+  createdAt: string;
+}
+
 export interface Employee {
   id: string;
   name: string;

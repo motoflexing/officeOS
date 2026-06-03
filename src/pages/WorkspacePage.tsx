@@ -1,4 +1,4 @@
-import { Building2, Mail, MessageSquare, Radio, UsersRound } from 'lucide-react';
+import { Building2, Mail, MessageSquare, Radio, Send, UsersRound } from 'lucide-react';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import { Toast } from '../components/Toast';
@@ -6,22 +6,31 @@ import { auth, isFirebaseConfigured } from '../services/firebase';
 import { firestoreService } from '../services/firestoreService';
 import { storage } from '../services/storage';
 import { useAuth } from '../state/AuthContext';
-import type { PresenceStatus, UserProfile, WorkspaceUser } from '../types';
+import type { DirectConversation, DirectMessage, PresenceStatus, UserProfile, WorkspaceUser } from '../types';
 
 const presenceStatuses: PresenceStatus[] = ['Online', 'Away', 'On Break', 'In Meeting', 'Offline'];
 
 export const WorkspacePage = () => {
   const { profile } = useAuth();
   const [workspaceUsers, setWorkspaceUsers] = useState<WorkspaceUser[]>(() => storage.getWorkspaceUsers());
+  const [directConversations, setDirectConversations] = useState<DirectConversation[]>([]);
+  const [selectedUser, setSelectedUser] = useState<WorkspaceUser | null>(null);
+  const [directMessages, setDirectMessages] = useState<DirectMessage[]>([]);
+  const [messageText, setMessageText] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<PresenceStatus>('Online');
   const [toast, setToast] = useState('');
   const [loading, setLoading] = useState(isFirebaseConfigured);
+  const [messagesLoading, setMessagesLoading] = useState(false);
 
   const currentUser = useMemo(
     () => workspaceUsers.find((user) => user.email === profile?.email),
     [profile?.email, workspaceUsers],
   );
   const currentStatus = currentUser?.presenceStatus || selectedStatus;
+  const directMessageUsers = useMemo(
+    () => workspaceUsers.filter((user) => user.email !== profile?.email),
+    [profile?.email, workspaceUsers],
+  );
 
   const notify = (message: string) => {
     setToast(message);
@@ -38,6 +47,7 @@ export const WorkspacePage = () => {
     if (!isFirebaseConfigured) {
       if (profile) {
         setWorkspaceUsers((users) => ensureCurrentUser(users, profile, selectedStatus));
+        setDirectConversations(storage.getDirectConversationsForUser(profile.email));
       }
       return;
     }
@@ -52,6 +62,42 @@ export const WorkspacePage = () => {
       })
       .finally(() => setLoading(false));
   }, [profile]);
+
+  useEffect(() => {
+    if (!profile) return;
+
+    if (!isFirebaseConfigured) {
+      setDirectConversations(storage.getDirectConversationsForUser(profile.email));
+      return;
+    }
+
+    firestoreService
+      .getDirectConversationsForUser(profile.email)
+      .then(setDirectConversations)
+      .catch((error) => notify(error instanceof Error ? error.message : 'Unable to load direct messages.'));
+  }, [profile?.email]);
+
+  useEffect(() => {
+    if (!profile || !selectedUser) {
+      setDirectMessages([]);
+      return;
+    }
+
+    const conversationId = createDirectConversationId([profile.email, selectedUser.email]);
+    setMessagesLoading(true);
+
+    if (!isFirebaseConfigured) {
+      setDirectMessages(storage.getDirectMessages(conversationId));
+      setMessagesLoading(false);
+      return;
+    }
+
+    firestoreService
+      .getDirectMessages(conversationId)
+      .then(setDirectMessages)
+      .catch((error) => notify(error instanceof Error ? error.message : 'Unable to load messages.'))
+      .finally(() => setMessagesLoading(false));
+  }, [profile, selectedUser]);
 
   const updateStatus = async (event: FormEvent) => {
     event.preventDefault();
@@ -70,6 +116,32 @@ export const WorkspacePage = () => {
       notify(`Status updated to ${selectedStatus}.`);
     } catch (error) {
       notify(error instanceof Error ? error.message : 'Unable to update status.');
+    }
+  };
+
+  const sendDirectMessage = async (event: FormEvent) => {
+    event.preventDefault();
+    const text = messageText.trim();
+    if (!profile || !selectedUser || !text) return;
+
+    try {
+      if (isFirebaseConfigured) {
+        await firestoreService.sendDirectMessage(profile, selectedUser, text);
+        const conversationId = createDirectConversationId([profile.email, selectedUser.email]);
+        const [messages, conversations] = await Promise.all([
+          firestoreService.getDirectMessages(conversationId),
+          firestoreService.getDirectConversationsForUser(profile.email),
+        ]);
+        setDirectMessages(messages);
+        setDirectConversations(conversations);
+      } else {
+        const result = storage.sendDirectMessage(profile, selectedUser, text);
+        setDirectMessages(result.messages);
+        setDirectConversations(storage.getDirectConversationsForUser(profile.email));
+      }
+      setMessageText('');
+    } catch (error) {
+      notify(error instanceof Error ? error.message : 'Unable to send message.');
     }
   };
 
@@ -125,11 +197,133 @@ export const WorkspacePage = () => {
           </div>
         </form>
 
-        <section className="grid gap-4 md:grid-cols-3">
-          <ComingSoonCard icon={MessageSquare} title="Direct messages" />
+        <section className="grid gap-4 md:grid-cols-2">
           <ComingSoonCard icon={UsersRound} title="Groups" />
           <ComingSoonCard icon={Mail} title="Internal mail" />
         </section>
+      </section>
+
+      <section className="surface overflow-hidden">
+        <div className="border-b border-white/10 p-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-accent-500/25 bg-accent-500/10 text-accent-100">
+              <MessageSquare size={20} />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white">Direct Messages</h3>
+              <p className="mt-1 text-sm text-slate-500">Start a one-to-one conversation with a teammate.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid min-h-[560px] lg:grid-cols-[360px_1fr]">
+          <aside className="border-b border-white/10 lg:border-b-0 lg:border-r">
+            <div className="border-b border-white/10 p-4">
+              <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">Teammates</p>
+              <p className="mt-1 text-sm text-slate-300">{directMessageUsers.length} available contacts</p>
+            </div>
+            <div className="max-h-[500px] overflow-y-auto p-3">
+              {directMessageUsers.map((user) => {
+                const conversation = directConversations.find((item) => item.participantEmails.includes(user.email));
+                const isSelected = selectedUser?.email === user.email;
+
+                return (
+                  <button
+                    key={`${user.id}-${user.email}`}
+                    type="button"
+                    onClick={() => setSelectedUser(user)}
+                    className={`mb-2 w-full rounded-lg border p-3 text-left transition ${
+                      isSelected
+                        ? 'border-accent-500/45 bg-accent-500/10 shadow-[0_0_24px_rgba(239,35,43,0.14)]'
+                        : 'border-white/10 bg-white/[0.035] hover:border-accent-500/25 hover:bg-white/[0.055]'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-white">{user.name}</p>
+                        <p className="mt-1 truncate text-xs text-slate-500">{user.email}</p>
+                      </div>
+                      <PresenceBadge status={user.presenceStatus} />
+                    </div>
+                    <div className="mt-3 grid gap-2 text-xs text-slate-400">
+                      <span className="truncate">{user.role} · {user.department}</span>
+                      <span>Last active: {formatLastActive(user.lastActiveAt)}</span>
+                      {conversation?.lastMessage ? (
+                        <span className="truncate text-slate-500">Last: {conversation.lastMessage}</span>
+                      ) : null}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </aside>
+
+          <div className="flex min-h-[560px] flex-col">
+            {selectedUser ? (
+              <>
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 p-5">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">{selectedUser.name}</h3>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {selectedUser.role} · {selectedUser.department}
+                    </p>
+                  </div>
+                  <PresenceBadge status={selectedUser.presenceStatus} />
+                </div>
+
+                <div className="flex-1 space-y-3 overflow-y-auto p-5">
+                  {messagesLoading ? <p className="text-sm text-slate-500">Loading messages...</p> : null}
+                  {!messagesLoading && directMessages.length === 0 ? (
+                    <div className="flex min-h-72 items-center justify-center rounded-lg border border-dashed border-white/10 bg-white/[0.025] p-6 text-center">
+                      <p className="text-sm text-slate-500">No messages yet. Send the first message.</p>
+                    </div>
+                  ) : null}
+                  {directMessages.map((message) => {
+                    const isMine = message.senderEmail === profile?.email;
+
+                    return (
+                      <div key={message.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                        <div
+                          className={`max-w-[78%] rounded-lg border px-4 py-3 ${
+                            isMine
+                              ? 'border-accent-500/30 bg-accent-500/15 text-white'
+                              : 'border-white/10 bg-white/[0.045] text-slate-200'
+                          }`}
+                        >
+                          <p className="text-sm leading-6">{message.text}</p>
+                          <p className="mt-2 text-[11px] text-slate-500">{formatLastActive(message.createdAt)}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <form onSubmit={sendDirectMessage} className="border-t border-white/10 p-4">
+                  <div className="flex gap-3">
+                    <input
+                      className="field"
+                      placeholder={`Message ${selectedUser.name}`}
+                      value={messageText}
+                      onChange={(event) => setMessageText(event.target.value)}
+                    />
+                    <button type="submit" className="btn-primary shrink-0" disabled={!messageText.trim()}>
+                      <Send size={18} />
+                      Send
+                    </button>
+                  </div>
+                </form>
+              </>
+            ) : (
+              <div className="flex flex-1 items-center justify-center p-6">
+                <div className="max-w-sm rounded-lg border border-dashed border-white/10 bg-white/[0.025] p-6 text-center">
+                  <MessageSquare className="mx-auto text-accent-500" size={30} />
+                  <p className="mt-4 text-sm font-semibold text-white">Select a teammate to start a conversation.</p>
+                  <p className="mt-2 text-sm text-slate-500">Direct messages are private one-to-one workspace conversations.</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </section>
 
       <section className="surface overflow-hidden">
@@ -238,6 +432,12 @@ const upsertPresence = (users: WorkspaceUser[], profile: UserProfile, presenceSt
     ? users.map((user) => (user.email === profile.email ? { ...user, ...nextUser } : user))
     : [nextUser, ...users];
 };
+
+const createDirectConversationId = (emails: string[]) =>
+  [...emails]
+    .sort((a, b) => a.localeCompare(b))
+    .map((email) => email.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''))
+    .join('__');
 
 const formatLastActive = (value: string | undefined) => {
   if (!value) return 'Not available';

@@ -4,6 +4,8 @@ import {
   doc,
   getDoc,
   getDocs,
+  limit,
+  orderBy,
   query,
   setDoc,
   updateDoc,
@@ -16,6 +18,8 @@ import type {
   Candidate,
   CompanySettings,
   DailyReport,
+  DirectConversation,
+  DirectMessage,
   Employee,
   Interview,
   JobOpening,
@@ -40,6 +44,16 @@ const clean = <T extends Record<string, unknown>>(value: T): T =>
 const companyDoc = () => doc(requireDb(), 'companies', companyId);
 const companyCollection = (name: string) => collection(companyDoc(), name);
 const companyDocument = (name: string, id: string) => doc(companyCollection(name), id);
+const directConversationDocument = (conversationId: string) => companyDocument('directConversations', conversationId);
+const directMessagesCollection = (conversationId: string) => collection(directConversationDocument(conversationId), 'messages');
+
+const createDirectConversationId = (emails: string[]) =>
+  [...emails]
+    .sort((a, b) => a.localeCompare(b))
+    .map((email) => email.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''))
+    .join('__');
+
+const createId = (prefix: string) => `${prefix}-${Date.now()}-${Math.round(Math.random() * 1000)}`;
 
 const readCollection = async <T extends { id: string }>(name: string): Promise<T[]> => {
   const snapshot = await getDocs(companyCollection(name));
@@ -109,6 +123,55 @@ export const firestoreService = {
     const lastActiveAt = new Date().toISOString();
     await setDoc(companyDocument('users', uid), { presenceStatus, lastActiveAt }, { merge: true });
     return { uid, presenceStatus, lastActiveAt };
+  },
+
+  getDirectConversationsForUser: async (email: string): Promise<DirectConversation[]> => {
+    const snapshot = await getDocs(
+      query(companyCollection('directConversations'), where('participantEmails', 'array-contains', email)),
+    );
+    return snapshot.docs
+      .map((item) => ({ id: item.id, ...item.data() }) as DirectConversation)
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  },
+  getDirectMessages: async (conversationId: string): Promise<DirectMessage[]> => {
+    const snapshot = await getDocs(
+      query(directMessagesCollection(conversationId), orderBy('createdAt', 'desc'), limit(30)),
+    );
+    return snapshot.docs.map((item) => ({ id: item.id, ...item.data() }) as DirectMessage).reverse();
+  },
+  sendDirectMessage: async (currentUser: UserProfile, selectedUser: WorkspaceUser, text: string) => {
+    const conversationId = createDirectConversationId([currentUser.email, selectedUser.email]);
+    const now = new Date().toISOString();
+    const participants = [
+      { email: currentUser.email, name: currentUser.name },
+      { email: selectedUser.email, name: selectedUser.name },
+    ].sort((a, b) => a.email.localeCompare(b.email));
+    const conversationSnapshot = await getDoc(directConversationDocument(conversationId));
+    const conversation: DirectConversation = {
+      id: conversationId,
+      participantEmails: participants.map((participant) => participant.email),
+      participantNames: participants.map((participant) => participant.name),
+      lastMessage: text,
+      lastMessageAt: now,
+      createdAt: conversationSnapshot.exists()
+        ? ((conversationSnapshot.data() as DirectConversation).createdAt ?? now)
+        : now,
+      updatedAt: now,
+    };
+    const message: DirectMessage = {
+      id: createId('dm'),
+      conversationId,
+      senderEmail: currentUser.email,
+      senderName: currentUser.name,
+      receiverEmail: selectedUser.email,
+      text,
+      createdAt: now,
+    };
+
+    await setDoc(directConversationDocument(conversationId), clean({ ...conversation }), { merge: true });
+    await setDoc(doc(directMessagesCollection(conversationId), message.id), clean({ ...message }));
+
+    return { conversation, message };
   },
 
   getEmployees: () => readCollection<Employee>('employees'),

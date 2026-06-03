@@ -80,6 +80,19 @@ service cloud.firestore {
       return request.resource.data.presenceStatus in ['Online', 'Away', 'On Break', 'In Meeting', 'Offline'];
     }
 
+    function isConversationParticipant(data) {
+      return authEmail() in data.participantEmails;
+    }
+
+    function directConversationPath(companyId, conversationId) {
+      return /databases/$(database)/documents/companies/$(companyId)/directConversations/$(conversationId);
+    }
+
+    function isMessageParticipant(companyId, conversationId) {
+      return exists(directConversationPath(companyId, conversationId)) &&
+        authEmail() in get(directConversationPath(companyId, conversationId)).data.participantEmails;
+    }
+
     match /companies/{companyId} {
       allow read: if inCompany(companyId);
       allow write: if isAdmin(companyId);
@@ -131,6 +144,24 @@ service cloud.firestore {
       match /settings/{settingsId} {
         allow read: if settingsId == 'main' && inCompany(companyId);
         allow write: if settingsId == 'main' && isAdmin(companyId);
+      }
+
+      match /directConversations/{conversationId} {
+        allow read: if inCompany(companyId) && isConversationParticipant(resource.data);
+        allow create: if inCompany(companyId) && isConversationParticipant(request.resource.data);
+        allow update: if inCompany(companyId) &&
+          isConversationParticipant(resource.data) &&
+          isConversationParticipant(request.resource.data);
+        allow delete: if isAdmin(companyId);
+
+        match /messages/{messageId} {
+          allow read: if inCompany(companyId) && isMessageParticipant(companyId, conversationId);
+          allow create: if inCompany(companyId) &&
+            isMessageParticipant(companyId, conversationId) &&
+            request.resource.data.senderEmail == authEmail();
+          allow update: if false;
+          allow delete: if isAdmin(companyId);
+        }
       }
 
       match /{document=**} {
