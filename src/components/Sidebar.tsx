@@ -5,18 +5,21 @@ import {
   CalendarDays,
   ClipboardList,
   LayoutDashboard,
+  MessagesSquare,
   Settings,
   User,
   Users,
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { BRANDING } from '../config/branding';
+import { useAuth } from '../state/AuthContext';
 import type { Role } from '../types';
 import { PoweredBy } from './PoweredBy';
 
 const roleItems = {
   Admin: [
     { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
+    { label: 'Workspace', to: '/workspace', icon: MessagesSquare },
     { label: 'Attendance', to: '/attendance', icon: CalendarCheck },
     { label: 'Employees', to: '/employees', icon: Users },
     { label: 'Daily Reports', to: '/reports', icon: ClipboardList },
@@ -28,6 +31,7 @@ const roleItems = {
   ],
   HR: [
     { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
+    { label: 'Workspace', to: '/workspace', icon: MessagesSquare },
     { label: 'Attendance', to: '/attendance', icon: CalendarCheck },
     { label: 'Employees', to: '/employees', icon: Users },
     { label: 'Daily Reports', to: '/reports', icon: ClipboardList },
@@ -38,6 +42,7 @@ const roleItems = {
   ],
   Employee: [
     { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
+    { label: 'Workspace', to: '/workspace', icon: MessagesSquare },
     { label: 'Attendance', to: '/attendance', icon: CalendarCheck },
     { label: 'Daily Report', to: '/reports', icon: ClipboardList },
     { label: 'Leave Requests', to: '/leave', icon: CalendarDays },
@@ -46,8 +51,12 @@ const roleItems = {
   ],
 } satisfies Record<Role, Array<{ label: string; to: string; icon: typeof LayoutDashboard }>>;
 
-export const Sidebar = ({ role, open, onClose }: { role: Role; open: boolean; onClose: () => void }) => (
-  <>
+export const Sidebar = ({ role, open, onClose }: { role: Role; open: boolean; onClose: () => void }) => {
+  const { role: authenticatedRole } = useAuth();
+  const sidebarRole = authenticatedRole || role;
+
+  return (
+    <>
     <div
       className={`fixed inset-0 z-30 bg-black/50 transition lg:hidden ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
       onClick={onClose}
@@ -68,7 +77,7 @@ export const Sidebar = ({ role, open, onClose }: { role: Role; open: boolean; on
       </div>
 
       <nav className="mt-8 space-y-1">
-        {roleItems[role].map((item) => (
+        {roleItems[sidebarRole].map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -93,8 +102,9 @@ export const Sidebar = ({ role, open, onClose }: { role: Role; open: boolean; on
           <p className="mt-2 text-sm font-semibold text-slate-100">{BRANDING.workspaceName}</p>
           <p className="mt-1 text-xs text-slate-500">{BRANDING.tagline}</p>
         </div>
-        <PoweredBy />
+        {authenticatedRole === 'Admin' ? <PoweredBy /> : null}
       </div>
     </aside>
-  </>
-);
+    </>
+  );
+};

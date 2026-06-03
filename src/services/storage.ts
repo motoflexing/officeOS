@@ -1,20 +1,29 @@
 import {
   defaultAnnouncements,
+  defaultCandidates,
+  defaultInterviews,
+  defaultJobOpenings,
   defaultLeaveRequests,
   defaultProfiles,
   defaultSettings,
+  defaultWorkspaceUsers,
   employees,
 } from '../data/mockData';
 import type {
   Announcement,
   AttendanceIndexRecord,
   AttendanceRecord,
+  Candidate,
   CompanySettings,
   DailyReport,
   Employee,
+  Interview,
+  JobOpening,
   LeaveRequest,
+  PresenceStatus,
   Role,
   UserProfile,
+  WorkspaceUser,
 } from '../types';
 
 const read = <T>(key: string, fallback: T): T => {
@@ -132,6 +141,35 @@ export const storage = {
 
   getLeaveRequests: () => read<LeaveRequest[]>('geekynd:leaveRequests', defaultLeaveRequests),
   setLeaveRequests: (requests: LeaveRequest[]) => write('geekynd:leaveRequests', requests),
+
+  getJobOpenings: () => read<JobOpening[]>('geekynd:jobOpenings', defaultJobOpenings),
+  setJobOpenings: (jobOpenings: JobOpening[]) => write('geekynd:jobOpenings', jobOpenings),
+
+  getCandidates: () => read<Candidate[]>('geekynd:candidates', defaultCandidates),
+  setCandidates: (candidates: Candidate[]) => write('geekynd:candidates', candidates),
+
+  getInterviews: () => read<Interview[]>('geekynd:interviews', defaultInterviews),
+  setInterviews: (interviews: Interview[]) => write('geekynd:interviews', interviews),
+
+  getWorkspaceUsers: () => read<WorkspaceUser[]>('geekynd:workspaceUsers', defaultWorkspaceUsers),
+  setWorkspaceUsers: (users: WorkspaceUser[]) => write('geekynd:workspaceUsers', users),
+  updateMyPresenceStatus: (profile: UserProfile, presenceStatus: PresenceStatus) => {
+    const users = storage.getWorkspaceUsers();
+    const lastActiveAt = new Date().toISOString();
+    const currentUser: WorkspaceUser = {
+      id: `workspace-${profile.email}`,
+      name: profile.name,
+      email: profile.email,
+      role: profile.role,
+      department: profile.department,
+      presenceStatus,
+      lastActiveAt,
+    };
+    const nextUsers = users.some((user) => user.email === profile.email)
+      ? users.map((user) => (user.email === profile.email ? { ...user, ...currentUser } : user))
+      : [currentUser, ...users];
+    return storage.setWorkspaceUsers(nextUsers);
+  },
 
   getSettings: () => normalizeSettings(read<Partial<CompanySettings>>('geekynd:settings', defaultSettings)),
   setSettings: (settings: CompanySettings) => write('geekynd:settings', normalizeSettings(settings)),

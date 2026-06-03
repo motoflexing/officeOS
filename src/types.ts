@@ -6,6 +6,10 @@ export type WorkModePolicy = 'Office Only' | 'Hybrid' | 'Remote Friendly';
 export type LeaveStatus = 'Pending' | 'Approved' | 'Rejected';
 export type ReportStatus = 'Submitted' | 'Reviewed';
 export type AnnouncementTargetRole = 'Everyone' | Role;
+export type JobOpeningStatus = 'Open' | 'Paused' | 'Closed';
+export type CandidateStatus = 'Applied' | 'Screening' | 'Interview' | 'Selected' | 'Rejected';
+export type InterviewStatus = 'Scheduled' | 'Completed' | 'Cancelled';
+export type PresenceStatus = 'Online' | 'Away' | 'On Break' | 'In Meeting' | 'Offline';
 
 export interface UserProfile {
   name: string;
@@ -16,6 +20,16 @@ export interface UserProfile {
   employmentStatus?: EmploymentStatus;
   workMode: WorkMode;
   status: EmployeeStatus;
+}
+
+export interface WorkspaceUser {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  department: string;
+  presenceStatus: PresenceStatus;
+  lastActiveAt?: string;
 }
 
 export interface Employee {
@@ -95,6 +109,41 @@ export interface LeaveRequest {
   reviewedBy?: string;
   reviewedAt?: string;
   date?: string;
+}
+
+export interface JobOpening {
+  id: string;
+  title: string;
+  department: string;
+  location: string;
+  experience: string;
+  salaryRange: string;
+  status: JobOpeningStatus;
+  createdAt: string;
+}
+
+export interface Candidate {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  appliedRole: string;
+  experience: string;
+  skills: string[];
+  resumeLink?: string;
+  status: CandidateStatus;
+  appliedAt: string;
+}
+
+export interface Interview {
+  id: string;
+  candidateName: string;
+  role: string;
+  interviewDate: string;
+  interviewTime: string;
+  interviewer: string;
+  status: InterviewStatus;
+  notes: string;
 }
 
 export interface WorkspaceSettings {

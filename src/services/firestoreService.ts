@@ -13,12 +13,17 @@ import { db, companyId, isFirebaseConfigured } from './firebase';
 import type {
   Announcement,
   AttendanceIndexRecord,
+  Candidate,
   CompanySettings,
   DailyReport,
   Employee,
+  Interview,
+  JobOpening,
   LeaveRequest,
   LeaveStatus,
+  PresenceStatus,
   UserProfile,
+  WorkspaceUser,
 } from '../types';
 
 const requireDb = () => {
@@ -75,6 +80,37 @@ export const firestoreService = {
     };
   },
 
+  getWorkspaceUsers: async (): Promise<WorkspaceUser[]> => {
+    const snapshot = await getDocs(companyCollection('users'));
+    return snapshot.docs.map((item) => {
+      const data = item.data() as Record<string, unknown>;
+      const role = data.role === 'Admin' || data.role === 'HR' || data.role === 'Employee' ? data.role : 'Employee';
+      const presenceStatus =
+        data.presenceStatus === 'Online' ||
+        data.presenceStatus === 'Away' ||
+        data.presenceStatus === 'On Break' ||
+        data.presenceStatus === 'In Meeting' ||
+        data.presenceStatus === 'Offline'
+          ? data.presenceStatus
+          : 'Offline';
+
+      return {
+        id: item.id,
+        name: typeof data.name === 'string' ? data.name : 'OfficeOS User',
+        email: typeof data.email === 'string' ? data.email : '',
+        role,
+        department: typeof data.department === 'string' ? data.department : 'General',
+        presenceStatus,
+        lastActiveAt: typeof data.lastActiveAt === 'string' ? data.lastActiveAt : undefined,
+      };
+    });
+  },
+  updateMyPresenceStatus: async (uid: string, presenceStatus: PresenceStatus) => {
+    const lastActiveAt = new Date().toISOString();
+    await setDoc(companyDocument('users', uid), { presenceStatus, lastActiveAt }, { merge: true });
+    return { uid, presenceStatus, lastActiveAt };
+  },
+
   getEmployees: () => readCollection<Employee>('employees'),
   addEmployee: async (employee: Employee) => {
     await setDoc(companyDocument('employees', employee.id), clean({ ...employee }));
@@ -105,6 +141,36 @@ export const firestoreService = {
     const reviewedAt = new Date().toISOString();
     await updateDoc(companyDocument('leaveRequests', id), { status, reviewedBy, reviewedAt });
     return { id, status, reviewedBy, reviewedAt };
+  },
+
+  getJobOpenings: () => readCollection<JobOpening>('jobOpenings'),
+  addJobOpening: async (jobOpening: JobOpening) => {
+    await setDoc(companyDocument('jobOpenings', jobOpening.id), clean({ ...jobOpening }));
+    return jobOpening;
+  },
+  updateJobOpening: async (jobOpening: JobOpening) => {
+    await setDoc(companyDocument('jobOpenings', jobOpening.id), clean({ ...jobOpening }), { merge: true });
+    return jobOpening;
+  },
+
+  getCandidates: () => readCollection<Candidate>('candidates'),
+  addCandidate: async (candidate: Candidate) => {
+    await setDoc(companyDocument('candidates', candidate.id), clean({ ...candidate }));
+    return candidate;
+  },
+  updateCandidate: async (candidate: Candidate) => {
+    await setDoc(companyDocument('candidates', candidate.id), clean({ ...candidate }), { merge: true });
+    return candidate;
+  },
+
+  getInterviews: () => readCollection<Interview>('interviews'),
+  addInterview: async (interview: Interview) => {
+    await setDoc(companyDocument('interviews', interview.id), clean({ ...interview }));
+    return interview;
+  },
+  updateInterview: async (interview: Interview) => {
+    await setDoc(companyDocument('interviews', interview.id), clean({ ...interview }), { merge: true });
+    return interview;
   },
 
   getReports: () => readCollection<DailyReport>('reports'),

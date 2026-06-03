@@ -64,20 +64,19 @@ export const LoginPage = () => {
             <p className="mt-3 text-lg text-slate-400">{BRANDING.tagline}</p>
           </div>
 
-          <div className="mt-12 grid gap-3">
-            <div className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
-              <p className="text-sm font-semibold text-white">
-                {isFirebaseConfigured ? 'Firebase access' : 'Demo access'}
+          <div className="mt-12">
+            <div className="rounded-lg border border-accent-500/20 bg-gradient-to-br from-accent-500/12 via-white/[0.04] to-black/20 p-5 shadow-[0_0_32px_rgba(239,35,43,0.12)]">
+              <div className="h-1 w-12 rounded-full bg-accent-500/80 shadow-[0_0_18px_rgba(239,35,43,0.45)]" />
+              <h2 className="mt-5 text-2xl font-semibold tracking-normal text-white">Welcome to Geekynd Hub</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-300">
+                Manage employees, attendance, reports, leave requests, and announcements from one secure workspace.
               </p>
-              <p className="mt-1 text-sm text-slate-400">
-                {isFirebaseConfigured
-                  ? 'Use a Firebase Auth user with a matching workspace profile.'
-                  : 'Select a role to load matching credentials.'}
+              <p className="mt-3 text-sm leading-6 text-slate-400">
+                Built to simplify daily operations and keep your team aligned.
               </p>
-            </div>
-            <div className="rounded-lg border border-accent-500/20 bg-gradient-to-br from-accent-500/12 to-black/10 p-4 text-sm text-accent-100">
-              {BRANDING.productName} is prepared behind the{' '}
-              {isFirebaseConfigured ? 'Firebase backend.' : 'local prototype data layer.'}
+              <p className="mt-5 border-t border-white/10 pt-4 text-xs font-medium uppercase tracking-[0.14em] text-accent-100/80">
+                Designed for productivity and team collaboration.
+              </p>
             </div>
           </div>
         </div>

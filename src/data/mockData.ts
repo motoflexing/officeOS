@@ -1,5 +1,15 @@
 import { BRANDING } from '../config/branding';
-import type { Announcement, CompanySettings, Employee, LeaveRequest, UserProfile } from '../types';
+import type {
+  Announcement,
+  Candidate,
+  CompanySettings,
+  Employee,
+  Interview,
+  JobOpening,
+  LeaveRequest,
+  UserProfile,
+  WorkspaceUser,
+} from '../types';
 
 export const demoCredentials = {
   Admin: { email: 'admin@geekynd.com', password: '123456' },
@@ -109,6 +119,38 @@ export const employees: Employee[] = [
   },
 ];
 
+export const defaultWorkspaceUsers: WorkspaceUser[] = [
+  {
+    id: 'workspace-admin',
+    name: defaultProfiles.Admin.name,
+    email: defaultProfiles.Admin.email,
+    role: 'Admin',
+    department: defaultProfiles.Admin.department,
+    presenceStatus: 'Online',
+    lastActiveAt: 'Just now',
+  },
+  {
+    id: 'workspace-hr',
+    name: defaultProfiles.HR.name,
+    email: defaultProfiles.HR.email,
+    role: 'HR',
+    department: defaultProfiles.HR.department,
+    presenceStatus: 'In Meeting',
+    lastActiveAt: '8 min ago',
+  },
+  ...employees
+    .filter((employee) => employee.email !== defaultProfiles.HR.email)
+    .map((employee, index) => ({
+      id: `workspace-${employee.id}`,
+      name: employee.name,
+      email: employee.email,
+      role: employee.role,
+      department: employee.department,
+      presenceStatus: (['Online', 'Away', 'On Break', 'Offline'] as const)[index % 4],
+      lastActiveAt: index === 0 ? 'Just now' : `${(index + 1) * 7} min ago`,
+    })),
+];
+
 export const defaultAnnouncements: Announcement[] = [
   {
     id: 'ann-1',
@@ -163,6 +205,91 @@ export const defaultLeaveRequests: LeaveRequest[] = [
     reason: 'Personal commitment.',
     status: 'Rejected',
     submittedAt: '2026-06-01T09:00:00.000Z',
+  },
+];
+
+export const defaultJobOpenings: JobOpening[] = [
+  {
+    id: 'job-1',
+    title: 'Frontend Developer',
+    department: 'Engineering',
+    location: 'Kolkata / Hybrid',
+    experience: '1-3 years',
+    salaryRange: 'Rs. 4 LPA - Rs. 7 LPA',
+    status: 'Open',
+    createdAt: '2026-05-28',
+  },
+  {
+    id: 'job-2',
+    title: 'HR Operations Executive',
+    department: 'People Operations',
+    location: 'Kolkata',
+    experience: '2-4 years',
+    salaryRange: 'Rs. 3 LPA - Rs. 5 LPA',
+    status: 'Paused',
+    createdAt: '2026-05-20',
+  },
+];
+
+export const defaultCandidates: Candidate[] = [
+  {
+    id: 'candidate-1',
+    name: 'Priya Sharma',
+    email: 'priya.sharma@example.com',
+    phone: '+91 98765 43210',
+    appliedRole: 'Frontend Developer',
+    experience: '2 years',
+    skills: ['React', 'TypeScript', 'Tailwind'],
+    resumeLink: '#',
+    status: 'Interview',
+    appliedAt: '2026-06-01',
+  },
+  {
+    id: 'candidate-2',
+    name: 'Rahul Dutta',
+    email: 'rahul.dutta@example.com',
+    phone: '+91 98765 43211',
+    appliedRole: 'HR Operations Executive',
+    experience: '3 years',
+    skills: ['Recruitment', 'Payroll', 'Employee Relations'],
+    resumeLink: '#',
+    status: 'Screening',
+    appliedAt: '2026-05-30',
+  },
+  {
+    id: 'candidate-3',
+    name: 'Sneha Roy',
+    email: 'sneha.roy@example.com',
+    phone: '+91 98765 43212',
+    appliedRole: 'Frontend Developer',
+    experience: '1.5 years',
+    skills: ['JavaScript', 'UI Development', 'Testing'],
+    resumeLink: '#',
+    status: 'Selected',
+    appliedAt: '2026-05-26',
+  },
+];
+
+export const defaultInterviews: Interview[] = [
+  {
+    id: 'interview-1',
+    candidateName: 'Priya Sharma',
+    role: 'Frontend Developer',
+    interviewDate: '2026-06-06',
+    interviewTime: '11:30',
+    interviewer: 'Geekynd HR Team',
+    status: 'Scheduled',
+    notes: 'Technical round with engineering lead.',
+  },
+  {
+    id: 'interview-2',
+    candidateName: 'Sneha Roy',
+    role: 'Frontend Developer',
+    interviewDate: '2026-06-02',
+    interviewTime: '15:00',
+    interviewer: 'Geekynd Admin',
+    status: 'Completed',
+    notes: 'Strong communication and project ownership.',
   },
 ];
 

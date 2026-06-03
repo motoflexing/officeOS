@@ -10,6 +10,7 @@ import { LoginPage } from './pages/LoginPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ReportsPage } from './pages/ReportsPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { WorkspacePage } from './pages/WorkspacePage';
 import { useAuth } from './state/AuthContext';
 
 const RoleRoute = ({ allow, children }: { allow: string[]; children: React.ReactNode }) => {
@@ -33,6 +34,7 @@ export default function App() {
       <Route element={<AppLayout />}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/workspace" element={<WorkspacePage />} />
         <Route path="/attendance" element={<AttendancePage />} />
         <Route path="/employees" element={<RoleRoute allow={['Admin', 'HR']}><EmployeesPage /></RoleRoute>} />
         <Route path="/reports" element={<ReportsPage />} />

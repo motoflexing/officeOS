@@ -76,13 +76,22 @@ service cloud.firestore {
       return request.resource.data.authorRole in ['Admin', 'HR'];
     }
 
+    function writesValidPresenceStatus() {
+      return request.resource.data.presenceStatus in ['Online', 'Away', 'On Break', 'In Meeting', 'Offline'];
+    }
+
     match /companies/{companyId} {
       allow read: if inCompany(companyId);
       allow write: if isAdmin(companyId);
 
       match /users/{userId} {
-        allow read: if isAdmin(companyId) || (inCompany(companyId) && request.auth.uid == userId);
-        allow create, update, delete: if isAdmin(companyId);
+        allow read: if inCompany(companyId);
+        allow create, delete: if isAdmin(companyId);
+        allow update: if isAdmin(companyId) ||
+          (inCompany(companyId) &&
+            request.auth.uid == userId &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['presenceStatus', 'lastActiveAt']) &&
+            writesValidPresenceStatus());
       }
 
       match /employees/{employeeId} {
