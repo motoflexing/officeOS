@@ -3,6 +3,7 @@ import {
   defaultLeaveRequests,
   defaultProfiles,
   defaultSettings,
+  employees,
 } from '../data/mockData';
 import type {
   Announcement,
@@ -10,6 +11,7 @@ import type {
   AttendanceRecord,
   CompanySettings,
   DailyReport,
+  Employee,
   LeaveRequest,
   Role,
   UserProfile,
@@ -33,6 +35,55 @@ const read = <T>(key: string, fallback: T): T => {
 const write = <T>(key: string, value: T) => {
   localStorage.setItem(key, JSON.stringify(value));
   return value;
+};
+
+const toWorkModePolicy = (mode: CompanySettings['defaultWorkMode']): CompanySettings['workModePolicy'] | undefined => {
+  if (mode === 'Office') return 'Office Only';
+  if (mode === 'Remote') return 'Remote Friendly';
+  if (mode === 'Hybrid') return 'Hybrid';
+  return undefined;
+};
+
+const toTimeInputValue = (time: string | undefined) => {
+  if (!time) return undefined;
+  if (/^\d{2}:\d{2}$/.test(time)) return time;
+
+  const match = time.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) return undefined;
+
+  const [, hourValue, minuteValue, periodValue] = match;
+  const period = periodValue.toUpperCase();
+  let hour = Number(hourValue);
+
+  if (period === 'PM' && hour < 12) hour += 12;
+  if (period === 'AM' && hour === 12) hour = 0;
+
+  return `${hour.toString().padStart(2, '0')}:${minuteValue}`;
+};
+
+const normalizeSettings = (settings: Partial<CompanySettings>): CompanySettings => {
+  const [legacyStartTime, legacyEndTime] = settings.workingHours?.split(' - ') ?? [];
+
+  return {
+    ...defaultSettings,
+    ...settings,
+    workspaceName: settings.workspaceName || settings.companyName || defaultSettings.workspaceName,
+    productName: settings.productName || defaultSettings.productName,
+    websiteUrl: settings.websiteUrl || defaultSettings.websiteUrl,
+    websiteLabel: settings.websiteLabel || defaultSettings.websiteLabel,
+    officeStartTime:
+      toTimeInputValue(settings.officeStartTime) ||
+      toTimeInputValue(legacyStartTime) ||
+      defaultSettings.officeStartTime,
+    officeEndTime:
+      toTimeInputValue(settings.officeEndTime) ||
+      toTimeInputValue(legacyEndTime) ||
+      defaultSettings.officeEndTime,
+    workModePolicy: settings.workModePolicy || toWorkModePolicy(settings.defaultWorkMode) || defaultSettings.workModePolicy,
+    allowHrAnnouncements: settings.allowHrAnnouncements ?? true,
+    requireDailyReports: settings.requireDailyReports ?? settings.dailyReportReminders ?? true,
+    timezone: settings.timezone || defaultSettings.timezone,
+  };
 };
 
 export const storage = {
@@ -61,6 +112,20 @@ export const storage = {
   getReports: () => read<DailyReport[]>('geekynd:reports', []),
   setReports: (reports: DailyReport[]) => write('geekynd:reports', reports),
 
+  getEmployees: () => read<Employee[]>('geekynd:employees', employees),
+  setEmployees: (employeeRecords: Employee[]) => write('geekynd:employees', employeeRecords),
+  upsertEmployee: (employee: Employee) => {
+    const employeeRecords = storage.getEmployees();
+    const nextEmployees = employeeRecords.some((item) => item.id === employee.id)
+      ? employeeRecords.map((item) => (item.id === employee.id ? employee : item))
+      : [employee, ...employeeRecords];
+    return storage.setEmployees(nextEmployees);
+  },
+  deleteEmployee: (employeeId: string) => {
+    const employeeRecords = storage.getEmployees();
+    return storage.setEmployees(employeeRecords.filter((employee) => employee.id !== employeeId));
+  },
+
   getAnnouncements: () => read<Announcement[]>('geekynd:announcements', defaultAnnouncements),
   setAnnouncements: (announcements: Announcement[]) =>
     write('geekynd:announcements', announcements),
@@ -68,6 +133,6 @@ export const storage = {
   getLeaveRequests: () => read<LeaveRequest[]>('geekynd:leaveRequests', defaultLeaveRequests),
   setLeaveRequests: (requests: LeaveRequest[]) => write('geekynd:leaveRequests', requests),
 
-  getSettings: () => read<CompanySettings>('geekynd:settings', defaultSettings),
-  setSettings: (settings: CompanySettings) => write('geekynd:settings', settings),
+  getSettings: () => normalizeSettings(read<Partial<CompanySettings>>('geekynd:settings', defaultSettings)),
+  setSettings: (settings: CompanySettings) => write('geekynd:settings', normalizeSettings(settings)),
 };

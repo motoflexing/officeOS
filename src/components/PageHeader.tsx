@@ -1,0 +1,22 @@
+export const PageHeader = ({
+  eyebrow,
+  title,
+  subtitle,
+  action,
+}: {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  action?: React.ReactNode;
+}) => (
+  <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+    <div>
+      {eyebrow ? (
+        <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">{eyebrow}</p>
+      ) : null}
+      <h2 className="mt-2 text-3xl font-semibold tracking-normal text-white">{title}</h2>
+      {subtitle ? <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">{subtitle}</p> : null}
+    </div>
+    {action ? <div className="flex shrink-0 flex-wrap items-center gap-2">{action}</div> : null}
+  </div>
+);

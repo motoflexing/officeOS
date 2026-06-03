@@ -1,6 +1,20 @@
-import { AlertTriangle, CalendarDays, CheckCircle2, Clock, ListChecks, MonitorSmartphone, Timer } from 'lucide-react';
+import {
+  AlertTriangle,
+  Bell,
+  CalendarCheck,
+  CalendarDays,
+  CheckCircle2,
+  Clock,
+  FileText,
+  ListChecks,
+  MonitorSmartphone,
+  Plus,
+  Settings as SettingsIcon,
+  Timer,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { PageHeader } from '../components/PageHeader';
 import { StatCard } from '../components/StatCard';
 import { StatusBadge } from '../components/StatusBadge';
 import { BRANDING } from '../config/branding';
@@ -10,6 +24,27 @@ import type { AttendanceIndexRecord, AttendanceRecord } from '../types';
 import { formatDate, formatTime } from '../utils/format';
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
+
+const quickActions = {
+  Admin: [
+    { label: 'Add Employee', to: '/employees', icon: Plus },
+    { label: 'Review Leave', to: '/hr', icon: CalendarDays },
+    { label: 'Review Reports', to: '/reports', icon: FileText },
+    { label: 'Settings', to: '/settings', icon: SettingsIcon },
+  ],
+  HR: [
+    { label: 'Add Employee', to: '/employees', icon: Plus },
+    { label: 'Review Leave', to: '/hr', icon: CalendarDays },
+    { label: 'Review Reports', to: '/reports', icon: FileText },
+    { label: 'Announcements', to: '/announcements', icon: Bell },
+  ],
+  Employee: [
+    { label: 'Apply Leave', to: '/leave', icon: CalendarDays },
+    { label: 'Submit Report', to: '/reports', icon: FileText },
+    { label: 'View Attendance', to: '/attendance', icon: CalendarCheck },
+    { label: 'View Announcements', to: '/announcements', icon: Bell },
+  ],
+};
 
 export const DashboardPage = () => {
   const { profile, role, updateProfile } = useAuth();
@@ -51,28 +86,52 @@ export const DashboardPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-        <div>
-          <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">Dashboard</p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-normal text-white">Today at {BRANDING.workspaceName}</h2>
+      <PageHeader
+        eyebrow="Dashboard"
+        title={`Today at ${BRANDING.workspaceName}`}
+        subtitle={`${BRANDING.productName} keeps attendance, reports, leave, and announcements ready for the team.`}
+        action={
+          <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3">
+            <MonitorSmartphone size={18} className="text-accent-500" />
+            <span className="text-sm font-medium text-slate-300">Remote Work</span>
+            <button
+              type="button"
+              onClick={toggleRemote}
+              className={`relative h-6 w-11 rounded-full transition ${today.remote ? 'bg-accent-600' : 'bg-slate-700'}`}
+              aria-label="Toggle remote work"
+            >
+              <span
+                className={`absolute top-1 h-4 w-4 rounded-full bg-white transition ${
+                  today.remote ? 'left-6' : 'left-1'
+                }`}
+              />
+            </button>
+          </div>
+        }
+      />
+
+      <section className="surface p-5">
+        <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+          <div>
+            <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
+            <p className="mt-1 text-sm text-slate-500">Jump into the most common workflows for your role.</p>
+          </div>
         </div>
-        <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3">
-          <MonitorSmartphone size={18} className="text-accent-500" />
-          <span className="text-sm font-medium text-slate-300">Remote Work</span>
-          <button
-            type="button"
-            onClick={toggleRemote}
-            className={`relative h-6 w-11 rounded-full transition ${today.remote ? 'bg-accent-600' : 'bg-slate-700'}`}
-            aria-label="Toggle remote work"
-          >
-            <span
-              className={`absolute top-1 h-4 w-4 rounded-full bg-white transition ${
-                today.remote ? 'left-6' : 'left-1'
-              }`}
-            />
-          </button>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {quickActions[role ?? profile.role].map((action) => (
+            <Link
+              key={action.label}
+              to={action.to}
+              className="group flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.035] px-4 py-3 text-sm font-medium text-slate-200 transition hover:border-accent-500/35 hover:bg-accent-500/10"
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-500/10 text-accent-500 transition group-hover:bg-accent-500/15">
+                <action.icon size={18} />
+              </span>
+              {action.label}
+            </Link>
+          ))}
         </div>
-      </div>
+      </section>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard title="Today's Date" value={formatDate()} icon={CalendarDays} caption="Current local workday" />

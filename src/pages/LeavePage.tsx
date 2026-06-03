@@ -1,5 +1,7 @@
 import { CalendarDays } from 'lucide-react';
 import { FormEvent, useMemo, useState } from 'react';
+import { EmptyState } from '../components/EmptyState';
+import { PageHeader } from '../components/PageHeader';
 import { StatusBadge } from '../components/StatusBadge';
 import { Toast } from '../components/Toast';
 import { storage } from '../services/storage';
@@ -72,10 +74,11 @@ export const LeavePage = () => {
   return (
     <div className="space-y-6">
       {toast ? <Toast message={toast} /> : null}
-      <div>
-        <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">Leave Requests</p>
-        <h2 className="mt-2 text-3xl font-semibold text-white">Apply for Leave</h2>
-      </div>
+      <PageHeader
+        eyebrow="Leave Requests"
+        title="Apply for Leave"
+        subtitle="Submit a leave request and track review status from the HR team."
+      />
 
       <form onSubmit={submit} className="surface max-w-4xl p-6">
         <div className="grid gap-4 md:grid-cols-2">
@@ -125,7 +128,11 @@ export const LeavePage = () => {
           </label>
         </div>
 
-        {error ? <p className="mt-4 text-sm text-rose-300">{error}</p> : null}
+        {error ? (
+          <p className="mt-4 rounded-lg border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+            {error}
+          </p>
+        ) : null}
 
         <button type="submit" className="btn-primary mt-6">
           <CalendarDays size={18} />
@@ -137,7 +144,11 @@ export const LeavePage = () => {
         <h3 className="text-xl font-semibold text-white">My Leave Requests</h3>
         <div className="mt-4 grid gap-4">
           {myRequests.length === 0 ? (
-            <div className="surface p-6 text-sm text-slate-400">No leave requests submitted yet.</div>
+            <EmptyState
+              icon={CalendarDays}
+              title="No leave requests submitted yet"
+              description="Your submitted leave applications and review statuses will appear here."
+            />
           ) : (
             myRequests.map((request) => (
               <article key={request.id} className="surface p-5">

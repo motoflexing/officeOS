@@ -1,12 +1,18 @@
 import { FormEvent, useState } from 'react';
+import { PageHeader } from '../components/PageHeader';
 import { Toast } from '../components/Toast';
-import { BRANDING } from '../config/branding';
 import { storage } from '../services/storage';
-import type { CompanySettings, WorkMode } from '../types';
+import type { CompanySettings, WorkModePolicy } from '../types';
+
+const workModePolicies: WorkModePolicy[] = ['Office Only', 'Hybrid', 'Remote Friendly'];
 
 export const SettingsPage = () => {
   const [settings, setSettings] = useState<CompanySettings>(() => storage.getSettings());
   const [toast, setToast] = useState('');
+
+  const updateSetting = <Key extends keyof CompanySettings>(key: Key, value: CompanySettings[Key]) => {
+    setSettings((current) => ({ ...current, [key]: value }));
+  };
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -18,73 +24,140 @@ export const SettingsPage = () => {
   return (
     <div className="space-y-6">
       {toast ? <Toast message={toast} /> : null}
-      <div>
-        <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">Admin Settings</p>
-        <h2 className="mt-2 text-3xl font-semibold text-white">Company Settings</h2>
-      </div>
+      <PageHeader
+        eyebrow="Admin Settings"
+        title="Workspace Settings"
+        subtitle="Manage tenant branding, office policy, and local communication preferences."
+      />
 
-      <form onSubmit={submit} className="surface max-w-3xl p-6">
-        <div className="grid gap-4 md:grid-cols-2">
-          <label>
-            <span className="mb-2 block text-sm font-medium text-slate-300">Company Name</span>
-            <input
-              className="field"
-              value={settings.companyName}
-              onChange={(event) => setSettings({ ...settings, companyName: event.target.value })}
-            />
-          </label>
-          <label>
-            <span className="mb-2 block text-sm font-medium text-slate-300">Working Hours</span>
-            <input
-              className="field"
-              value={settings.workingHours}
-              onChange={(event) => setSettings({ ...settings, workingHours: event.target.value })}
-            />
-          </label>
-          <label>
-            <span className="mb-2 block text-sm font-medium text-slate-300">Default Work Mode</span>
-            <select
-              className="field"
-              value={settings.defaultWorkMode}
-              onChange={(event) => setSettings({ ...settings, defaultWorkMode: event.target.value as WorkMode })}
-            >
-              <option>Office</option>
-              <option>Remote</option>
-              <option>Hybrid</option>
-            </select>
-          </label>
-        </div>
+      <form onSubmit={submit} className="space-y-6">
+        <section className="surface p-6">
+          <div>
+            <h3 className="text-lg font-semibold text-white">Workspace Branding</h3>
+            <p className="mt-1 text-sm text-slate-500">Local tenant details used for this workspace.</p>
+          </div>
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <label>
+              <span className="mb-2 block text-sm font-medium text-slate-300">Workspace Name</span>
+              <input
+                className="field"
+                value={settings.workspaceName}
+                onChange={(event) => updateSetting('workspaceName', event.target.value)}
+                required
+              />
+            </label>
+            <label>
+              <span className="mb-2 block text-sm font-medium text-slate-300">Product Name</span>
+              <input
+                className="field"
+                value={settings.productName}
+                onChange={(event) => updateSetting('productName', event.target.value)}
+                required
+              />
+            </label>
+            <label>
+              <span className="mb-2 block text-sm font-medium text-slate-300">Website URL</span>
+              <input
+                className="field"
+                type="url"
+                value={settings.websiteUrl}
+                onChange={(event) => updateSetting('websiteUrl', event.target.value)}
+                required
+              />
+            </label>
+            <label>
+              <span className="mb-2 block text-sm font-medium text-slate-300">Website Label</span>
+              <input
+                className="field"
+                value={settings.websiteLabel}
+                onChange={(event) => updateSetting('websiteLabel', event.target.value)}
+                required
+              />
+            </label>
+          </div>
+        </section>
 
-        <section className="mt-6">
-          <h3 className="text-lg font-semibold text-white">Notification Preferences</h3>
-          <div className="mt-4 grid gap-3">
+        <section className="surface p-6">
+          <div>
+            <h3 className="text-lg font-semibold text-white">Office Policy</h3>
+            <p className="mt-1 text-sm text-slate-500">Define the expected working rhythm for this workspace.</p>
+          </div>
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <label>
+              <span className="mb-2 block text-sm font-medium text-slate-300">Office Start Time</span>
+              <input
+                className="field"
+                type="time"
+                value={settings.officeStartTime}
+                onChange={(event) => updateSetting('officeStartTime', event.target.value)}
+                required
+              />
+            </label>
+            <label>
+              <span className="mb-2 block text-sm font-medium text-slate-300">Office End Time</span>
+              <input
+                className="field"
+                type="time"
+                value={settings.officeEndTime}
+                onChange={(event) => updateSetting('officeEndTime', event.target.value)}
+                required
+              />
+            </label>
+            <label>
+              <span className="mb-2 block text-sm font-medium text-slate-300">Work Mode Policy</span>
+              <select
+                className="field"
+                value={settings.workModePolicy}
+                onChange={(event) => updateSetting('workModePolicy', event.target.value as WorkModePolicy)}
+              >
+                {workModePolicies.map((policy) => (
+                  <option key={policy}>{policy}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span className="mb-2 block text-sm font-medium text-slate-300">Default Timezone</span>
+              <input
+                className="field"
+                value={settings.timezone}
+                onChange={(event) => updateSetting('timezone', event.target.value)}
+                placeholder="Asia/Kolkata"
+                required
+              />
+            </label>
+          </div>
+        </section>
+
+        <section className="surface p-6">
+          <div>
+            <h3 className="text-lg font-semibold text-white">Communication & Reports</h3>
+            <p className="mt-1 text-sm text-slate-500">Control workspace communication permissions and reporting rules.</p>
+          </div>
+          <div className="mt-5 grid gap-3">
             <PreferenceToggle
-              label="Email notifications"
-              checked={settings.emailNotifications}
-              onChange={() =>
-                setSettings({ ...settings, emailNotifications: !settings.emailNotifications })
-              }
+              label="Allow HR to create announcements"
+              checked={settings.allowHrAnnouncements}
+              onChange={() => updateSetting('allowHrAnnouncements', !settings.allowHrAnnouncements)}
             />
             <PreferenceToggle
-              label="Daily report reminders"
-              checked={settings.dailyReportReminders}
-              onChange={() =>
-                setSettings({ ...settings, dailyReportReminders: !settings.dailyReportReminders })
-              }
+              label="Require daily reports"
+              checked={settings.requireDailyReports}
+              onChange={() => updateSetting('requireDailyReports', !settings.requireDailyReports)}
             />
           </div>
         </section>
 
-        <section className="mt-6 rounded-xl border border-white/10 bg-white/[0.035] p-5">
+        <section className="surface p-6">
           <h3 className="text-lg font-semibold text-white">Platform Information</h3>
           <div className="mt-4 grid gap-3 text-sm">
-            <PlatformInfoRow label="Platform" value={BRANDING.productName} />
+            <PlatformInfoRow label="Platform" value={settings.productName} />
             <PlatformInfoRow label="Version" value="v0.1 Prototype" />
-            <PlatformInfoRow label="Client Workspace" value={BRANDING.workspaceName} />
+            <PlatformInfoRow label="Client Workspace" value={settings.workspaceName} />
+            <PlatformInfoRow label="Website" value={settings.websiteLabel} />
           </div>
         </section>
 
-        <button type="submit" className="btn-primary mt-6">
+        <button type="submit" className="btn-primary">
           Save Settings
         </button>
       </form>

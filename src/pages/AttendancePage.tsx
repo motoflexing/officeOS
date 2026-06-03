@@ -1,5 +1,7 @@
 import { CalendarCheck } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { EmptyState } from '../components/EmptyState';
+import { PageHeader } from '../components/PageHeader';
 import { storage } from '../services/storage';
 import { useAuth } from '../state/AuthContext';
 import type { AttendanceIndexRecord, AttendanceRecord, UserProfile, WorkMode } from '../types';
@@ -61,21 +63,22 @@ export const AttendancePage = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">Attendance</p>
-        <h2 className="mt-2 text-3xl font-semibold text-white">Attendance History</h2>
-      </div>
+      <PageHeader
+        eyebrow="Attendance"
+        title="Attendance History"
+        subtitle={
+          showEmployeeColumn
+            ? 'Review check-in, check-out, work mode, and status records across the workspace.'
+            : 'Review your saved check-in, check-out, work mode, and status history.'
+        }
+      />
 
       {rows.length === 0 ? (
-        <div className="surface p-8 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-accent-500/10 text-accent-500">
-            <CalendarCheck size={22} />
-          </div>
-          <h3 className="mt-4 text-lg font-semibold text-white">No attendance records yet</h3>
-          <p className="mt-2 text-sm text-slate-400">
-            Attendance history will appear here after check-in, check-out, or remote work updates are saved.
-          </p>
-        </div>
+        <EmptyState
+          icon={CalendarCheck}
+          title="No attendance records yet"
+          description="Attendance history will appear here after check-in, check-out, or remote work updates are saved."
+        />
       ) : (
         <section className="surface overflow-hidden">
           <div className="overflow-x-auto">
