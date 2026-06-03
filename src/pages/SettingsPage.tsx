@@ -1,5 +1,6 @@
 import { FormEvent, useState } from 'react';
 import { Toast } from '../components/Toast';
+import { BRANDING } from '../config/branding';
 import { storage } from '../services/storage';
 import type { CompanySettings, WorkMode } from '../types';
 
@@ -77,9 +78,9 @@ export const SettingsPage = () => {
         <section className="mt-6 rounded-xl border border-white/10 bg-white/[0.035] p-5">
           <h3 className="text-lg font-semibold text-white">Platform Information</h3>
           <div className="mt-4 grid gap-3 text-sm">
-            <PlatformInfoRow label="Platform" value="CompanyOS" />
+            <PlatformInfoRow label="Platform" value={BRANDING.productName} />
             <PlatformInfoRow label="Version" value="v0.1 Prototype" />
-            <PlatformInfoRow label="Client Workspace" value="Geekynd Hub" />
+            <PlatformInfoRow label="Client Workspace" value={BRANDING.workspaceName} />
           </div>
         </section>
 

@@ -25,6 +25,17 @@ export interface AttendanceRecord {
   remote: boolean;
 }
 
+export interface AttendanceIndexRecord {
+  id: string;
+  employeeName: string;
+  employeeEmail: string;
+  date: string;
+  checkIn?: string;
+  checkOut?: string;
+  workMode: WorkMode;
+  status: EmployeeStatus;
+}
+
 export interface DailyReport {
   id: string;
   date: string;
@@ -47,9 +58,14 @@ export interface Announcement {
 export interface LeaveRequest {
   id: string;
   employeeName: string;
+  employeeEmail: string;
   leaveType: string;
-  date: string;
+  startDate: string;
+  endDate: string;
+  reason: string;
   status: LeaveStatus;
+  submittedAt: string;
+  date?: string;
 }
 
 export interface CompanySettings {

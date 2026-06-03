@@ -1,6 +1,8 @@
 import {
   BarChart3,
   Bell,
+  CalendarCheck,
+  CalendarDays,
   ClipboardList,
   LayoutDashboard,
   Settings,
@@ -8,14 +10,17 @@ import {
   Users,
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
+import { BRANDING } from '../config/branding';
 import type { Role } from '../types';
 import { PoweredBy } from './PoweredBy';
 
 const roleItems = {
   Admin: [
     { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
+    { label: 'Attendance', to: '/attendance', icon: CalendarCheck },
     { label: 'Employees', to: '/employees', icon: Users },
     { label: 'Daily Reports', to: '/reports', icon: ClipboardList },
+    { label: 'Leave Requests', to: '/leave', icon: CalendarDays },
     { label: 'Announcements', to: '/announcements', icon: Bell },
     { label: 'HR Panel', to: '/hr', icon: BarChart3 },
     { label: 'Settings', to: '/settings', icon: Settings },
@@ -23,15 +28,19 @@ const roleItems = {
   ],
   HR: [
     { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
+    { label: 'Attendance', to: '/attendance', icon: CalendarCheck },
     { label: 'Employees', to: '/employees', icon: Users },
     { label: 'Daily Reports', to: '/reports', icon: ClipboardList },
+    { label: 'Leave Requests', to: '/leave', icon: CalendarDays },
     { label: 'Announcements', to: '/announcements', icon: Bell },
     { label: 'HR Panel', to: '/hr', icon: BarChart3 },
     { label: 'Profile', to: '/profile', icon: User },
   ],
   Employee: [
     { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
+    { label: 'Attendance', to: '/attendance', icon: CalendarCheck },
     { label: 'Daily Report', to: '/reports', icon: ClipboardList },
+    { label: 'Leave Requests', to: '/leave', icon: CalendarDays },
     { label: 'Announcements', to: '/announcements', icon: Bell },
     { label: 'Profile', to: '/profile', icon: User },
   ],
@@ -53,8 +62,8 @@ export const Sidebar = ({ role, open, onClose }: { role: Role; open: boolean; on
           GH
         </div>
         <div>
-          <p className="text-base font-semibold text-white">Geekynd Hub</p>
-          <p className="text-xs text-slate-500">Internal operations</p>
+          <p className="text-base font-semibold text-white">{BRANDING.workspaceName}</p>
+          <p className="text-xs text-slate-500">{BRANDING.productName}</p>
         </div>
       </div>
 
@@ -81,8 +90,8 @@ export const Sidebar = ({ role, open, onClose }: { role: Role; open: boolean; on
       <div className="mt-auto space-y-3">
         <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">Workspace</p>
-          <p className="mt-2 text-sm font-semibold text-slate-100">Geekynd Digital</p>
-          <p className="mt-1 text-xs text-slate-500">Prototype data saved locally</p>
+          <p className="mt-2 text-sm font-semibold text-slate-100">{BRANDING.workspaceName}</p>
+          <p className="mt-1 text-xs text-slate-500">{BRANDING.tagline}</p>
         </div>
         <PoweredBy />
       </div>

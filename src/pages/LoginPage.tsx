@@ -2,6 +2,7 @@ import { ArrowRight, BriefcaseBusiness, ShieldCheck, UserRound } from 'lucide-re
 import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PoweredBy } from '../components/PoweredBy';
+import { BRANDING } from '../config/branding';
 import { demoCredentials } from '../data/mockData';
 import { useAuth } from '../state/AuthContext';
 import type { Role } from '../types';
@@ -47,8 +48,8 @@ export const LoginPage = () => {
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent-600 font-bold text-white">
               GH
             </div>
-            <h1 className="mt-8 text-4xl font-semibold tracking-normal text-white">Geekynd Hub</h1>
-            <p className="mt-3 text-lg text-slate-400">Internal Employee Management Platform</p>
+            <h1 className="mt-8 text-4xl font-semibold tracking-normal text-white">{BRANDING.workspaceName}</h1>
+            <p className="mt-3 text-lg text-slate-400">{BRANDING.tagline}</p>
             <PoweredBy variant="badge" />
           </div>
 
@@ -58,7 +59,7 @@ export const LoginPage = () => {
               <p className="mt-1 text-sm text-slate-400">Select a role to load matching credentials.</p>
             </div>
             <div className="rounded-lg border border-accent-500/20 bg-accent-500/10 p-4 text-sm text-accent-100">
-              Firebase-ready architecture is prepared behind the local prototype data layer.
+              {BRANDING.productName} is prepared behind the local prototype data layer.
             </div>
           </div>
         </div>

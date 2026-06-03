@@ -1,3 +1,4 @@
+import { BRANDING } from '../config/branding';
 import type { Announcement, CompanySettings, Employee, LeaveRequest, UserProfile } from '../types';
 
 export const demoCredentials = {
@@ -117,28 +118,40 @@ export const defaultLeaveRequests: LeaveRequest[] = [
   {
     id: 'leave-1',
     employeeName: 'Adit Saha',
+    employeeEmail: 'adit@geekynd.com',
     leaveType: 'Casual Leave',
-    date: '2026-06-05',
+    startDate: '2026-06-05',
+    endDate: '2026-06-05',
+    reason: 'Personal work that needs attention during office hours.',
     status: 'Pending',
+    submittedAt: '2026-06-03T09:00:00.000Z',
   },
   {
     id: 'leave-2',
     employeeName: 'Rohan Marak',
+    employeeEmail: 'rohan@geekynd.com',
     leaveType: 'Sick Leave',
-    date: '2026-06-04',
+    startDate: '2026-06-04',
+    endDate: '2026-06-04',
+    reason: 'Medical rest.',
     status: 'Approved',
+    submittedAt: '2026-06-02T09:00:00.000Z',
   },
   {
     id: 'leave-3',
     employeeName: 'Syeda Simirani Ahmed',
+    employeeEmail: 'syeda@geekynd.com',
     leaveType: 'Personal Leave',
-    date: '2026-06-07',
+    startDate: '2026-06-07',
+    endDate: '2026-06-07',
+    reason: 'Personal commitment.',
     status: 'Rejected',
+    submittedAt: '2026-06-01T09:00:00.000Z',
   },
 ];
 
 export const defaultSettings: CompanySettings = {
-  companyName: 'Geekynd Hub',
+  companyName: BRANDING.workspaceName,
   workingHours: '10:00 AM - 7:00 PM',
   defaultWorkMode: 'Hybrid',
   emailNotifications: true,

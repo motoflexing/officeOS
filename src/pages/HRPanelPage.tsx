@@ -5,6 +5,7 @@ import { StatusBadge } from '../components/StatusBadge';
 import { employees } from '../data/mockData';
 import { storage } from '../services/storage';
 import type { LeaveRequest, LeaveStatus } from '../types';
+import { formatShortDate } from '../utils/format';
 
 export const HRPanelPage = () => {
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(() => storage.getLeaveRequests());
@@ -100,7 +101,8 @@ export const HRPanelPage = () => {
               <tr>
                 <th className="px-5 py-4">Employee Name</th>
                 <th className="px-5 py-4">Leave Type</th>
-                <th className="px-5 py-4">Date</th>
+                <th className="px-5 py-4">Dates</th>
+                <th className="px-5 py-4">Reason</th>
                 <th className="px-5 py-4">Status</th>
                 <th className="px-5 py-4">Actions</th>
               </tr>
@@ -110,7 +112,10 @@ export const HRPanelPage = () => {
                 <tr key={request.id} className="transition hover:bg-white/[0.035]">
                   <td className="px-5 py-4 font-semibold text-white">{request.employeeName}</td>
                   <td className="px-5 py-4 text-sm text-slate-300">{request.leaveType}</td>
-                  <td className="px-5 py-4 text-sm text-slate-300">{request.date}</td>
+                  <td className="px-5 py-4 text-sm text-slate-300">{formatLeaveRange(request)}</td>
+                  <td className="max-w-xs px-5 py-4 text-sm text-slate-300">
+                    <p className="line-clamp-2">{request.reason || 'No reason provided.'}</p>
+                  </td>
                   <td className="px-5 py-4">
                     <StatusBadge status={request.status} />
                   </td>
@@ -140,3 +145,12 @@ const OnboardingItem = ({ title, value }: { title: string; value: string }) => (
     <p className="mt-1 text-sm text-slate-500">{value}</p>
   </div>
 );
+
+const formatLeaveRange = (request: LeaveRequest) => {
+  const startDate = request.startDate || request.date;
+  const endDate = request.endDate || request.date;
+
+  if (!startDate) return 'Date not available';
+  if (!endDate || startDate === endDate) return formatShortDate(startDate);
+  return `${formatShortDate(startDate)} - ${formatShortDate(endDate)}`;
+};

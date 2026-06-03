@@ -6,6 +6,7 @@ import {
 } from '../data/mockData';
 import type {
   Announcement,
+  AttendanceIndexRecord,
   AttendanceRecord,
   CompanySettings,
   DailyReport,
@@ -46,6 +47,16 @@ export const storage = {
     read<AttendanceRecord[]>(`geekynd:attendance:${email}`, []),
   setAttendance: (email: string, records: AttendanceRecord[]) =>
     write(`geekynd:attendance:${email}`, records),
+  getAttendanceIndex: () => read<AttendanceIndexRecord[]>('geekynd:attendance:index', []),
+  setAttendanceIndex: (records: AttendanceIndexRecord[]) =>
+    write('geekynd:attendance:index', records),
+  upsertAttendanceIndex: (record: AttendanceIndexRecord) => {
+    const records = storage.getAttendanceIndex();
+    const nextRecords = records.some((item) => item.id === record.id)
+      ? records.map((item) => (item.id === record.id ? record : item))
+      : [record, ...records];
+    return storage.setAttendanceIndex(nextRecords);
+  },
 
   getReports: () => read<DailyReport[]>('geekynd:reports', []),
   setReports: (reports: DailyReport[]) => write('geekynd:reports', reports),
