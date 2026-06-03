@@ -53,12 +53,12 @@ export const Sidebar = ({ role, open, onClose }: { role: Role; open: boolean; on
       onClick={onClose}
     />
     <aside
-      className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-white/10 bg-ink-950/95 px-4 py-5 shadow-glow backdrop-blur transition lg:static lg:z-auto lg:translate-x-0 ${
+      className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-white/10 bg-black/90 px-4 py-5 shadow-glow backdrop-blur transition lg:static lg:z-auto lg:translate-x-0 ${
         open ? 'translate-x-0' : '-translate-x-full'
       }`}
     >
       <div className="flex items-center gap-3 px-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-600 text-sm font-bold text-white">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-accent-500 to-red-950 text-sm font-bold text-white shadow-[0_0_24px_rgba(239,35,43,0.26)]">
           GH
         </div>
         <div>
@@ -76,7 +76,7 @@ export const Sidebar = ({ role, open, onClose }: { role: Role; open: boolean; on
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
                 isActive
-                  ? 'bg-accent-500/15 text-white ring-1 ring-accent-500/25'
+                  ? 'bg-gradient-to-r from-red-950 via-red-900/75 to-accent-600/35 text-white shadow-[inset_0_0_0_1px_rgba(239,35,43,0.25)]'
                   : 'text-slate-400 hover:bg-white/[0.055] hover:text-slate-100'
               }`
             }

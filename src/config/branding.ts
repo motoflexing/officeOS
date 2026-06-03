@@ -1,8 +1,8 @@
 export const BRANDING = {
   workspaceName: 'Geekynd Hub',
   productName: 'OfficeOS',
-  poweredBy: 'Moto Flexing',
+  poweredBy: 'MotoFlexing',
   websiteLabel: 'www.motoflexing.com',
   websiteUrl: 'https://www.motoflexing.com',
-  tagline: 'Internal operations hub powered by OfficeOS',
+  tagline: 'Secure workspace company portal',
 };

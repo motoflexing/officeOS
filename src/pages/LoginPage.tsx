@@ -1,7 +1,6 @@
 import { ArrowRight, BriefcaseBusiness, ShieldCheck, UserRound } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PoweredBy } from '../components/PoweredBy';
 import { BRANDING } from '../config/branding';
 import { demoCredentials } from '../data/mockData';
 import { isFirebaseConfigured } from '../services/firebase';
@@ -56,14 +55,13 @@ export const LoginPage = () => {
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-10">
       <section className="grid w-full max-w-6xl gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="flex flex-col justify-between rounded-xl border border-white/10 bg-ink-950/70 p-8 shadow-glow">
+        <div className="flex flex-col justify-between rounded-xl border border-white/10 bg-black/55 p-8 shadow-glow backdrop-blur">
           <div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent-600 font-bold text-white">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-accent-500 to-red-900 font-bold text-white shadow-[0_0_28px_rgba(239,35,43,0.28)]">
               GH
             </div>
             <h1 className="mt-8 text-4xl font-semibold tracking-normal text-white">{BRANDING.workspaceName}</h1>
             <p className="mt-3 text-lg text-slate-400">{BRANDING.tagline}</p>
-            <PoweredBy variant="badge" />
           </div>
 
           <div className="mt-12 grid gap-3">
@@ -77,9 +75,9 @@ export const LoginPage = () => {
                   : 'Select a role to load matching credentials.'}
               </p>
             </div>
-            <div className="rounded-lg border border-accent-500/20 bg-accent-500/10 p-4 text-sm text-accent-100">
+            <div className="rounded-lg border border-accent-500/20 bg-gradient-to-br from-accent-500/12 to-black/10 p-4 text-sm text-accent-100">
               {BRANDING.productName} is prepared behind the{' '}
-              {isFirebaseConfigured ? 'Moto Flexing Firebase backend.' : 'local prototype data layer.'}
+              {isFirebaseConfigured ? 'Firebase backend.' : 'local prototype data layer.'}
             </div>
           </div>
         </div>
@@ -98,8 +96,8 @@ export const LoginPage = () => {
                 onClick={() => chooseRole(item.role)}
                 className={`rounded-xl border p-4 text-left transition hover:-translate-y-0.5 ${
                   selectedRole === item.role
-                    ? 'border-accent-500 bg-accent-500/12 shadow-glow'
-                    : 'border-white/10 bg-white/[0.04] hover:border-white/20'
+                    ? 'border-accent-500 bg-accent-500/12 shadow-[0_0_30px_rgba(239,35,43,0.18)]'
+                    : 'border-white/10 bg-black/25 hover:border-accent-500/35 hover:bg-accent-500/[0.06]'
                 }`}
               >
                 <item.icon className={selectedRole === item.role ? 'text-accent-500' : 'text-slate-400'} size={22} />

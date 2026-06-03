@@ -15,7 +15,7 @@ export const Topbar = ({ onMenu }: { onMenu: () => void }) => {
   if (!profile) return null;
 
   return (
-    <header className="sticky top-0 z-20 border-b border-white/10 bg-ink-950/70 px-4 py-3 backdrop-blur lg:px-8">
+    <header className="sticky top-0 z-20 border-b border-white/10 bg-black/55 px-4 py-3 backdrop-blur lg:px-8">
       <div className="flex items-center justify-between gap-4">
         <button
           type="button"
@@ -44,7 +44,7 @@ export const Topbar = ({ onMenu }: { onMenu: () => void }) => {
           <button
             type="button"
             onClick={handleLogout}
-            className="btn-secondary px-3"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-accent-500/55 bg-black/30 px-3 py-2.5 text-sm font-semibold text-accent-200 transition hover:bg-accent-500/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-accent-500/35"
             title="Log out"
             aria-label="Log out"
           >
