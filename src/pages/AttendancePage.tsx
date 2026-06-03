@@ -2,6 +2,8 @@ import { CalendarCheck } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { EmptyState } from '../components/EmptyState';
 import { PageHeader } from '../components/PageHeader';
+import { firestoreService } from '../services/firestoreService';
+import { isFirebaseConfigured } from '../services/firebase';
 import { storage } from '../services/storage';
 import { useAuth } from '../state/AuthContext';
 import type { AttendanceIndexRecord, AttendanceRecord, UserProfile, WorkMode } from '../types';
@@ -22,9 +24,23 @@ export const AttendancePage = () => {
   const [attendanceIndex, setAttendanceIndex] = useState<AttendanceIndexRecord[]>(() =>
     storage.getAttendanceIndex(),
   );
+  const [loading, setLoading] = useState(isFirebaseConfigured);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!profile) return;
+    if (isFirebaseConfigured) {
+      const request =
+        role === 'Admin' || role === 'HR'
+          ? firestoreService.getAttendance()
+          : firestoreService.getUserAttendance(profile.email);
+
+      request
+        .then(setAttendanceIndex)
+        .catch((error) => setError(error instanceof Error ? error.message : 'Unable to load attendance.'))
+        .finally(() => setLoading(false));
+      return;
+    }
 
     const index = storage.getAttendanceIndex();
     if ((role === 'Admin' || role === 'HR') && index.length === 0) {
@@ -44,6 +60,12 @@ export const AttendancePage = () => {
 
   const rows = useMemo(() => {
     if (!profile) return [];
+
+    if (isFirebaseConfigured) {
+      return attendanceIndex
+        .map(buildAttendanceRowFromIndex)
+        .sort((a, b) => b.date.localeCompare(a.date));
+    }
 
     if (role === 'Admin' || role === 'HR') {
       return attendanceIndex
@@ -74,11 +96,17 @@ export const AttendancePage = () => {
       />
 
       {rows.length === 0 ? (
+        loading ? (
+          <EmptyState icon={CalendarCheck} title="Loading attendance" description="Fetching attendance records." />
+        ) : error ? (
+          <EmptyState icon={CalendarCheck} title="Unable to load attendance" description={error} />
+        ) : (
         <EmptyState
           icon={CalendarCheck}
           title="No attendance records yet"
           description="Attendance history will appear here after check-in, check-out, or remote work updates are saved."
         />
+        )
       ) : (
         <section className="surface overflow-hidden">
           <div className="overflow-x-auto">

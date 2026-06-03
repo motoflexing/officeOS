@@ -12,6 +12,8 @@ export interface UserProfile {
   email: string;
   role: Role;
   department: string;
+  designation?: string;
+  employmentStatus?: EmploymentStatus;
   workMode: WorkMode;
   status: EmployeeStatus;
 }
@@ -90,6 +92,8 @@ export interface LeaveRequest {
   reason: string;
   status: LeaveStatus;
   submittedAt: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
   date?: string;
 }
 

@@ -1,0 +1,132 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    /*
+      OfficeOS MVP/demo rules.
+
+      These rules are role-based and tenant-scoped for the companies/{companyId}
+      data model. They are intentionally practical for demos, but should be
+      hardened before paid production use with stricter field validation,
+      immutable audit fields, audit logs, backups, and monitored billing limits.
+
+      Preferred role source:
+      - Firebase Auth custom claims from scripts/seedFirebase.js:
+        { companyId: "geekynd", role: "admin" | "hr" | "employee" }
+
+      MVP fallback:
+      - companies/{companyId}/users/{uid}.role using "Admin" | "HR" | "Employee"
+    */
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userDocPath(companyId) {
+      return /databases/$(database)/documents/companies/$(companyId)/users/$(request.auth.uid);
+    }
+
+    function hasUserDoc(companyId) {
+      return signedIn() && exists(userDocPath(companyId));
+    }
+
+    function profileRole(companyId) {
+      return hasUserDoc(companyId) ? get(userDocPath(companyId)).data.role : null;
+    }
+
+    function inCompany(companyId) {
+      return signedIn() &&
+        (request.auth.token.companyId == companyId || hasUserDoc(companyId));
+    }
+
+    function hasRole(companyId, claimRoles, profileRoles) {
+      return inCompany(companyId) &&
+        (request.auth.token.role in claimRoles || profileRole(companyId) in profileRoles);
+    }
+
+    function isAdmin(companyId) {
+      return hasRole(companyId, ['admin'], ['Admin']);
+    }
+
+    function isHr(companyId) {
+      return hasRole(companyId, ['hr'], ['HR']);
+    }
+
+    function isEmployee(companyId) {
+      return hasRole(companyId, ['employee'], ['Employee']);
+    }
+
+    function isAdminOrHr(companyId) {
+      return isAdmin(companyId) || isHr(companyId);
+    }
+
+    function authEmail() {
+      return request.auth.token.email;
+    }
+
+    function writesOwnEmployeeEmail() {
+      return request.resource.data.employeeEmail == authEmail();
+    }
+
+    function readsOwnEmployeeEmail() {
+      return resource.data.employeeEmail == authEmail();
+    }
+
+    function writesValidAnnouncementRole() {
+      return request.resource.data.authorRole in ['Admin', 'HR'];
+    }
+
+    match /companies/{companyId} {
+      allow read: if inCompany(companyId);
+      allow write: if isAdmin(companyId);
+
+      match /users/{userId} {
+        allow read: if isAdmin(companyId) || (inCompany(companyId) && request.auth.uid == userId);
+        allow create, update, delete: if isAdmin(companyId);
+      }
+
+      match /employees/{employeeId} {
+        allow read: if isAdminOrHr(companyId);
+        allow create, update, delete: if isAdminOrHr(companyId);
+      }
+
+      match /attendance/{attendanceId} {
+        allow read: if isAdminOrHr(companyId) || (isEmployee(companyId) && readsOwnEmployeeEmail());
+        allow create: if isAdminOrHr(companyId) || (isEmployee(companyId) && writesOwnEmployeeEmail());
+        allow update: if isAdminOrHr(companyId) ||
+          (isEmployee(companyId) && readsOwnEmployeeEmail() && writesOwnEmployeeEmail());
+        allow delete: if isAdmin(companyId);
+      }
+
+      match /leaveRequests/{leaveRequestId} {
+        allow read: if isAdminOrHr(companyId) || (isEmployee(companyId) && readsOwnEmployeeEmail());
+        allow create: if isAdminOrHr(companyId) || (isEmployee(companyId) && writesOwnEmployeeEmail());
+        allow update: if isAdminOrHr(companyId);
+        allow delete: if isAdmin(companyId);
+      }
+
+      match /reports/{reportId} {
+        allow read: if isAdminOrHr(companyId) || (isEmployee(companyId) && readsOwnEmployeeEmail());
+        allow create: if isAdminOrHr(companyId) || (isEmployee(companyId) && writesOwnEmployeeEmail());
+        allow update: if isAdminOrHr(companyId);
+        allow delete: if isAdmin(companyId);
+      }
+
+      match /announcements/{announcementId} {
+        allow read: if inCompany(companyId);
+        allow create: if isAdmin(companyId) ||
+          (isHr(companyId) && writesValidAnnouncementRole());
+        allow update, delete: if isAdmin(companyId);
+      }
+
+      match /settings/{settingsId} {
+        allow read: if settingsId == 'main' && inCompany(companyId);
+        allow write: if settingsId == 'main' && isAdmin(companyId);
+      }
+
+      match /{document=**} {
+        allow read, write: if isAdmin(companyId);
+      }
+    }
+  }
+}

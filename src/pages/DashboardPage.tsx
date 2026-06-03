@@ -12,15 +12,17 @@ import {
   Settings as SettingsIcon,
   Timer,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';
 import { StatCard } from '../components/StatCard';
 import { StatusBadge } from '../components/StatusBadge';
 import { BRANDING } from '../config/branding';
+import { firestoreService } from '../services/firestoreService';
+import { isFirebaseConfigured } from '../services/firebase';
 import { storage } from '../services/storage';
 import { useAuth } from '../state/AuthContext';
-import type { AttendanceIndexRecord, AttendanceRecord } from '../types';
+import type { AttendanceIndexRecord, AttendanceRecord, LeaveRequest } from '../types';
 import { formatDate, formatTime } from '../utils/format';
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
@@ -51,6 +53,36 @@ export const DashboardPage = () => {
   const [records, setRecords] = useState<AttendanceRecord[]>(() =>
     profile ? storage.getAttendance(profile.email) : [],
   );
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(() => storage.getLeaveRequests());
+  const [attendanceError, setAttendanceError] = useState('');
+
+  useEffect(() => {
+    if (!isFirebaseConfigured || !profile) return;
+
+    firestoreService
+      .getUserAttendance(profile.email)
+      .then((items) =>
+        setRecords(
+          items.map((item) => ({
+            date: item.date,
+            checkIn: item.checkIn,
+            checkOut: item.checkOut,
+            status: item.status,
+            remote: item.workMode === 'Remote',
+          })),
+        ),
+      )
+      .catch((error) => setAttendanceError(error instanceof Error ? error.message : 'Unable to load attendance.'));
+  }, [profile]);
+
+  useEffect(() => {
+    if (!isFirebaseConfigured) return;
+
+    firestoreService
+      .getLeaveRequests()
+      .then(setLeaveRequests)
+      .catch((error) => setAttendanceError(error instanceof Error ? error.message : 'Unable to load dashboard data.'));
+  }, []);
 
   const today = useMemo(
     () => records.find((record) => record.date === todayKey()) ?? {
@@ -63,22 +95,30 @@ export const DashboardPage = () => {
 
   if (!profile) return null;
 
-  const saveToday = (record: AttendanceRecord) => {
+  const saveToday = async (record: AttendanceRecord) => {
     const nextRecords = records.some((item) => item.date === record.date)
       ? records.map((item) => (item.date === record.date ? record : item))
       : [record, ...records];
     setRecords(nextRecords);
-    storage.setAttendance(profile.email, nextRecords);
-    storage.upsertAttendanceIndex(toAttendanceIndexRecord(profile.name, profile.email, profile.workMode, record));
+    const indexRecord = toAttendanceIndexRecord(profile.name, profile.email, profile.workMode, record);
+    try {
+      if (isFirebaseConfigured) {
+        await firestoreService.upsertAttendance(indexRecord);
+      } else {
+        storage.setAttendance(profile.email, nextRecords);
+        storage.upsertAttendanceIndex(indexRecord);
+      }
+      setAttendanceError('');
+    } catch (error) {
+      setAttendanceError(error instanceof Error ? error.message : 'Unable to save attendance.');
+    }
     updateProfile({ ...profile, status: record.status, workMode: record.remote ? 'Remote' : profile.workMode });
   };
 
   const checkIn = () => saveToday({ ...today, checkIn: today.checkIn ?? formatTime(), status: 'At Work' });
   const checkOut = () => saveToday({ ...today, checkOut: formatTime(), status: 'Checked Out' });
   const toggleRemote = () => saveToday({ ...today, remote: !today.remote });
-  const pendingLeaveRequests = storage
-    .getLeaveRequests()
-    .filter((request) => {
+  const pendingLeaveRequests = leaveRequests.filter((request) => {
       if (request.status !== 'Pending') return false;
       if (role === 'Admin' || role === 'HR') return true;
       return request.employeeEmail ? request.employeeEmail === profile.email : request.employeeName === profile.name;
@@ -155,6 +195,11 @@ export const DashboardPage = () => {
           </div>
         </article>
       </div>
+      {attendanceError ? (
+        <p className="rounded-lg border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+          {attendanceError}
+        </p>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard title="Planned Tasks" value="8" icon={ListChecks} caption="Sprint and async tasks" />

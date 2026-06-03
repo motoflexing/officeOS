@@ -1,13 +1,17 @@
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { defaultProfiles } from '../data/mockData';
+import { auth, isFirebaseConfigured } from '../services/firebase';
+import { firestoreService } from '../services/firestoreService';
 import { storage } from '../services/storage';
 import type { Role, UserProfile } from '../types';
 
 interface AuthState {
   role: Role | null;
   profile: UserProfile | null;
-  login: (role: Role) => void;
-  logout: () => void;
+  loading: boolean;
+  login: (role: Role, email?: string, password?: string) => Promise<void>;
+  logout: () => Promise<void>;
   updateProfile: (profile: UserProfile) => void;
 }
 
@@ -19,17 +23,77 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const savedRole = storage.getRole();
     return savedRole ? storage.getProfile(savedRole) : null;
   });
+  const [loading, setLoading] = useState(isFirebaseConfigured);
+
+  useEffect(() => {
+    if (!isFirebaseConfigured || !auth) {
+      setLoading(false);
+      return undefined;
+    }
+
+    return onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        storage.clearSession();
+        setRole(null);
+        setProfile(null);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const nextProfile = await firestoreService.getUserProfile(user.uid);
+        if (!nextProfile) {
+          storage.clearSession();
+          setRole(null);
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+
+        storage.setRole(nextProfile.role);
+        storage.setProfile(nextProfile);
+        setRole(nextProfile.role);
+        setProfile(nextProfile);
+      } finally {
+        setLoading(false);
+      }
+    });
+  }, []);
 
   const value = useMemo<AuthState>(
     () => ({
       role,
       profile,
-      login: (nextRole) => {
+      loading,
+      login: async (nextRole, email, password) => {
+        if (isFirebaseConfigured && auth) {
+          if (!email || !password) {
+            throw new Error('Email and password are required.');
+          }
+
+          const credential = await signInWithEmailAndPassword(auth, email, password);
+          const nextProfile = await firestoreService.getUserProfile(credential.user.uid);
+
+          if (!nextProfile) {
+            await signOut(auth);
+            throw new Error('No workspace profile found for this Firebase user.');
+          }
+
+          storage.setRole(nextProfile.role);
+          storage.setProfile(nextProfile);
+          setRole(nextProfile.role);
+          setProfile(nextProfile);
+          return;
+        }
+
         storage.setRole(nextRole);
         setRole(nextRole);
         setProfile(storage.getProfile(nextRole) ?? defaultProfiles[nextRole]);
       },
-      logout: () => {
+      logout: async () => {
+        if (isFirebaseConfigured && auth) {
+          await signOut(auth);
+        }
         storage.clearSession();
         setRole(null);
         setProfile(null);
@@ -39,7 +103,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setProfile(nextProfile);
       },
     }),
-    [role, profile],
+    [loading, role, profile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

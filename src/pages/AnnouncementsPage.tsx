@@ -1,9 +1,11 @@
 import { Send } from 'lucide-react';
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { AnnouncementCard, canViewAnnouncement } from '../components/AnnouncementCard';
 import { EmptyState } from '../components/EmptyState';
 import { PageHeader } from '../components/PageHeader';
 import { Toast } from '../components/Toast';
+import { firestoreService } from '../services/firestoreService';
+import { isFirebaseConfigured } from '../services/firebase';
 import { storage } from '../services/storage';
 import { useAuth } from '../state/AuthContext';
 import type { Announcement, AnnouncementTargetRole } from '../types';
@@ -18,6 +20,20 @@ export const AnnouncementsPage = () => {
   const [targetRole, setTargetRole] = useState<AnnouncementTargetRole>('Everyone');
   const [settings] = useState(() => storage.getSettings());
   const [toast, setToast] = useState('');
+  const [allowHrAnnouncements, setAllowHrAnnouncements] = useState(settings.allowHrAnnouncements);
+  const [loading, setLoading] = useState(isFirebaseConfigured);
+
+  useEffect(() => {
+    if (!isFirebaseConfigured) return;
+
+    Promise.all([firestoreService.getAnnouncements(), firestoreService.getSettings()])
+      .then(([announcements, settings]) => {
+        setAnnouncements(announcements);
+        if (settings) setAllowHrAnnouncements(settings.allowHrAnnouncements);
+      })
+      .catch((error) => setToast(error instanceof Error ? error.message : 'Unable to load announcements.'))
+      .finally(() => setLoading(false));
+  }, []);
 
   const visibleAnnouncements = useMemo(
     () => (role ? announcements.filter((announcement) => canViewAnnouncement(announcement, role)) : []),
@@ -26,9 +42,9 @@ export const AnnouncementsPage = () => {
 
   if (!profile || !role) return null;
 
-  const canCreate = role === 'Admin' || (role === 'HR' && settings.allowHrAnnouncements);
+  const canCreate = role === 'Admin' || (role === 'HR' && allowHrAnnouncements);
 
-  const postAnnouncement = (event: FormEvent) => {
+  const postAnnouncement = async (event: FormEvent) => {
     event.preventDefault();
     if (!canCreate) return;
 
@@ -41,14 +57,24 @@ export const AnnouncementsPage = () => {
       targetRole,
       createdAt: new Date().toISOString(),
     };
-    const nextAnnouncements = [announcement, ...announcements];
-    setAnnouncements(nextAnnouncements);
-    storage.setAnnouncements(nextAnnouncements);
-    setTitle('');
-    setMessage('');
-    setTargetRole('Everyone');
-    setToast('Announcement posted');
-    window.setTimeout(() => setToast(''), 2400);
+    try {
+      if (isFirebaseConfigured) {
+        await firestoreService.addAnnouncement(announcement);
+      }
+      const nextAnnouncements = [announcement, ...announcements];
+      setAnnouncements(nextAnnouncements);
+      if (!isFirebaseConfigured) {
+        storage.setAnnouncements(nextAnnouncements);
+      }
+      setTitle('');
+      setMessage('');
+      setTargetRole('Everyone');
+      setToast('Announcement posted');
+      window.setTimeout(() => setToast(''), 2400);
+    } catch (error) {
+      setToast(error instanceof Error ? error.message : 'Unable to post announcement.');
+      window.setTimeout(() => setToast(''), 2400);
+    }
   };
 
   return (
@@ -92,7 +118,9 @@ export const AnnouncementsPage = () => {
       ) : null}
 
       <div className="grid gap-4">
-        {visibleAnnouncements.length === 0 ? (
+        {loading ? (
+          <EmptyState icon={Send} title="Loading announcements" description="Fetching workspace announcements." />
+        ) : visibleAnnouncements.length === 0 ? (
           <EmptyState
             icon={Send}
             title="No announcements available"

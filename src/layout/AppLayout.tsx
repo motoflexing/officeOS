@@ -6,8 +6,12 @@ import { BRANDING } from '../config/branding';
 import { useAuth } from '../state/AuthContext';
 
 export const AppLayout = () => {
-  const { role } = useAuth();
+  const { loading, role } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  if (loading) {
+    return <div className="min-h-screen p-6 text-sm text-slate-400">Loading workspace...</div>;
+  }
 
   if (!role) {
     return <Navigate to="/login" replace />;

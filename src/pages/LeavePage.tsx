@@ -1,9 +1,11 @@
 import { CalendarDays } from 'lucide-react';
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { EmptyState } from '../components/EmptyState';
 import { PageHeader } from '../components/PageHeader';
 import { StatusBadge } from '../components/StatusBadge';
 import { Toast } from '../components/Toast';
+import { firestoreService } from '../services/firestoreService';
+import { isFirebaseConfigured } from '../services/firebase';
 import { storage } from '../services/storage';
 import { useAuth } from '../state/AuthContext';
 import type { LeaveRequest } from '../types';
@@ -24,6 +26,17 @@ export const LeavePage = () => {
   const [requests, setRequests] = useState<LeaveRequest[]>(() => storage.getLeaveRequests());
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
+  const [loading, setLoading] = useState(isFirebaseConfigured);
+
+  useEffect(() => {
+    if (!isFirebaseConfigured) return;
+
+    firestoreService
+      .getLeaveRequests()
+      .then(setRequests)
+      .catch((error) => setError(error instanceof Error ? error.message : 'Unable to load leave requests.'))
+      .finally(() => setLoading(false));
+  }, []);
 
   const myRequests = useMemo(
     () =>
@@ -37,7 +50,7 @@ export const LeavePage = () => {
 
   if (!profile) return null;
 
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault();
     setError('');
 
@@ -63,12 +76,21 @@ export const LeavePage = () => {
       submittedAt: new Date().toISOString(),
     };
 
-    const nextRequests = [request, ...requests];
-    setRequests(nextRequests);
-    storage.setLeaveRequests(nextRequests);
-    setForm(emptyForm);
-    setToast('Leave request submitted');
-    window.setTimeout(() => setToast(''), 2200);
+    try {
+      if (isFirebaseConfigured) {
+        await firestoreService.addLeaveRequest(request);
+      }
+      const nextRequests = [request, ...requests];
+      setRequests(nextRequests);
+      if (!isFirebaseConfigured) {
+        storage.setLeaveRequests(nextRequests);
+      }
+      setForm(emptyForm);
+      setToast('Leave request submitted');
+      window.setTimeout(() => setToast(''), 2200);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Unable to submit leave request.');
+    }
   };
 
   return (
@@ -143,7 +165,9 @@ export const LeavePage = () => {
       <section>
         <h3 className="text-xl font-semibold text-white">My Leave Requests</h3>
         <div className="mt-4 grid gap-4">
-          {myRequests.length === 0 ? (
+          {loading ? (
+            <EmptyState icon={CalendarDays} title="Loading leave requests" description="Fetching your leave history." />
+          ) : myRequests.length === 0 ? (
             <EmptyState
               icon={CalendarDays}
               title="No leave requests submitted yet"

@@ -1,6 +1,8 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import { Toast } from '../components/Toast';
+import { firestoreService } from '../services/firestoreService';
+import { isFirebaseConfigured } from '../services/firebase';
 import { storage } from '../services/storage';
 import type { CompanySettings, WorkModePolicy } from '../types';
 
@@ -9,16 +11,37 @@ const workModePolicies: WorkModePolicy[] = ['Office Only', 'Hybrid', 'Remote Fri
 export const SettingsPage = () => {
   const [settings, setSettings] = useState<CompanySettings>(() => storage.getSettings());
   const [toast, setToast] = useState('');
+  const [loading, setLoading] = useState(isFirebaseConfigured);
+
+  useEffect(() => {
+    if (!isFirebaseConfigured) return;
+
+    firestoreService
+      .getSettings()
+      .then((settings) => {
+        if (settings) setSettings(storage.setSettings(settings));
+      })
+      .catch((error) => setToast(error instanceof Error ? error.message : 'Unable to load settings.'))
+      .finally(() => setLoading(false));
+  }, []);
 
   const updateSetting = <Key extends keyof CompanySettings>(key: Key, value: CompanySettings[Key]) => {
     setSettings((current) => ({ ...current, [key]: value }));
   };
 
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault();
-    storage.setSettings(settings);
-    setToast('Settings saved');
-    window.setTimeout(() => setToast(''), 2200);
+    try {
+      if (isFirebaseConfigured) {
+        await firestoreService.updateSettings(settings);
+      }
+      storage.setSettings(settings);
+      setToast('Settings saved');
+      window.setTimeout(() => setToast(''), 2200);
+    } catch (error) {
+      setToast(error instanceof Error ? error.message : 'Unable to save settings.');
+      window.setTimeout(() => setToast(''), 2200);
+    }
   };
 
   return (
@@ -29,6 +52,7 @@ export const SettingsPage = () => {
         title="Workspace Settings"
         subtitle="Manage tenant branding, office policy, and local communication preferences."
       />
+      {loading ? <p className="text-sm text-slate-400">Loading workspace settings...</p> : null}
 
       <form onSubmit={submit} className="space-y-6">
         <section className="surface p-6">

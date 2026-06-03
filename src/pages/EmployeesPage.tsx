@@ -1,10 +1,12 @@
 import { Plus, Search } from 'lucide-react';
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { EmptyState } from '../components/EmptyState';
 import { EmployeeTable } from '../components/EmployeeTable';
 import { PageHeader } from '../components/PageHeader';
 import { Toast } from '../components/Toast';
 import { BRANDING } from '../config/branding';
+import { firestoreService } from '../services/firestoreService';
+import { isFirebaseConfigured } from '../services/firebase';
 import { storage } from '../services/storage';
 import type { Employee, EmploymentStatus, Role } from '../types';
 
@@ -35,6 +37,17 @@ export const EmployeesPage = () => {
   const [form, setForm] = useState<EmployeeForm>(emptyForm);
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
+  const [loading, setLoading] = useState(isFirebaseConfigured);
+
+  useEffect(() => {
+    if (!isFirebaseConfigured) return;
+
+    firestoreService
+      .getEmployees()
+      .then(setEmployees)
+      .catch((error) => setError(error instanceof Error ? error.message : 'Unable to load employees.'))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filteredEmployees = useMemo(
     () =>
@@ -81,7 +94,7 @@ export const EmployeesPage = () => {
     setError('');
   };
 
-  const saveEmployee = (event: FormEvent) => {
+  const saveEmployee = async (event: FormEvent) => {
     event.preventDefault();
     setError('');
 
@@ -121,20 +134,46 @@ export const EmployeesPage = () => {
       location: form.location?.trim() || undefined,
     };
 
-    storage.upsertEmployee(nextEmployee);
-    setEmployees(storage.getEmployees());
-    setToast(editingEmployee ? 'Employee details updated' : 'Employee added to directory');
-    window.setTimeout(() => setToast(''), 2400);
-    closeForm();
+    try {
+      if (isFirebaseConfigured) {
+        if (editingEmployee) {
+          await firestoreService.updateEmployee(nextEmployee);
+        } else {
+          await firestoreService.addEmployee(nextEmployee);
+        }
+        setEmployees((current) =>
+          current.some((employee) => employee.id === nextEmployee.id)
+            ? current.map((employee) => (employee.id === nextEmployee.id ? nextEmployee : employee))
+            : [nextEmployee, ...current],
+        );
+      } else {
+        storage.upsertEmployee(nextEmployee);
+        setEmployees(storage.getEmployees());
+      }
+      setToast(editingEmployee ? 'Employee details updated' : 'Employee added to directory');
+      window.setTimeout(() => setToast(''), 2400);
+      closeForm();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Unable to save employee.');
+    }
   };
 
-  const deleteEmployee = (employee: Employee) => {
+  const deleteEmployee = async (employee: Employee) => {
     const shouldDelete = window.confirm(`Delete ${employee.name} from the employee directory?`);
     if (!shouldDelete) return;
-    storage.deleteEmployee(employee.id);
-    setEmployees(storage.getEmployees());
-    setToast('Employee removed from directory');
-    window.setTimeout(() => setToast(''), 2400);
+    try {
+      if (isFirebaseConfigured) {
+        await firestoreService.deleteEmployee(employee.id);
+        setEmployees((current) => current.filter((item) => item.id !== employee.id));
+      } else {
+        storage.deleteEmployee(employee.id);
+        setEmployees(storage.getEmployees());
+      }
+      setToast('Employee removed from directory');
+      window.setTimeout(() => setToast(''), 2400);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Unable to delete employee.');
+    }
   };
 
   const noFilters = !query && roleFilter === 'All' && statusFilter === 'All';
@@ -193,7 +232,9 @@ export const EmployeesPage = () => {
         />
       ) : null}
 
-      {employees.length === 0 ? (
+      {loading ? (
+        <EmptyState title="Loading employees" description="Fetching employee directory records." />
+      ) : employees.length === 0 ? (
         <EmptyState
           icon={Plus}
           title="No employees found"
@@ -230,7 +271,7 @@ const EmployeeFormPanel = ({
   error: string;
   onCancel: () => void;
   onChange: (form: EmployeeForm) => void;
-  onSubmit: (event: FormEvent) => void;
+  onSubmit: (event: FormEvent) => void | Promise<void>;
 }) => (
   <form onSubmit={onSubmit} className="surface p-5">
     <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">

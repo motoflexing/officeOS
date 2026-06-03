@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { PoweredBy } from '../components/PoweredBy';
 import { BRANDING } from '../config/branding';
 import { demoCredentials } from '../data/mockData';
+import { isFirebaseConfigured } from '../services/firebase';
 import { useAuth } from '../state/AuthContext';
 import type { Role } from '../types';
 
@@ -18,6 +19,7 @@ export const LoginPage = () => {
   const [email, setEmail] = useState<string>(demoCredentials.Admin.email);
   const [password, setPassword] = useState<string>(demoCredentials.Admin.password);
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -28,16 +30,27 @@ export const LoginPage = () => {
     setError('');
   };
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    const demo = demoCredentials[selectedRole];
-    if (email !== demo.email || password !== demo.password) {
-      setError('Use the selected role demo credentials to continue.');
-      return;
-    }
+    setError('');
+    setSubmitting(true);
 
-    login(selectedRole);
-    navigate('/dashboard');
+    try {
+      if (!isFirebaseConfigured) {
+        const demo = demoCredentials[selectedRole];
+        if (email !== demo.email || password !== demo.password) {
+          setError('Use the selected role demo credentials to continue.');
+          return;
+        }
+      }
+
+      await login(selectedRole, email, password);
+      navigate('/dashboard');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Unable to sign in.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -55,11 +68,18 @@ export const LoginPage = () => {
 
           <div className="mt-12 grid gap-3">
             <div className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
-              <p className="text-sm font-semibold text-white">Demo access</p>
-              <p className="mt-1 text-sm text-slate-400">Select a role to load matching credentials.</p>
+              <p className="text-sm font-semibold text-white">
+                {isFirebaseConfigured ? 'Firebase access' : 'Demo access'}
+              </p>
+              <p className="mt-1 text-sm text-slate-400">
+                {isFirebaseConfigured
+                  ? 'Use a Firebase Auth user with a matching workspace profile.'
+                  : 'Select a role to load matching credentials.'}
+              </p>
             </div>
             <div className="rounded-lg border border-accent-500/20 bg-accent-500/10 p-4 text-sm text-accent-100">
-              {BRANDING.productName} is prepared behind the local prototype data layer.
+              {BRANDING.productName} is prepared behind the{' '}
+              {isFirebaseConfigured ? 'Moto Flexing Firebase backend.' : 'local prototype data layer.'}
             </div>
           </div>
         </div>
@@ -105,10 +125,14 @@ export const LoginPage = () => {
             </label>
           </div>
 
-          {error ? <p className="mt-4 text-sm text-rose-300">{error}</p> : null}
+          {error ? (
+            <p className="mt-4 rounded-lg border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+              {error}
+            </p>
+          ) : null}
 
-          <button type="submit" className="btn-primary mt-7 w-full">
-            Login as {selectedRole}
+          <button type="submit" className="btn-primary mt-7 w-full" disabled={submitting}>
+            {submitting ? 'Signing in...' : `Login as ${selectedRole}`}
             <ArrowRight size={18} />
           </button>
         </form>

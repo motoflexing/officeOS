@@ -1,19 +1,44 @@
 import { ClipboardCheck, Hourglass, UserCheck, Users } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { EmptyState } from '../components/EmptyState';
 import { PageHeader } from '../components/PageHeader';
 import { StatCard } from '../components/StatCard';
 import { StatusBadge } from '../components/StatusBadge';
 import { Toast } from '../components/Toast';
+import { firestoreService } from '../services/firestoreService';
+import { isFirebaseConfigured } from '../services/firebase';
 import { storage } from '../services/storage';
-import type { LeaveRequest, LeaveStatus } from '../types';
+import { useAuth } from '../state/AuthContext';
+import type { DailyReport, Employee, LeaveRequest, LeaveStatus } from '../types';
 import { formatShortDate } from '../utils/format';
 
 export const HRPanelPage = () => {
+  const { profile } = useAuth();
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(() => storage.getLeaveRequests());
-  const [employees] = useState(() => storage.getEmployees());
+  const [employees, setEmployees] = useState<Employee[]>(() => storage.getEmployees());
+  const [reports, setReports] = useState<DailyReport[]>(() => storage.getReports());
   const [toast, setToast] = useState('');
-  const reports = storage.getReports();
+  const [loading, setLoading] = useState(isFirebaseConfigured);
+
+  useEffect(() => {
+    if (!isFirebaseConfigured) return;
+
+    Promise.all([
+      firestoreService.getLeaveRequests(),
+      firestoreService.getEmployees(),
+      firestoreService.getReports(),
+    ])
+      .then(([leaveRequests, employees, reports]) => {
+        setLeaveRequests(leaveRequests);
+        setEmployees(employees);
+        setReports(reports);
+      })
+      .catch((error) => {
+        setToast(error instanceof Error ? error.message : 'Unable to load HR data.');
+        window.setTimeout(() => setToast(''), 2400);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const stats = useMemo(
     () => ({
@@ -26,19 +51,32 @@ export const HRPanelPage = () => {
     [reports.length],
   );
 
-  const updateLeave = (id: string, status: LeaveStatus) => {
-    const nextRequests = leaveRequests.map((request) =>
-      request.id === id ? { ...request, status } : request,
-    );
-    setLeaveRequests(nextRequests);
-    storage.setLeaveRequests(nextRequests);
-    setToast(`Leave request ${status.toLowerCase()}`);
-    window.setTimeout(() => setToast(''), 2400);
+  const updateLeave = async (id: string, status: LeaveStatus) => {
+    const reviewedBy = profile?.name || 'HR/Admin';
+    const reviewedAt = new Date().toISOString();
+    try {
+      if (isFirebaseConfigured) {
+        await firestoreService.updateLeaveRequestStatus(id, status, reviewedBy);
+      }
+      const nextRequests = leaveRequests.map((request) =>
+        request.id === id ? { ...request, status, reviewedBy, reviewedAt } : request,
+      );
+      setLeaveRequests(nextRequests);
+      if (!isFirebaseConfigured) {
+        storage.setLeaveRequests(nextRequests);
+      }
+      setToast(`Leave request ${status.toLowerCase()}`);
+      window.setTimeout(() => setToast(''), 2400);
+    } catch (error) {
+      setToast(error instanceof Error ? error.message : 'Unable to update leave request.');
+      window.setTimeout(() => setToast(''), 2400);
+    }
   };
 
   return (
     <div className="space-y-6">
       {toast ? <Toast message={toast} /> : null}
+      {loading ? <p className="text-sm text-slate-400">Loading HR data...</p> : null}
       <PageHeader
         eyebrow="HR Panel"
         title="People Operations Dashboard"

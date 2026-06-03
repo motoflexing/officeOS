@@ -13,14 +13,19 @@ import { SettingsPage } from './pages/SettingsPage';
 import { useAuth } from './state/AuthContext';
 
 const RoleRoute = ({ allow, children }: { allow: string[]; children: React.ReactNode }) => {
-  const { role } = useAuth();
+  const { loading, role } = useAuth();
+  if (loading) return <div className="p-6 text-sm text-slate-400">Loading workspace...</div>;
   if (!role) return <Navigate to="/login" replace />;
   if (!allow.includes(role)) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 };
 
 export default function App() {
-  const { role } = useAuth();
+  const { loading, role } = useAuth();
+
+  if (loading) {
+    return <div className="min-h-screen p-6 text-sm text-slate-400">Loading workspace...</div>;
+  }
 
   return (
     <Routes>

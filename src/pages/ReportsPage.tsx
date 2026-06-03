@@ -1,10 +1,12 @@
 import { FileText } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { EmptyState } from '../components/EmptyState';
 import { PageHeader } from '../components/PageHeader';
 import { ReportForm, type ReportDraft } from '../components/ReportForm';
 import { StatusBadge } from '../components/StatusBadge';
 import { Toast } from '../components/Toast';
+import { firestoreService } from '../services/firestoreService';
+import { isFirebaseConfigured } from '../services/firebase';
 import { storage } from '../services/storage';
 import { useAuth } from '../state/AuthContext';
 import type { DailyReport, ReportStatus } from '../types';
@@ -19,6 +21,17 @@ export const ReportsPage = () => {
   const [dateFilter, setDateFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState<ReportStatus | 'All'>('All');
   const [toast, setToast] = useState('');
+  const [loading, setLoading] = useState(isFirebaseConfigured);
+
+  useEffect(() => {
+    if (!isFirebaseConfigured) return;
+
+    firestoreService
+      .getReports()
+      .then((reports) => setReports(sortReports(reports.map(normalizeReport))))
+      .catch((error) => setToast(error instanceof Error ? error.message : 'Unable to load reports.'))
+      .finally(() => setLoading(false));
+  }, []);
 
   if (!profile) return null;
 
@@ -26,7 +39,7 @@ export const ReportsPage = () => {
   const canSubmit = currentRole === 'Employee';
   const canReview = currentRole === 'Admin' || currentRole === 'HR';
 
-  const addReport = (draft: ReportDraft) => {
+  const addReport = async (draft: ReportDraft) => {
     const now = new Date().toISOString();
     const nextReport: DailyReport = {
       id: crypto.randomUUID(),
@@ -37,24 +50,51 @@ export const ReportsPage = () => {
       createdAt: now,
       ...draft,
     };
-    const nextReports = sortReports([nextReport, ...reports]);
-    setReports(nextReports);
-    storage.setReports(nextReports);
-    setToast('Daily report submitted');
-    window.setTimeout(() => setToast(''), 2400);
+    try {
+      if (isFirebaseConfigured) {
+        await firestoreService.addReport(nextReport);
+      }
+      const nextReports = sortReports([nextReport, ...reports]);
+      setReports(nextReports);
+      if (!isFirebaseConfigured) {
+        storage.setReports(nextReports);
+      }
+      setToast('Daily report submitted');
+      window.setTimeout(() => setToast(''), 2400);
+    } catch (error) {
+      setToast(error instanceof Error ? error.message : 'Unable to submit report.');
+      window.setTimeout(() => setToast(''), 2400);
+    }
   };
 
-  const markReviewed = (reportId: string) => {
+  const markReviewed = async (reportId: string) => {
     const now = new Date().toISOString();
+    const reviewedReport = reports.find((report) => report.id === reportId);
+    if (!reviewedReport) return;
+
+    const nextReport = {
+      ...normalizeReport(reviewedReport),
+      status: 'Reviewed' as const,
+      reviewedBy: profile.name,
+      reviewedAt: now,
+    };
     const nextReports = reports.map((report) =>
-      report.id === reportId
-        ? { ...normalizeReport(report), status: 'Reviewed' as const, reviewedBy: profile.name, reviewedAt: now }
-        : normalizeReport(report),
+      report.id === reportId ? nextReport : normalizeReport(report),
     );
-    setReports(nextReports);
-    storage.setReports(nextReports);
-    setToast('Report marked as reviewed');
-    window.setTimeout(() => setToast(''), 2400);
+    try {
+      if (isFirebaseConfigured) {
+        await firestoreService.updateReport(nextReport);
+      }
+      setReports(nextReports);
+      if (!isFirebaseConfigured) {
+        storage.setReports(nextReports);
+      }
+      setToast('Report marked as reviewed');
+      window.setTimeout(() => setToast(''), 2400);
+    } catch (error) {
+      setToast(error instanceof Error ? error.message : 'Unable to review report.');
+      window.setTimeout(() => setToast(''), 2400);
+    }
   };
 
   const scopedReports =
@@ -133,7 +173,9 @@ export const ReportsPage = () => {
       <section>
         <h3 className="text-xl font-semibold text-white">Recent Reports</h3>
         <div className="mt-4 grid gap-4">
-          {visibleReports.length === 0 ? (
+          {loading ? (
+            <EmptyState icon={FileText} title="Loading reports" description="Fetching daily reports." />
+          ) : visibleReports.length === 0 ? (
             <EmptyState
               icon={FileText}
               title={reports.length === 0 ? 'No reports yet' : 'No reports match the filters'}
