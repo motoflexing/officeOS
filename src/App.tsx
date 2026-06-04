@@ -7,6 +7,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { DeveloperLoginPage } from './pages/DeveloperLoginPage';
 import { DeveloperPanelPage } from './pages/DeveloperPanelPage';
 import { EmployeesPage } from './pages/EmployeesPage';
+import { FeedbackPage } from './pages/FeedbackPage';
 import { HRPanelPage } from './pages/HRPanelPage';
 import { LeavePage } from './pages/LeavePage';
 import { LoginPage } from './pages/LoginPage';
@@ -52,6 +53,7 @@ export default function App() {
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/leave" element={<LeavePage />} />
         <Route path="/announcements" element={<AnnouncementsPage />} />
+        <Route path="/feedback" element={<FeedbackPage />} />
         <Route path="/hr" element={<RoleRoute allow={['HR']}><HRPanelPage /></RoleRoute>} />
         <Route path="/settings" element={<RoleRoute allow={['Admin']}><SettingsPage /></RoleRoute>} />
         <Route path="/profile" element={<ProfilePage />} />

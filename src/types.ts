@@ -26,6 +26,9 @@ export type FeedbackModule =
   | 'HR/ATS'
   | 'Workspace'
   | 'Auth'
+  | 'Login/Auth'
+  | 'Profile'
+  | 'Developer Panel'
   | 'Other';
 
 export interface UserProfile {

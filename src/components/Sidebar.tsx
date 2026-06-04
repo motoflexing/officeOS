@@ -5,6 +5,7 @@ import {
   CalendarDays,
   ClipboardList,
   LayoutDashboard,
+  MessageCircle,
   MessagesSquare,
   Settings,
   User,
@@ -25,6 +26,7 @@ const roleItems = {
     { label: 'Daily Reports', to: '/reports', icon: ClipboardList },
     { label: 'Leave Requests', to: '/leave', icon: CalendarDays },
     { label: 'Announcements', to: '/announcements', icon: Bell },
+    { label: 'Feedback', to: '/feedback', icon: MessageCircle },
     { label: 'Settings', to: '/settings', icon: Settings },
     { label: 'Profile', to: '/profile', icon: User },
   ],
@@ -37,6 +39,7 @@ const roleItems = {
     { label: 'Leave Requests', to: '/leave', icon: CalendarDays },
     { label: 'Announcements', to: '/announcements', icon: Bell },
     { label: 'HR Panel', to: '/hr', icon: BarChart3 },
+    { label: 'Feedback', to: '/feedback', icon: MessageCircle },
     { label: 'Profile', to: '/profile', icon: User },
   ],
   Employee: [
@@ -46,6 +49,7 @@ const roleItems = {
     { label: 'Daily Report', to: '/reports', icon: ClipboardList },
     { label: 'Leave Requests', to: '/leave', icon: CalendarDays },
     { label: 'Announcements', to: '/announcements', icon: Bell },
+    { label: 'Feedback', to: '/feedback', icon: MessageCircle },
     { label: 'Profile', to: '/profile', icon: User },
   ],
 } satisfies Record<Role, Array<{ label: string; to: string; icon: typeof LayoutDashboard }>>;

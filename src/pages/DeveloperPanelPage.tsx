@@ -52,6 +52,9 @@ const moduleOptions: Array<'All Modules' | FeedbackModule> = [
   'HR/ATS',
   'Workspace',
   'Auth',
+  'Login/Auth',
+  'Profile',
+  'Developer Panel',
   'Other',
 ];
 
