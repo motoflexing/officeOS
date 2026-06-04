@@ -1,3 +1,4 @@
+import { ArrowRight, Lock, Mail, ShieldCheck } from 'lucide-react';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -40,41 +41,129 @@ export const DeveloperLoginPage = () => {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-10">
-      <form onSubmit={submit} className="surface w-full max-w-md p-6 md:p-8">
-        <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">MotoFlexing</p>
-        <h1 className="mt-3 text-2xl font-semibold text-white">Developer Login</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-400">
-          Developer accounts are managed separately from company Admin, HR, and Employee accounts.
-        </p>
+    <main className="relative min-h-screen overflow-hidden bg-[#050505] px-4 py-10 text-white">
+      <div className="pointer-events-none absolute -left-28 -top-28 h-96 w-96 rounded-full bg-accent-500/20 blur-[120px]" />
+      <div className="pointer-events-none absolute -bottom-28 left-0 h-80 w-80 rounded-full bg-red-900/20 blur-[120px]" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_70%_20%,rgba(226,232,240,0.10),transparent_28rem)]" />
 
-        <div className="mt-6 grid gap-4">
-          <label>
-            <span className="mb-2 block text-sm font-medium text-slate-300">Email</span>
-            <input className="field" required type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
-          </label>
-          <label>
-            <span className="mb-2 block text-sm font-medium text-slate-300">Password</span>
-            <input
-              className="field"
-              required
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
-          </label>
+      <section className="relative mx-auto grid min-h-[calc(100vh-5rem)] w-full max-w-6xl items-center gap-10 lg:grid-cols-[1fr_420px]">
+        <div className="flex min-h-[520px] flex-col justify-center">
+          <div className="inline-flex w-fit items-center gap-4">
+            <MFLogo size="large" />
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">MotoFlexing</p>
+              <h1 className="mt-2 text-4xl font-semibold tracking-normal text-white md:text-5xl">Developer Access</h1>
+            </div>
+          </div>
+          <p className="mt-7 max-w-xl text-base leading-7 text-slate-400">
+            A separate control layer for reviewing OfficeOS feedback, module health, and future platform improvements.
+          </p>
+          <div className="mt-9 grid max-w-xl gap-3 sm:grid-cols-3">
+            {['Feedback', 'Security', 'Platform'].map((item) => (
+              <div key={item} className="rounded-lg border border-white/10 bg-white/[0.035] px-4 py-3 backdrop-blur">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{item}</p>
+                <div className="mt-3 h-px bg-gradient-to-r from-accent-500/70 via-white/20 to-transparent" />
+              </div>
+            ))}
+          </div>
         </div>
 
-        {error ? (
-          <p className="mt-4 rounded-lg border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
-            {error}
-          </p>
-        ) : null}
+        <form
+          onSubmit={submit}
+          className="rounded-xl border border-white/12 bg-white/[0.045] p-6 shadow-[0_26px_90px_rgba(0,0,0,0.65),0_0_44px_rgba(239,35,43,0.10)] backdrop-blur-xl md:p-8"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-500">Secure Access Only</p>
+              <h2 className="mt-3 text-3xl font-semibold tracking-normal text-white">Developer Login</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Access the MotoFlexing developer control panel.
+              </p>
+            </div>
+            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/35 text-slate-200">
+              <ShieldCheck size={20} />
+            </div>
+          </div>
 
-        <button type="submit" className="btn-primary mt-6 w-full" disabled={submitting}>
-          {submitting ? 'Checking access...' : 'Sign in'}
-        </button>
-      </form>
+          <div className="mt-7 grid gap-4">
+            <DeveloperField
+              icon={Mail}
+              label="Email"
+              placeholder="Developer Email"
+              type="email"
+              value={email}
+              onChange={setEmail}
+            />
+            <DeveloperField
+              icon={Lock}
+              label="Password"
+              placeholder="Password"
+              type="password"
+              value={password}
+              onChange={setPassword}
+            />
+          </div>
+
+          {error ? (
+            <p className="mt-4 rounded-lg border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+              {error}
+            </p>
+          ) : null}
+
+          <button
+            type="submit"
+            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-b from-slate-100 to-slate-400 px-4 py-3 text-sm font-bold text-black shadow-[0_0_34px_rgba(226,232,240,0.16)] transition hover:from-white hover:to-slate-300 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={submitting}
+          >
+            {submitting ? 'Checking access...' : 'Login'}
+            <ArrowRight size={18} />
+          </button>
+
+          <p className="mt-6 text-center text-xs font-medium text-slate-500">Secure Access Only</p>
+        </form>
+      </section>
     </main>
   );
 };
+
+const DeveloperField = ({
+  icon: Icon,
+  label,
+  onChange,
+  placeholder,
+  type,
+  value,
+}: {
+  icon: typeof Mail;
+  label: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  type: string;
+  value: string;
+}) => (
+  <label>
+    <span className="sr-only">{label}</span>
+    <div className="flex items-center gap-3 rounded-lg border border-white/15 bg-black/35 px-4 py-3 text-slate-300 transition focus-within:border-accent-500/45 focus-within:ring-2 focus-within:ring-accent-500/15">
+      <Icon size={18} className="text-slate-400" />
+      <input
+        className="w-full bg-transparent text-sm text-slate-100 outline-none placeholder:text-slate-500"
+        placeholder={placeholder}
+        required
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </div>
+  </label>
+);
+
+const MFLogo = ({ size = 'small' }: { size?: 'small' | 'large' }) => (
+  <div
+    className={`font-black italic tracking-[-0.08em] ${
+      size === 'large' ? 'text-6xl md:text-7xl' : 'text-2xl'
+    } drop-shadow-[0_0_22px_rgba(239,35,43,0.25)]`}
+  >
+    <span className="text-accent-500">M</span>
+    <span className="bg-gradient-to-br from-white via-slate-200 to-slate-500 bg-clip-text text-transparent">F</span>
+  </div>
+);

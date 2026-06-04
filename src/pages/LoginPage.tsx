@@ -54,6 +54,15 @@ export const LoginPage = () => {
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-10">
+      <button
+        type="button"
+        onClick={() => navigate('/developer-login')}
+        className="fixed right-4 top-4 z-10 rounded-lg border border-white/10 bg-black/45 px-3 py-2 text-sm font-black tracking-tight shadow-[0_0_22px_rgba(239,35,43,0.08)] backdrop-blur transition hover:border-accent-500/35 hover:bg-black/70"
+        aria-label="MotoFlexing developer access"
+      >
+        <span className="text-accent-500">M</span>
+        <span className="text-slate-100">F</span>
+      </button>
       <section className="grid w-full max-w-6xl gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="flex flex-col justify-between rounded-xl border border-white/10 bg-black/55 p-8 shadow-glow backdrop-blur">
           <div>

@@ -97,7 +97,7 @@ service cloud.firestore {
     }
 
     function writesValidFeedbackStatus() {
-      return request.resource.data.status in ['New', 'In Review', 'Planned', 'Resolved', 'Closed'];
+      return request.resource.data.status in ['New', 'Reviewed', 'Planned', 'In Progress', 'Fixed', 'Rejected'];
     }
 
     function writesValidFeedbackCreate(companyId) {

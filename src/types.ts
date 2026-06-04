@@ -12,9 +12,9 @@ export type InterviewStatus = 'Scheduled' | 'Completed' | 'Cancelled';
 export type PresenceStatus = 'Online' | 'Away' | 'On Break' | 'In Meeting' | 'Offline';
 export type DeveloperRole = 'Developer';
 export type DeveloperStatus = 'Active' | 'Inactive';
-export type FeedbackType = 'Bug' | 'Feature Request' | 'Improvement' | 'Question';
+export type FeedbackType = 'Bug' | 'Feature Request' | 'UI/UX Improvement' | 'Workflow Issue' | 'Other';
 export type FeedbackPriority = 'Low' | 'Medium' | 'High' | 'Critical';
-export type FeedbackStatus = 'New' | 'In Review' | 'Planned' | 'Resolved' | 'Closed';
+export type FeedbackStatus = 'New' | 'Reviewed' | 'Planned' | 'In Progress' | 'Fixed' | 'Rejected';
 export type FeedbackModule =
   | 'Dashboard'
   | 'Employees'
