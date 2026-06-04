@@ -33,6 +33,7 @@ import type {
   LeaveStatus,
 } from '../types';
 import { formatShortDate } from '../utils/format';
+import { canReviewLeaveRequest, getReviewLeaveRequests } from '../utils/leaveWorkflow';
 
 type HrTab = 'Overview' | 'Job Openings' | 'Candidates' | 'Interviews';
 
@@ -73,9 +74,11 @@ const emptyInterviewForm = {
 
 export const HRPanelPage = () => {
   const { profile } = useAuth();
-  const canManageAts = profile?.role === 'Admin' || profile?.role === 'HR';
+  const canManageAts = profile?.role === 'HR';
   const [activeTab, setActiveTab] = useState<HrTab>('Overview');
-  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(() => storage.getLeaveRequests());
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(() =>
+    getReviewLeaveRequests(storage.getLeaveRequests(), 'HR'),
+  );
   const [employees, setEmployees] = useState<Employee[]>(() => storage.getEmployees());
   const [reports, setReports] = useState<DailyReport[]>(() => storage.getReports());
   const [jobOpenings, setJobOpenings] = useState<JobOpening[]>(() => storage.getJobOpenings());
@@ -99,7 +102,7 @@ export const HRPanelPage = () => {
     if (!isFirebaseConfigured) return;
 
     Promise.all([
-      firestoreService.getLeaveRequests(),
+      firestoreService.getReviewLeaveRequests('HR'),
       firestoreService.getEmployees(),
       firestoreService.getReports(),
       firestoreService.getJobOpenings(),
@@ -107,7 +110,7 @@ export const HRPanelPage = () => {
       firestoreService.getInterviews(),
     ])
       .then(([leaveRequests, employees, reports, jobOpenings, candidates, interviews]) => {
-        setLeaveRequests(leaveRequests);
+        setLeaveRequests(getReviewLeaveRequests(leaveRequests, 'HR'));
         setEmployees(employees);
         setReports(reports);
         setJobOpenings(jobOpenings);
@@ -144,6 +147,9 @@ export const HRPanelPage = () => {
   const visibleTabs = canManageAts ? tabs : tabs.filter((tab) => tab === 'Overview');
 
   const updateLeave = async (id: string, status: LeaveStatus) => {
+    const request = leaveRequests.find((item) => item.id === id);
+    if (!profile || !request || !canReviewLeaveRequest(request, profile)) return;
+
     const reviewedBy = profile?.name || 'HR/Admin';
     const reviewedAt = new Date().toISOString();
     try {
@@ -483,7 +489,7 @@ const OverviewSection = ({
       </section>
 
       <section className="surface p-5">
-        <h3 className="text-lg font-semibold text-white">Leave Requests</h3>
+        <h3 className="text-lg font-semibold text-white">Employee Leave Requests</h3>
         <p className="mt-2 text-sm text-slate-500">Review pending requests and update status.</p>
         <div className="mt-5 flex gap-3">
           <span className="rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
@@ -498,7 +504,7 @@ const OverviewSection = ({
 
     <section className="surface overflow-hidden">
       <div className="border-b border-white/10 p-5">
-        <h3 className="text-lg font-semibold text-white">Leave Requests Table</h3>
+        <h3 className="text-lg font-semibold text-white">Employee Leave Requests Table</h3>
       </div>
       <div className="overflow-x-auto">
         {leaveRequests.length === 0 ? (
@@ -506,7 +512,7 @@ const OverviewSection = ({
             <EmptyState
               icon={ClipboardCheck}
               title="No leave requests yet"
-              description="Employee leave applications will appear here for HR/Admin review."
+              description="Employee leave applications will appear here for HR review."
             />
           </div>
         ) : (

@@ -26,9 +26,11 @@ import type {
   LeaveRequest,
   LeaveStatus,
   PresenceStatus,
+  Role,
   UserProfile,
   WorkspaceUser,
 } from '../types';
+import { normalizeLeaveRequest } from '../utils/leaveWorkflow';
 
 const requireDb = () => {
   if (!isFirebaseConfigured || !db) {
@@ -59,6 +61,9 @@ const readCollection = async <T extends { id: string }>(name: string): Promise<T
   const snapshot = await getDocs(companyCollection(name));
   return snapshot.docs.map((item) => ({ id: item.id, ...item.data() }) as T);
 };
+
+const uniqueLeaveRequests = (requests: LeaveRequest[]) =>
+  Array.from(new Map(requests.map((request) => [request.id, request])).values());
 
 export const firestoreService = {
   getUserProfile: async (uid: string): Promise<UserProfile | null> => {
@@ -196,6 +201,40 @@ export const firestoreService = {
   },
 
   getLeaveRequests: () => readCollection<LeaveRequest>('leaveRequests'),
+  getOwnLeaveRequests: async (profile: UserProfile) => {
+    const byEmployeeEmail = await getDocs(
+      query(companyCollection('leaveRequests'), where('employeeEmail', '==', profile.email)),
+    );
+    const emailMatchedRequests = byEmployeeEmail.docs.map((item) => ({ id: item.id, ...item.data() }) as LeaveRequest);
+
+    if (profile.role === 'Employee') return uniqueLeaveRequests(emailMatchedRequests);
+
+    const byRequesterEmail = await getDocs(
+      query(companyCollection('leaveRequests'), where('requesterEmail', '==', profile.email)),
+    );
+    return uniqueLeaveRequests([
+      ...emailMatchedRequests,
+      ...byRequesterEmail.docs.map((item) => ({ id: item.id, ...item.data() }) as LeaveRequest),
+    ]);
+  },
+  getReviewLeaveRequests: async (reviewerRole: Role) => {
+    const requesterRole: Role | null =
+      reviewerRole === 'Admin' ? 'HR' : reviewerRole === 'HR' ? 'Employee' : null;
+    if (!requesterRole) return [];
+
+    const byRequesterRole = await getDocs(
+      query(companyCollection('leaveRequests'), where('requesterRole', '==', requesterRole)),
+    );
+    const modernRequests = byRequesterRole.docs.map((item) => ({ id: item.id, ...item.data() }) as LeaveRequest);
+
+    const allRequests = await readCollection<LeaveRequest>('leaveRequests');
+    const legacyRequests = allRequests.filter((request) => {
+      if (request.requesterRole) return false;
+      return normalizeLeaveRequest(request).requesterRole === requesterRole;
+    });
+
+    return uniqueLeaveRequests([...modernRequests, ...legacyRequests]);
+  },
   addLeaveRequest: async (request: LeaveRequest) => {
     await setDoc(companyDocument('leaveRequests', request.id), clean({ ...request }));
     return request;

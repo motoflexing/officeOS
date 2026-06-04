@@ -40,7 +40,7 @@ export default function App() {
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/leave" element={<LeavePage />} />
         <Route path="/announcements" element={<AnnouncementsPage />} />
-        <Route path="/hr" element={<RoleRoute allow={['Admin', 'HR']}><HRPanelPage /></RoleRoute>} />
+        <Route path="/hr" element={<RoleRoute allow={['HR']}><HRPanelPage /></RoleRoute>} />
         <Route path="/settings" element={<RoleRoute allow={['Admin']}><SettingsPage /></RoleRoute>} />
         <Route path="/profile" element={<ProfilePage />} />
       </Route>

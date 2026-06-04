@@ -120,12 +120,18 @@ export interface LeaveRequest {
   id: string;
   employeeName: string;
   employeeEmail: string;
+  requesterId?: string;
+  requesterName?: string;
+  requesterEmail?: string;
+  requesterRole?: Role;
+  companyId?: string;
   leaveType: string;
   startDate: string;
   endDate: string;
   reason: string;
   status: LeaveStatus;
   submittedAt: string;
+  createdAt?: string;
   reviewedBy?: string;
   reviewedAt?: string;
   date?: string;

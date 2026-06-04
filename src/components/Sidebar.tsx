@@ -25,7 +25,6 @@ const roleItems = {
     { label: 'Daily Reports', to: '/reports', icon: ClipboardList },
     { label: 'Leave Requests', to: '/leave', icon: CalendarDays },
     { label: 'Announcements', to: '/announcements', icon: Bell },
-    { label: 'HR Panel', to: '/hr', icon: BarChart3 },
     { label: 'Settings', to: '/settings', icon: Settings },
     { label: 'Profile', to: '/profile', icon: User },
   ],

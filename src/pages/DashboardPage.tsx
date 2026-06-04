@@ -24,19 +24,20 @@ import { storage } from '../services/storage';
 import { useAuth } from '../state/AuthContext';
 import type { AttendanceIndexRecord, AttendanceRecord, LeaveRequest } from '../types';
 import { formatDate, formatTime } from '../utils/format';
+import { getOwnLeaveRequests, getReviewLeaveRequests } from '../utils/leaveWorkflow';
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
 
 const quickActions = {
   Admin: [
     { label: 'Add Employee', to: '/employees', icon: Plus },
-    { label: 'Review Leave', to: '/hr', icon: CalendarDays },
+    { label: 'Review Leave', to: '/leave', icon: CalendarDays },
     { label: 'Review Reports', to: '/reports', icon: FileText },
     { label: 'Settings', to: '/settings', icon: SettingsIcon },
   ],
   HR: [
     { label: 'Add Employee', to: '/employees', icon: Plus },
-    { label: 'Review Leave', to: '/hr', icon: CalendarDays },
+    { label: 'Review Leave', to: '/leave', icon: CalendarDays },
     { label: 'Review Reports', to: '/reports', icon: FileText },
     { label: 'Announcements', to: '/announcements', icon: Bell },
   ],
@@ -50,6 +51,7 @@ const quickActions = {
 
 export const DashboardPage = () => {
   const { profile, role, updateProfile } = useAuth();
+  const currentRole = role ?? profile?.role;
   const [records, setRecords] = useState<AttendanceRecord[]>(() =>
     profile ? storage.getAttendance(profile.email) : [],
   );
@@ -76,13 +78,33 @@ export const DashboardPage = () => {
   }, [profile]);
 
   useEffect(() => {
-    if (!isFirebaseConfigured) return;
+    if (!profile || !currentRole) return;
 
-    firestoreService
-      .getLeaveRequests()
-      .then(setLeaveRequests)
+    if (!isFirebaseConfigured) {
+      const requests = storage.getLeaveRequests();
+      setLeaveRequests(
+        currentRole === 'Admin' || currentRole === 'HR'
+          ? getReviewLeaveRequests(requests, currentRole)
+          : getOwnLeaveRequests(requests, profile),
+      );
+      return;
+    }
+
+    const request =
+      currentRole === 'Admin' || currentRole === 'HR'
+        ? firestoreService.getReviewLeaveRequests(currentRole)
+        : firestoreService.getOwnLeaveRequests(profile);
+
+    request
+      .then((requests) =>
+        setLeaveRequests(
+          currentRole === 'Admin' || currentRole === 'HR'
+            ? getReviewLeaveRequests(requests, currentRole)
+            : getOwnLeaveRequests(requests, profile),
+        ),
+      )
       .catch((error) => setAttendanceError(error instanceof Error ? error.message : 'Unable to load dashboard data.'));
-  }, []);
+  }, [currentRole, profile]);
 
   const today = useMemo(
     () => records.find((record) => record.date === todayKey()) ?? {
@@ -118,11 +140,7 @@ export const DashboardPage = () => {
   const checkIn = () => saveToday({ ...today, checkIn: today.checkIn ?? formatTime(), status: 'At Work' });
   const checkOut = () => saveToday({ ...today, checkOut: formatTime(), status: 'Checked Out' });
   const toggleRemote = () => saveToday({ ...today, remote: !today.remote });
-  const pendingLeaveRequests = leaveRequests.filter((request) => {
-      if (request.status !== 'Pending') return false;
-      if (role === 'Admin' || role === 'HR') return true;
-      return request.employeeEmail ? request.employeeEmail === profile.email : request.employeeName === profile.name;
-    }).length;
+  const pendingLeaveRequests = leaveRequests.filter((request) => request.status === 'Pending').length;
 
   return (
     <div className="space-y-6">
