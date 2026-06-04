@@ -22,12 +22,23 @@ export const DeveloperGuard = ({ children }: { children: React.ReactNode }) => {
         return;
       }
 
-      const profile = await firestoreService.getCurrentDeveloperProfile(user.uid);
-      if (profile) {
-        await firestoreService.updateDeveloperLastLogin(user.uid).catch(() => undefined);
+      debugDeveloperAuth('DeveloperGuard Firebase user detected', { uid: user.uid });
+
+      try {
+        const profile = await firestoreService.getCurrentDeveloperProfile(user.uid);
+        debugDeveloperAuth('DeveloperGuard profile authorization result', { authorized: Boolean(profile) });
+        if (profile) {
+          await firestoreService.updateDeveloperLastLogin(user.uid).catch((error) => {
+            debugDeveloperAuth('DeveloperGuard lastLoginAt update failed', getFirebaseDebugError(error));
+          });
+        }
+        setDeveloper(profile);
+      } catch (error) {
+        debugDeveloperAuth('DeveloperGuard profile check failed', getFirebaseDebugError(error));
+        setDeveloper(null);
+      } finally {
+        setLoading(false);
       }
-      setDeveloper(profile);
-      setLoading(false);
     });
   }, []);
 
@@ -35,4 +46,21 @@ export const DeveloperGuard = ({ children }: { children: React.ReactNode }) => {
   if (!developer) return <Navigate to="/developer-login" replace />;
 
   return <>{children}</>;
+};
+
+const debugDeveloperAuth = (message: string, data?: unknown) => {
+  if (import.meta.env.DEV) {
+    console.info(`[DeveloperAuth] ${message}`, data ?? '');
+  }
+};
+
+const getFirebaseDebugError = (error: unknown) => {
+  if (typeof error === 'object' && error) {
+    return {
+      code: 'code' in error ? (error as { code?: string }).code : undefined,
+      message: 'message' in error ? (error as { message?: string }).message : undefined,
+    };
+  }
+
+  return { message: String(error) };
 };

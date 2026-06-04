@@ -81,10 +81,25 @@ const feedbackFromSnapshot = (snapshot: QueryDocumentSnapshot<DocumentData>): Fe
 
 export const firestoreService = {
   getCurrentDeveloperProfile: async (uid: string): Promise<DeveloperProfile | null> => {
-    const snapshot = await getDoc(developerDocument(uid));
+    const path = `developers/${uid}`;
+    debugDeveloperAuth('Reading developer profile', { path, uid });
+
+    let snapshot;
+    try {
+      snapshot = await getDoc(developerDocument(uid));
+    } catch (error) {
+      debugDeveloperAuth('Developer profile read failed', getFirebaseDebugError(error));
+      throw error;
+    }
+
+    debugDeveloperAuth('Developer profile read result', { path, exists: snapshot.exists() });
     if (!snapshot.exists()) return null;
 
     const data = snapshot.data() as Record<string, unknown>;
+    debugDeveloperAuth('Developer profile role check', {
+      hasDeveloperRole: data.role === 'Developer',
+      hasActiveStatus: data.status === 'Active',
+    });
     if (data.role !== 'Developer' || data.status !== 'Active') return null;
 
     return {
@@ -382,4 +397,21 @@ export const firestoreService = {
     await setDoc(companyDocument('settings', 'main'), clean({ ...settings }), { merge: true });
     return settings;
   },
+};
+
+const debugDeveloperAuth = (message: string, data?: unknown) => {
+  if (import.meta.env.DEV) {
+    console.info(`[DeveloperAuth] ${message}`, data ?? '');
+  }
+};
+
+const getFirebaseDebugError = (error: unknown) => {
+  if (typeof error === 'object' && error) {
+    return {
+      code: 'code' in error ? (error as { code?: string }).code : undefined,
+      message: 'message' in error ? (error as { message?: string }).message : undefined,
+    };
+  }
+
+  return { message: String(error) };
 };

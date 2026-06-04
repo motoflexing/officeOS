@@ -1,4 +1,4 @@
-import { ArrowRight, Lock, Mail, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Lock, Mail, ShieldCheck } from 'lucide-react';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -24,7 +24,9 @@ export const DeveloperLoginPage = () => {
     setSubmitting(true);
     try {
       const credential = await signInWithEmailAndPassword(auth, email, password);
+      debugDeveloperAuth('Firebase Auth login accepted', { uid: credential.user.uid });
       const developer = await firestoreService.getCurrentDeveloperProfile(credential.user.uid);
+      debugDeveloperAuth('Developer profile authorization result', { authorized: Boolean(developer) });
       if (!developer) {
         await signOut(auth);
         setError('This account is not authorized for MotoFlexing developer access.');
@@ -34,6 +36,7 @@ export const DeveloperLoginPage = () => {
       await firestoreService.updateDeveloperLastLogin(credential.user.uid);
       navigate('/developer');
     } catch (error) {
+      debugDeveloperAuth('Developer login failed', getFirebaseDebugError(error));
       setError(error instanceof Error ? error.message : 'Unable to sign in as developer.');
     } finally {
       setSubmitting(false);
@@ -45,6 +48,15 @@ export const DeveloperLoginPage = () => {
       <div className="pointer-events-none absolute -left-28 -top-28 h-96 w-96 rounded-full bg-accent-500/20 blur-[120px]" />
       <div className="pointer-events-none absolute -bottom-28 left-0 h-80 w-80 rounded-full bg-red-900/20 blur-[120px]" />
       <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_70%_20%,rgba(226,232,240,0.10),transparent_28rem)]" />
+
+      <button
+        type="button"
+        onClick={() => navigate('/login')}
+        className="absolute left-4 top-4 z-10 inline-flex items-center gap-2 rounded-lg border border-white/10 bg-black/35 px-3 py-2 text-xs font-semibold text-slate-300 shadow-[0_0_28px_rgba(0,0,0,0.35)] backdrop-blur transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white md:left-6 md:top-6"
+      >
+        <ArrowLeft size={15} />
+        Back to OfficeOS Login
+      </button>
 
       <section className="relative mx-auto grid min-h-[calc(100vh-5rem)] w-full max-w-6xl items-center gap-10 lg:grid-cols-[1fr_420px]">
         <div className="flex min-h-[520px] flex-col justify-center">
@@ -167,3 +179,20 @@ const MFLogo = ({ size = 'small' }: { size?: 'small' | 'large' }) => (
     <span className="bg-gradient-to-br from-white via-slate-200 to-slate-500 bg-clip-text text-transparent">F</span>
   </div>
 );
+
+const debugDeveloperAuth = (message: string, data?: unknown) => {
+  if (import.meta.env.DEV) {
+    console.info(`[DeveloperAuth] ${message}`, data ?? '');
+  }
+};
+
+const getFirebaseDebugError = (error: unknown) => {
+  if (typeof error === 'object' && error) {
+    return {
+      code: 'code' in error ? (error as { code?: string }).code : undefined,
+      message: 'message' in error ? (error as { message?: string }).message : undefined,
+    };
+  }
+
+  return { message: String(error) };
+};

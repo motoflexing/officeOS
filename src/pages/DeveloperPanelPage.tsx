@@ -137,12 +137,12 @@ export const DeveloperPanelPage = () => {
   };
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white">
+    <main className="min-h-screen max-w-full overflow-x-hidden bg-[#050505] text-white">
       <div className="pointer-events-none fixed -left-32 -top-32 h-[30rem] w-[30rem] rounded-full bg-accent-500/14 blur-[140px]" />
       <div className="pointer-events-none fixed bottom-0 left-0 h-72 w-72 rounded-full bg-red-950/24 blur-[120px]" />
-      <div className="grid min-h-screen lg:grid-cols-[270px_1fr]">
-        <aside className="relative border-b border-white/10 bg-black/45 px-4 py-5 backdrop-blur-xl lg:border-b-0 lg:border-r">
-          <div className="flex items-center gap-3 px-2 pb-6">
+      <div className="grid min-h-screen max-w-full overflow-x-hidden lg:grid-cols-[minmax(220px,260px)_minmax(0,1fr)]">
+        <aside className="relative flex min-w-0 flex-col border-b border-white/10 bg-black/45 px-3 py-4 backdrop-blur-xl lg:border-b-0 lg:border-r">
+          <div className="flex items-center gap-3 px-2 pb-5">
             <MFLogo />
             <div>
               <p className="text-sm font-semibold text-white">OfficeOS</p>
@@ -150,14 +150,14 @@ export const DeveloperPanelPage = () => {
             </div>
           </div>
 
-          <nav className="space-y-2 border-t border-white/10 pt-5">
+          <nav className="space-y-1.5 border-t border-white/10 pt-4">
             {sidebarItems.map((item) => (
               <button
                 key={item.label}
                 type="button"
                 disabled={!item.enabled}
                 onClick={() => setActiveItem(item.label)}
-                className={`flex w-full items-center gap-3 rounded-lg border px-3 py-3 text-left text-sm font-medium transition ${
+                className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left text-sm font-medium transition ${
                   activeItem === item.label
                     ? 'border-white/10 bg-white/[0.10] text-white shadow-[0_0_30px_rgba(226,232,240,0.05)]'
                     : item.enabled
@@ -175,32 +175,42 @@ export const DeveloperPanelPage = () => {
           <button
             type="button"
             onClick={logout}
-            className="mt-8 flex w-full items-center gap-3 rounded-lg border border-white/10 bg-black/35 px-3 py-3 text-sm font-medium text-slate-300 transition hover:border-accent-500/40 hover:bg-accent-500/10 hover:text-white lg:absolute lg:bottom-5 lg:left-4 lg:right-4 lg:mt-0 lg:w-[calc(100%-2rem)]"
+            className="mt-6 flex w-full items-center gap-3 rounded-lg border border-white/10 bg-black/35 px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:border-accent-500/40 hover:bg-accent-500/10 hover:text-white lg:mt-auto"
           >
             <LogOut size={18} />
             Logout
           </button>
         </aside>
 
-        <section className="relative px-4 py-5 md:px-7">
-          <header className="flex flex-col gap-4 border-b border-white/10 pb-5 md:flex-row md:items-center md:justify-between">
+        <section className="relative min-w-0 overflow-x-hidden px-3 py-4 md:px-5">
+          <header className="flex min-w-0 flex-col gap-3 border-b border-white/10 pb-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="text-2xl font-semibold tracking-normal text-white">Developer Panel</h1>
               <p className="mt-1 text-sm text-slate-500">Feedback & Improvement Center</p>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/35 text-sm font-semibold text-white">
-                MF
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-3 rounded-full border border-white/10 bg-black/30 py-1 pl-1 pr-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/35 text-xs font-semibold text-white">
+                  MF
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">MF Developer</p>
+                  <p className="text-xs text-slate-500">Administrator</p>
+                </div>
+                <ChevronDown size={15} className="text-slate-500" />
               </div>
-              <div>
-                <p className="text-sm font-semibold text-white">MF Developer</p>
-                <p className="text-xs text-slate-500">Administrator</p>
-              </div>
-              <ChevronDown size={16} className="text-slate-500" />
+              <button
+                type="button"
+                onClick={logout}
+                className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.045] px-3 py-2 text-xs font-semibold text-slate-300 transition hover:border-accent-500/40 hover:bg-accent-500/10 hover:text-white"
+              >
+                <LogOut size={15} />
+                Logout
+              </button>
             </div>
           </header>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
             <DeveloperStat title="Total Feedback" value={stats.total} icon={MessageSquare} />
             <DeveloperStat title="New" value={stats.newItems} icon={Circle} />
             <DeveloperStat title="High Priority" value={stats.highPriority} icon={ShieldAlert} />
@@ -208,23 +218,23 @@ export const DeveloperPanelPage = () => {
             <DeveloperStat title="In Progress" value={stats.inProgress} icon={Gauge} />
           </div>
 
-          <section className="mt-6 overflow-hidden rounded-xl border border-white/10 bg-white/[0.035] shadow-[0_30px_90px_rgba(0,0,0,0.42)] backdrop-blur-xl">
-            <div className="flex flex-col gap-4 border-b border-white/10 p-4 xl:flex-row xl:items-center xl:justify-between">
+          <section className="mt-5 max-w-full overflow-hidden rounded-xl border border-white/10 bg-white/[0.035] shadow-[0_24px_70px_rgba(0,0,0,0.38)] backdrop-blur-xl">
+            <div className="flex flex-col gap-3 border-b border-white/10 p-3 xl:flex-row xl:items-center xl:justify-between">
               <div>
                 <h2 className="text-base font-semibold text-white">Recent Feedbacks</h2>
                 <p className="mt-1 text-xs text-slate-500">
                   {activeItem === 'Feedbacks' ? 'Filtered feedback queue' : 'Dashboard overview'}
                 </p>
               </div>
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[140px_150px_150px_150px_220px]">
+              <div className="grid min-w-0 gap-2 sm:grid-cols-2 xl:grid-cols-[120px_130px_150px_130px_minmax(170px,1fr)]">
                 <DeveloperSelect value={statusFilter} options={statusOptions} onChange={(value) => setStatusFilter(value)} />
                 <DeveloperSelect value={priorityFilter} options={priorityOptions} onChange={(value) => setPriorityFilter(value)} />
                 <DeveloperSelect value={typeFilter} options={typeOptions} onChange={(value) => setTypeFilter(value)} />
                 <DeveloperSelect value={moduleFilter} options={moduleOptions} onChange={(value) => setModuleFilter(value)} />
-                <label className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm text-slate-300">
-                  <Search size={16} className="text-slate-500" />
+                <label className="flex min-w-0 items-center gap-2 rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm text-slate-300">
+                  <Search size={15} className="shrink-0 text-slate-500" />
                   <input
-                    className="w-full bg-transparent outline-none placeholder:text-slate-600"
+                    className="min-w-0 w-full bg-transparent outline-none placeholder:text-slate-600"
                     placeholder="Search feedback"
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
@@ -234,7 +244,12 @@ export const DeveloperPanelPage = () => {
             </div>
 
             {error ? (
-              <div className="border-b border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div>
+              <div className="border-b border-rose-400/20 bg-rose-500/10 px-4 py-3">
+                <p className="text-sm font-medium text-rose-100">{error}</p>
+                <p className="mt-1 text-xs leading-5 text-rose-200/75">
+                  Developer access is active, but feedback collection access may need rule/index verification.
+                </p>
+              </div>
             ) : null}
 
             {loading ? (
@@ -249,36 +264,36 @@ export const DeveloperPanelPage = () => {
                 }
               />
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[1100px] text-left">
+              <div className="max-w-full overflow-x-auto">
+                <table className="w-full min-w-[920px] text-left">
                   <thead className="border-b border-white/10 bg-black/25 text-[11px] uppercase tracking-[0.14em] text-slate-500">
                     <tr>
-                      <th className="px-4 py-3 font-semibold">Title</th>
-                      <th className="px-4 py-3 font-semibold">Type</th>
-                      <th className="px-4 py-3 font-semibold">Module</th>
-                      <th className="px-4 py-3 font-semibold">Priority</th>
-                      <th className="px-4 py-3 font-semibold">Status</th>
-                      <th className="px-4 py-3 font-semibold">Submitted By</th>
-                      <th className="px-4 py-3 font-semibold">Date</th>
+                      <th className="px-3 py-3 font-semibold">Title</th>
+                      <th className="px-3 py-3 font-semibold">Type</th>
+                      <th className="px-3 py-3 font-semibold">Module</th>
+                      <th className="px-3 py-3 font-semibold">Priority</th>
+                      <th className="px-3 py-3 font-semibold">Status</th>
+                      <th className="px-3 py-3 font-semibold">Submitted By</th>
+                      <th className="px-3 py-3 font-semibold">Date</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/10">
                     {filteredFeedback.map((item) => (
                       <tr key={item.path || item.id} className="transition hover:bg-white/[0.035]">
-                        <td className="max-w-sm px-4 py-4">
-                          <p className="font-medium text-white">{item.title}</p>
+                        <td className="max-w-[280px] px-3 py-3">
+                          <p className="truncate font-medium text-white">{item.title}</p>
                           <p className="mt-1 line-clamp-1 text-xs leading-5 text-slate-500">{item.description}</p>
                         </td>
-                        <td className="px-4 py-4">
+                        <td className="px-3 py-3">
                           <TypeBadge type={item.type} />
                         </td>
-                        <td className="px-4 py-4 text-sm text-slate-300">{item.relatedModule}</td>
-                        <td className="px-4 py-4">
+                        <td className="px-3 py-3 text-sm text-slate-300">{item.relatedModule}</td>
+                        <td className="px-3 py-3">
                           <PriorityBadge priority={item.priority} />
                         </td>
-                        <td className="px-4 py-4">
+                        <td className="px-3 py-3">
                           <select
-                            className="rounded-lg border border-white/10 bg-black/45 px-3 py-2 text-xs font-medium text-slate-200 outline-none transition focus:border-accent-500/45"
+                            className="rounded-lg border border-white/10 bg-black/45 px-2.5 py-1.5 text-xs font-medium text-slate-200 outline-none transition focus:border-accent-500/45"
                             value={item.status}
                             disabled={updatingId === item.id}
                             onChange={(event) => updateStatus(item, event.target.value as FeedbackStatus)}
@@ -290,11 +305,11 @@ export const DeveloperPanelPage = () => {
                             ))}
                           </select>
                         </td>
-                        <td className="px-4 py-4 text-sm text-slate-300">
-                          <p>{item.submittedByName}</p>
+                        <td className="max-w-[150px] px-3 py-3 text-sm text-slate-300">
+                          <p className="truncate">{item.submittedByName}</p>
                           <p className="mt-1 text-xs text-slate-500">{item.submittedByRole}</p>
                         </td>
-                        <td className="px-4 py-4 text-sm text-slate-400">{formatDateTime(item.createdAt)}</td>
+                        <td className="px-3 py-3 text-sm text-slate-400">{formatDateTime(item.createdAt)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -303,7 +318,7 @@ export const DeveloperPanelPage = () => {
             )}
           </section>
 
-          <p className="py-6 text-center text-xs text-slate-600">OfficeOS Developer Panel by MotoFlexing</p>
+          <p className="py-5 text-center text-xs text-slate-600">OfficeOS Developer Panel by MotoFlexing</p>
         </section>
       </div>
     </main>
@@ -311,12 +326,12 @@ export const DeveloperPanelPage = () => {
 };
 
 const DeveloperStat = ({ icon: Icon, title, value }: { icon: typeof MessageSquare; title: string; value: number }) => (
-  <article className="rounded-xl border border-white/10 bg-white/[0.035] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.35)] backdrop-blur">
-    <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/[0.045] text-slate-200">
-      <Icon size={18} />
+  <article className="rounded-xl border border-white/10 bg-white/[0.035] p-4 shadow-[0_18px_54px_rgba(0,0,0,0.32)] backdrop-blur">
+    <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.045] text-slate-200">
+      <Icon size={16} />
     </div>
-    <p className="mt-5 text-3xl font-semibold text-white">{value}</p>
-    <p className="mt-1 text-sm text-slate-400">{title}</p>
+    <p className="mt-4 text-2xl font-semibold text-white">{value}</p>
+    <p className="mt-1 text-xs text-slate-400">{title}</p>
   </article>
 );
 
@@ -331,7 +346,7 @@ const DeveloperSelect = <Value extends string>({
 }) => (
   <label className="relative">
     <select
-      className="w-full appearance-none rounded-lg border border-white/10 bg-black/25 px-3 py-2 pr-8 text-sm text-slate-200 outline-none transition focus:border-accent-500/45"
+      className="w-full appearance-none rounded-lg border border-white/10 bg-black/25 px-3 py-2 pr-8 text-xs font-medium text-slate-200 outline-none transition focus:border-accent-500/45"
       value={value}
       onChange={(event) => onChange(event.target.value as Value)}
     >
@@ -346,12 +361,12 @@ const DeveloperSelect = <Value extends string>({
 );
 
 const DeveloperEmpty = ({ description, title }: { description: string; title: string }) => (
-  <div className="flex min-h-72 items-center justify-center p-8 text-center">
+  <div className="flex min-h-56 items-center justify-center p-6 text-center">
     <div className="max-w-md">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg border border-white/10 bg-white/[0.045] text-accent-100">
-        <Wrench size={22} />
+      <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/[0.045] text-accent-100">
+        <Wrench size={19} />
       </div>
-      <h3 className="mt-4 text-lg font-semibold text-white">{title}</h3>
+      <h3 className="mt-3 text-base font-semibold text-white">{title}</h3>
       <p className="mt-2 text-sm leading-6 text-slate-500">{description}</p>
     </div>
   </div>
@@ -424,16 +439,21 @@ const formatDateTime = (value: string) => {
 };
 
 const getFeedbackLoadError = (error: unknown) => {
+  const code =
+    typeof error === 'object' && error && 'code' in error ? (error as { code?: string }).code : undefined;
+  const message = error instanceof Error ? error.message : '';
+
   if (
-    typeof error === 'object' &&
-    error &&
-    'code' in error &&
-    (error as { code?: string }).code === 'failed-precondition'
+    code === 'failed-precondition'
   ) {
     return 'Feedback requires a Firestore index before it can be loaded. Open the Firebase index link from the console error, create the index, and try again.';
   }
 
-  return error instanceof Error ? error.message : 'Unable to load feedback.';
+  if (code === 'permission-denied' || message.toLowerCase().includes('missing or insufficient permissions')) {
+    return 'Feedback data could not be loaded. Please check developer permissions or Firestore rules.';
+  }
+
+  return message || 'Unable to load feedback.';
 };
 
 const MFLogo = () => (
