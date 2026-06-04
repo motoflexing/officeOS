@@ -1,6 +1,5 @@
 import {
   collection,
-  collectionGroup,
   deleteDoc,
   doc,
   getDoc,
@@ -330,7 +329,7 @@ export const firestoreService = {
     return snapshot.docs.map((item) => feedbackFromSnapshot(item));
   },
   getAllFeedbackForDeveloper: async () => {
-    const snapshot = await getDocs(query(collectionGroup(requireDb(), 'feedback'), orderBy('createdAt', 'desc')));
+    const snapshot = await getDocs(query(companyCollection('feedback'), orderBy('createdAt', 'desc')));
     return snapshot.docs.map((item) => feedbackFromSnapshot(item));
   },
   updateFeedbackStatus: async (feedbackPathOrId: string, status: FeedbackStatus) => {
