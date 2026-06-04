@@ -1,8 +1,11 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { DeveloperGuard } from './components/DeveloperGuard';
 import { AppLayout } from './layout/AppLayout';
 import { AnnouncementsPage } from './pages/AnnouncementsPage';
 import { AttendancePage } from './pages/AttendancePage';
 import { DashboardPage } from './pages/DashboardPage';
+import { DeveloperLoginPage } from './pages/DeveloperLoginPage';
+import { DeveloperPanelPage } from './pages/DeveloperPanelPage';
 import { EmployeesPage } from './pages/EmployeesPage';
 import { HRPanelPage } from './pages/HRPanelPage';
 import { LeavePage } from './pages/LeavePage';
@@ -31,6 +34,15 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={role ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
+      <Route path="/developer-login" element={<DeveloperLoginPage />} />
+      <Route
+        path="/developer"
+        element={
+          <DeveloperGuard>
+            <DeveloperPanelPage />
+          </DeveloperGuard>
+        }
+      />
       <Route element={<AppLayout />}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />

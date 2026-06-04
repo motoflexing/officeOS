@@ -26,6 +26,10 @@ service cloud.firestore {
       return /databases/$(database)/documents/companies/$(companyId)/users/$(request.auth.uid);
     }
 
+    function developerDocPath() {
+      return /databases/$(database)/documents/developers/$(request.auth.uid);
+    }
+
     function hasUserDoc(companyId) {
       return signedIn() && exists(userDocPath(companyId));
     }
@@ -60,6 +64,13 @@ service cloud.firestore {
       return isAdmin(companyId) || isHr(companyId);
     }
 
+    function isDeveloper() {
+      return signedIn() &&
+        exists(developerDocPath()) &&
+        get(developerDocPath()).data.role == 'Developer' &&
+        get(developerDocPath()).data.status == 'Active';
+    }
+
     function authEmail() {
       return request.auth.token.email;
     }
@@ -85,6 +96,28 @@ service cloud.firestore {
         (isHr(companyId) && request.resource.data.role == 'Employee');
     }
 
+    function writesValidFeedbackStatus() {
+      return request.resource.data.status in ['New', 'In Review', 'Planned', 'Resolved', 'Closed'];
+    }
+
+    function writesValidFeedbackCreate(companyId) {
+      return request.resource.data.companyId == companyId &&
+        request.resource.data.submittedByUid == request.auth.uid &&
+        request.resource.data.status == 'New' &&
+        request.resource.data.submittedByRole in ['Admin', 'HR', 'Employee'];
+    }
+
+    function updatesFeedbackReviewFields() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        'status',
+        'updatedAt',
+        'reviewedAt',
+        'reviewedByUid',
+        'reviewedByName',
+        'developerNotes'
+      ]) && writesValidFeedbackStatus();
+    }
+
     function isConversationParticipant(data) {
       return authEmail() in data.participantEmails;
     }
@@ -96,6 +129,20 @@ service cloud.firestore {
     function isMessageParticipant(companyId, conversationId) {
       return exists(directConversationPath(companyId, conversationId)) &&
         authEmail() in get(directConversationPath(companyId, conversationId)).data.participantEmails;
+    }
+
+    match /developers/{uid} {
+      allow read: if signedIn() &&
+        request.auth.uid == uid &&
+        resource.data.role == 'Developer' &&
+        resource.data.status == 'Active';
+      allow create: if false;
+      allow update: if signedIn() &&
+        request.auth.uid == uid &&
+        resource.data.role == 'Developer' &&
+        resource.data.status == 'Active' &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLoginAt']);
+      allow delete: if false;
     }
 
     match /companies/{companyId} {
@@ -151,6 +198,14 @@ service cloud.firestore {
       match /settings/{settingsId} {
         allow read: if settingsId == 'main' && inCompany(companyId);
         allow write: if settingsId == 'main' && isAdmin(companyId);
+      }
+
+      match /feedback/{feedbackId} {
+        allow create: if inCompany(companyId) && writesValidFeedbackCreate(companyId);
+        allow read: if isDeveloper() ||
+          (inCompany(companyId) && resource.data.submittedByUid == request.auth.uid);
+        allow update: if isDeveloper() && updatesFeedbackReviewFields();
+        allow delete: if false;
       }
 
       match /directConversations/{conversationId} {

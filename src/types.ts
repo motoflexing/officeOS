@@ -10,6 +10,23 @@ export type JobOpeningStatus = 'Open' | 'Paused' | 'Closed';
 export type CandidateStatus = 'Applied' | 'Screening' | 'Interview' | 'Selected' | 'Rejected';
 export type InterviewStatus = 'Scheduled' | 'Completed' | 'Cancelled';
 export type PresenceStatus = 'Online' | 'Away' | 'On Break' | 'In Meeting' | 'Offline';
+export type DeveloperRole = 'Developer';
+export type DeveloperStatus = 'Active' | 'Inactive';
+export type FeedbackType = 'Bug' | 'Feature Request' | 'Improvement' | 'Question';
+export type FeedbackPriority = 'Low' | 'Medium' | 'High' | 'Critical';
+export type FeedbackStatus = 'New' | 'In Review' | 'Planned' | 'Resolved' | 'Closed';
+export type FeedbackModule =
+  | 'Dashboard'
+  | 'Employees'
+  | 'Attendance'
+  | 'Leave'
+  | 'Reports'
+  | 'Announcements'
+  | 'Settings'
+  | 'HR/ATS'
+  | 'Workspace'
+  | 'Auth'
+  | 'Other';
 
 export interface UserProfile {
   name: string;
@@ -54,6 +71,50 @@ export interface DirectMessage {
   text: string;
   createdAt: string;
 }
+
+export interface DeveloperProfile {
+  name: string;
+  email: string;
+  role: DeveloperRole;
+  status: DeveloperStatus;
+  createdAt: string;
+  lastLoginAt?: string;
+}
+
+export interface FeedbackItem {
+  id: string;
+  path?: string;
+  type: FeedbackType;
+  title: string;
+  description: string;
+  priority: FeedbackPriority;
+  relatedModule: FeedbackModule;
+  status: FeedbackStatus;
+  submittedByUid: string;
+  submittedByName: string;
+  submittedByEmail: string;
+  submittedByRole: Role;
+  companyId: string;
+  createdAt: string;
+  updatedAt: string;
+  reviewedAt?: string;
+  reviewedByUid?: string;
+  reviewedByName?: string;
+  developerNotes?: string;
+}
+
+export type FeedbackInput = Pick<
+  FeedbackItem,
+  | 'type'
+  | 'title'
+  | 'description'
+  | 'priority'
+  | 'relatedModule'
+  | 'submittedByUid'
+  | 'submittedByName'
+  | 'submittedByEmail'
+  | 'submittedByRole'
+>;
 
 export interface Employee {
   id: string;

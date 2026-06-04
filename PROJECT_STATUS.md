@@ -163,6 +163,24 @@ OfficeOS is a MotoFlexing-owned internal operations workspace. The current tenan
   - `Admin`
   - `HR`
   - `Employee`
+- MotoFlexing developer access is separate from tenant/company users. Developer Auth users are manually created in Firebase Auth and linked to top-level `developers/{uid}` docs.
+
+### Developer Access Setup
+
+Manual setup for MotoFlexing developer access:
+
+1. Firebase Authentication -> Add user.
+2. Copy the Auth UID.
+3. Firestore -> create `developers/{uid}`.
+4. Add fields:
+   - `name`: `MotoFlexing Developer`
+   - `email`: developer email
+   - `role`: `Developer`
+   - `status`: `Active`
+   - `createdAt`: current timestamp
+   - `lastLoginAt`: optional timestamp, maintained by the app after login
+
+Developer accounts must not be created by Geekynd Admin or HR users from the OfficeOS UI.
 
 ### Firestore Tenant Model
 
@@ -285,6 +303,22 @@ companies/geekynd
 
 - Main settings document at `settings/main`.
 - Admin writes, company users read.
+
+### `developers/{uid}`
+
+- Top-level MotoFlexing developer profile collection.
+- Separate from `companies/{companyId}/users`.
+- Used by the `/developer` auth guard and future Developer Panel.
+- Client creation and deletion are blocked by Firestore rules.
+- Active developers can update only `lastLoginAt` on their own profile.
+
+### `companies/{companyId}/feedback`
+
+- Company-scoped feedback records submitted by authenticated company users.
+- Feedback includes type, title, description, priority, related module, status, submitter identity, companyId, createdAt, and updatedAt.
+- Company users can read only their own submitted feedback.
+- Active MotoFlexing developers can read feedback across all companies through a `collectionGroup('feedback')` query and can update review/status fields.
+- Current developer feedback query orders by `createdAt` only, which should use Firestore's automatic single-field indexes. Composite indexes may be needed later if filters are added.
 
 ### `companies/{companyId}/jobOpenings`
 

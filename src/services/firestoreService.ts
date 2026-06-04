@@ -1,5 +1,6 @@
 import {
   collection,
+  collectionGroup,
   deleteDoc,
   doc,
   getDoc,
@@ -10,6 +11,8 @@ import {
   setDoc,
   updateDoc,
   where,
+  type DocumentData,
+  type QueryDocumentSnapshot,
 } from 'firebase/firestore';
 import { db, companyId, isFirebaseConfigured } from './firebase';
 import type {
@@ -18,9 +21,13 @@ import type {
   Candidate,
   CompanySettings,
   DailyReport,
+  DeveloperProfile,
   DirectConversation,
   DirectMessage,
   Employee,
+  FeedbackInput,
+  FeedbackItem,
+  FeedbackStatus,
   Interview,
   JobOpening,
   LeaveRequest,
@@ -46,6 +53,7 @@ const clean = <T extends Record<string, unknown>>(value: T): T =>
 const companyDoc = () => doc(requireDb(), 'companies', companyId);
 const companyCollection = (name: string) => collection(companyDoc(), name);
 const companyDocument = (name: string, id: string) => doc(companyCollection(name), id);
+const developerDocument = (uid: string) => doc(requireDb(), 'developers', uid);
 const directConversationDocument = (conversationId: string) => companyDocument('directConversations', conversationId);
 const directMessagesCollection = (conversationId: string) => collection(directConversationDocument(conversationId), 'messages');
 
@@ -65,7 +73,35 @@ const readCollection = async <T extends { id: string }>(name: string): Promise<T
 const uniqueLeaveRequests = (requests: LeaveRequest[]) =>
   Array.from(new Map(requests.map((request) => [request.id, request])).values());
 
+const feedbackFromSnapshot = (snapshot: QueryDocumentSnapshot<DocumentData>): FeedbackItem => ({
+  id: snapshot.id,
+  path: snapshot.ref.path,
+  ...(snapshot.data() as Omit<FeedbackItem, 'id' | 'path'>),
+});
+
 export const firestoreService = {
+  getCurrentDeveloperProfile: async (uid: string): Promise<DeveloperProfile | null> => {
+    const snapshot = await getDoc(developerDocument(uid));
+    if (!snapshot.exists()) return null;
+
+    const data = snapshot.data() as Record<string, unknown>;
+    if (data.role !== 'Developer' || data.status !== 'Active') return null;
+
+    return {
+      name: typeof data.name === 'string' ? data.name : 'MotoFlexing Developer',
+      email: typeof data.email === 'string' ? data.email : '',
+      role: 'Developer',
+      status: 'Active',
+      createdAt: typeof data.createdAt === 'string' ? data.createdAt : '',
+      lastLoginAt: typeof data.lastLoginAt === 'string' ? data.lastLoginAt : undefined,
+    };
+  },
+  updateDeveloperLastLogin: async (uid: string) => {
+    const lastLoginAt = new Date().toISOString();
+    await updateDoc(developerDocument(uid), { lastLoginAt });
+    return lastLoginAt;
+  },
+
   getUserProfile: async (uid: string): Promise<UserProfile | null> => {
     const snapshot = await getDoc(companyDocument('users', uid));
     if (!snapshot.exists()) return null;
@@ -248,6 +284,47 @@ export const firestoreService = {
     const reviewedAt = new Date().toISOString();
     await updateDoc(companyDocument('leaveRequests', id), { status, reviewedBy, reviewedAt });
     return { id, status, reviewedBy, reviewedAt };
+  },
+
+  submitFeedback: async (targetCompanyId: string, feedbackInput: FeedbackInput) => {
+    const feedbackId = createId('feedback');
+    const now = new Date().toISOString();
+    const feedback: FeedbackItem = {
+      id: feedbackId,
+      ...feedbackInput,
+      companyId: targetCompanyId,
+      status: 'New',
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    await setDoc(
+      doc(collection(doc(requireDb(), 'companies', targetCompanyId), 'feedback'), feedbackId),
+      clean({ ...feedback }),
+    );
+    return feedback;
+  },
+  getMyFeedback: async (targetCompanyId: string, uid: string) => {
+    const snapshot = await getDocs(
+      query(
+        collection(doc(requireDb(), 'companies', targetCompanyId), 'feedback'),
+        where('submittedByUid', '==', uid),
+        orderBy('createdAt', 'desc'),
+      ),
+    );
+    return snapshot.docs.map((item) => feedbackFromSnapshot(item));
+  },
+  getAllFeedbackForDeveloper: async () => {
+    const snapshot = await getDocs(query(collectionGroup(requireDb(), 'feedback'), orderBy('createdAt', 'desc')));
+    return snapshot.docs.map((item) => feedbackFromSnapshot(item));
+  },
+  updateFeedbackStatus: async (feedbackPathOrId: string, status: FeedbackStatus) => {
+    const updatedAt = new Date().toISOString();
+    const feedbackRef = feedbackPathOrId.includes('/')
+      ? doc(requireDb(), feedbackPathOrId)
+      : companyDocument('feedback', feedbackPathOrId);
+    await updateDoc(feedbackRef, { status, updatedAt });
+    return { id: feedbackPathOrId, status, updatedAt };
   },
 
   getJobOpenings: () => readCollection<JobOpening>('jobOpenings'),

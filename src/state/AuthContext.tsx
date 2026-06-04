@@ -43,6 +43,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const nextProfile = await firestoreService.getUserProfile(user.uid);
         if (!nextProfile) {
+          const developerProfile = await firestoreService.getCurrentDeveloperProfile(user.uid);
+          if (developerProfile) {
+            storage.clearSession();
+            setRole(null);
+            setProfile(null);
+            setLoading(false);
+            return;
+          }
+
           storage.clearSession();
           setRole(null);
           setProfile(null);
