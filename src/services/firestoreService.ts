@@ -180,6 +180,11 @@ export const firestoreService = {
   },
 
   getEmployees: () => readCollection<Employee>('employees'),
+  createEmployeeAccountProfiles: async (uid: string, userProfile: UserProfile, employee: Employee) => {
+    await setDoc(companyDocument('users', uid), clean({ ...userProfile }));
+    await setDoc(companyDocument('employees', uid), clean({ ...employee, id: uid }));
+    return employee;
+  },
   addEmployee: async (employee: Employee) => {
     await setDoc(companyDocument('employees', employee.id), clean({ ...employee }));
     return employee;

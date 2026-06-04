@@ -5,12 +5,18 @@ import { EmployeeTable } from '../components/EmployeeTable';
 import { PageHeader } from '../components/PageHeader';
 import { Toast } from '../components/Toast';
 import { BRANDING } from '../config/branding';
+import { accountService } from '../services/accountService';
+import { companyId } from '../services/firebase';
 import { firestoreService } from '../services/firestoreService';
 import { isFirebaseConfigured } from '../services/firebase';
 import { storage } from '../services/storage';
-import type { Employee, EmploymentStatus, Role } from '../types';
+import { useAuth } from '../state/AuthContext';
+import type { Employee, EmploymentStatus, Role, WorkMode } from '../types';
 
-type EmployeeForm = Omit<Employee, 'id'>;
+type EmployeeForm = Omit<Employee, 'id' | 'authUid' | 'createdAt' | 'createdBy'> & {
+  temporaryPassword: string;
+  confirmTemporaryPassword: string;
+};
 
 const roles: Array<'All' | Role> = ['All', 'Admin', 'HR', 'Employee'];
 const statuses: Array<'All' | EmploymentStatus> = ['All', 'Active', 'Inactive', 'On Leave'];
@@ -23,11 +29,15 @@ const emptyForm: EmployeeForm = {
   designation: '',
   status: 'Active',
   joiningDate: '',
+  workMode: 'Hybrid',
   phone: '',
   location: '',
+  temporaryPassword: '',
+  confirmTemporaryPassword: '',
 };
 
 export const EmployeesPage = () => {
+  const { profile, role } = useAuth();
   const [employees, setEmployees] = useState<Employee[]>(() => storage.getEmployees());
   const [query, setQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<'All' | Role>('All');
@@ -80,8 +90,11 @@ export const EmployeesPage = () => {
       designation: employee.designation,
       status: employee.status,
       joiningDate: employee.joiningDate,
+      workMode: employee.workMode ?? 'Hybrid',
       phone: employee.phone ?? '',
       location: employee.location ?? '',
+      temporaryPassword: '',
+      confirmTemporaryPassword: '',
     });
     setError('');
     setFormOpen(true);
@@ -121,6 +134,24 @@ export const EmployeesPage = () => {
       return;
     }
 
+    const allowedRoles = getAllowedCreateRoles(role ?? profile?.role ?? 'Employee');
+    if (!editingEmployee && !allowedRoles.includes(form.role)) {
+      setError('You do not have permission to create this role.');
+      return;
+    }
+
+    if (!editingEmployee && isFirebaseConfigured) {
+      if (form.temporaryPassword.length < 8) {
+        setError('Temporary password must be at least 8 characters.');
+        return;
+      }
+
+      if (form.temporaryPassword !== form.confirmTemporaryPassword) {
+        setError('Confirm temporary password must match.');
+        return;
+      }
+    }
+
     const nextEmployee: Employee = {
       id: editingEmployee?.id ?? crypto.randomUUID(),
       name: form.name.trim(),
@@ -130,6 +161,7 @@ export const EmployeesPage = () => {
       designation: form.designation.trim(),
       status: form.status,
       joiningDate: form.joiningDate,
+      workMode: form.workMode,
       phone: form.phone?.trim() || undefined,
       location: form.location?.trim() || undefined,
     };
@@ -139,7 +171,56 @@ export const EmployeesPage = () => {
         if (editingEmployee) {
           await firestoreService.updateEmployee(nextEmployee);
         } else {
-          await firestoreService.addEmployee(nextEmployee);
+          let createdUid = '';
+          try {
+            createdUid = await accountService.createAuthUser(normalizedEmail, form.temporaryPassword);
+          } catch (error) {
+            const message = getAccountCreationErrorMessage(error);
+            setError(message);
+            return;
+          }
+
+          const now = new Date().toISOString();
+          const createdBy = profile?.email || 'OfficeOS';
+          const employeeWithAccount: Employee = {
+            ...nextEmployee,
+            id: createdUid,
+            authUid: createdUid,
+            status: 'Active',
+            createdAt: now,
+            createdBy,
+          };
+
+          try {
+            await firestoreService.createEmployeeAccountProfiles(
+              createdUid,
+              {
+                name: employeeWithAccount.name,
+                email: employeeWithAccount.email,
+                role: employeeWithAccount.role,
+                department: employeeWithAccount.department,
+                designation: employeeWithAccount.designation,
+                workMode: employeeWithAccount.workMode ?? 'Hybrid',
+                status: 'Away',
+                presenceStatus: 'Offline',
+                createdAt: now,
+                createdBy,
+              },
+              employeeWithAccount,
+            );
+            nextEmployee.id = employeeWithAccount.id;
+            nextEmployee.authUid = employeeWithAccount.authUid;
+            nextEmployee.createdAt = employeeWithAccount.createdAt;
+            nextEmployee.createdBy = employeeWithAccount.createdBy;
+            nextEmployee.status = employeeWithAccount.status;
+          } catch (error) {
+            setError(
+              error instanceof Error
+                ? `Auth account was created, but Firestore profile setup failed: ${error.message}`
+                : 'Auth account was created, but Firestore profile setup failed.',
+            );
+            return;
+          }
         }
         setEmployees((current) =>
           current.some((employee) => employee.id === nextEmployee.id)
@@ -150,7 +231,13 @@ export const EmployeesPage = () => {
         storage.upsertEmployee(nextEmployee);
         setEmployees(storage.getEmployees());
       }
-      setToast(editingEmployee ? 'Employee details updated' : 'Employee added to directory');
+      setToast(
+        editingEmployee
+          ? 'Employee details updated'
+          : isFirebaseConfigured
+            ? 'Employee account created successfully. Share the temporary password securely with the employee.'
+            : 'Employee added to directory',
+      );
       window.setTimeout(() => setToast(''), 2400);
       closeForm();
     } catch (error) {
@@ -226,6 +313,8 @@ export const EmployeesPage = () => {
           form={form}
           editing={Boolean(editingEmployee)}
           error={error}
+          allowedRoles={getAllowedCreateRoles(role ?? profile?.role ?? 'Employee')}
+          requireAccountPassword={isFirebaseConfigured}
           onCancel={closeForm}
           onChange={setForm}
           onSubmit={saveEmployee}
@@ -259,20 +348,27 @@ export const EmployeesPage = () => {
 };
 
 const EmployeeFormPanel = ({
+  allowedRoles,
   form,
   editing,
   error,
+  requireAccountPassword,
   onCancel,
   onChange,
   onSubmit,
 }: {
+  allowedRoles: Role[];
   form: EmployeeForm;
   editing: boolean;
   error: string;
+  requireAccountPassword: boolean;
   onCancel: () => void;
   onChange: (form: EmployeeForm) => void;
   onSubmit: (event: FormEvent) => void | Promise<void>;
-}) => (
+}) => {
+  const roleOptions = editing && !allowedRoles.includes(form.role) ? [form.role, ...allowedRoles] : allowedRoles;
+
+  return (
   <form onSubmit={onSubmit} className="surface p-5">
     <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
       <div>
@@ -290,13 +386,25 @@ const EmployeeFormPanel = ({
       <label>
         <span className="mb-2 block text-sm font-medium text-slate-300">Role</span>
         <select className="field" value={form.role} onChange={(event) => onChange({ ...form, role: event.target.value as Role })}>
-          <option>Admin</option>
-          <option>HR</option>
-          <option>Employee</option>
+          {roleOptions.map((role) => (
+            <option key={role}>{role}</option>
+          ))}
         </select>
       </label>
       <EmployeeField label="Department" value={form.department} onChange={(value) => onChange({ ...form, department: value })} />
       <EmployeeField label="Designation" value={form.designation} onChange={(value) => onChange({ ...form, designation: value })} />
+      <label>
+        <span className="mb-2 block text-sm font-medium text-slate-300">Work Mode</span>
+        <select
+          className="field"
+          value={form.workMode}
+          onChange={(event) => onChange({ ...form, workMode: event.target.value as WorkMode })}
+        >
+          <option>Office</option>
+          <option>Remote</option>
+          <option>Hybrid</option>
+        </select>
+      </label>
       <label>
         <span className="mb-2 block text-sm font-medium text-slate-300">Status</span>
         <select
@@ -317,6 +425,24 @@ const EmployeeFormPanel = ({
       />
       <EmployeeField label="Phone" value={form.phone ?? ''} onChange={(value) => onChange({ ...form, phone: value })} />
       <EmployeeField label="Location" value={form.location ?? ''} onChange={(value) => onChange({ ...form, location: value })} />
+      {!editing ? (
+        <>
+          <EmployeeField
+            label="Temporary Password"
+            value={form.temporaryPassword}
+            onChange={(value) => onChange({ ...form, temporaryPassword: value })}
+            required={requireAccountPassword}
+            type="password"
+          />
+          <EmployeeField
+            label="Confirm Temporary Password"
+            value={form.confirmTemporaryPassword}
+            onChange={(value) => onChange({ ...form, confirmTemporaryPassword: value })}
+            required={requireAccountPassword}
+            type="password"
+          />
+        </>
+      ) : null}
     </div>
 
     {error ? (
@@ -326,24 +452,46 @@ const EmployeeFormPanel = ({
     ) : null}
 
     <button type="submit" className="btn-primary mt-5">
-      {editing ? 'Save Employee' : 'Add Employee'}
+      {editing ? 'Save Employee' : requireAccountPassword ? 'Create Employee Account' : 'Add Employee'}
     </button>
   </form>
-);
+  );
+};
 
 const EmployeeField = ({
   label,
   value,
   onChange,
+  required = true,
   type = 'text',
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  required?: boolean;
   type?: string;
 }) => (
   <label>
     <span className="mb-2 block text-sm font-medium text-slate-300">{label}</span>
-    <input className="field" type={type} value={value} onChange={(event) => onChange(event.target.value)} />
+    <input className="field" required={required} type={type} value={value} onChange={(event) => onChange(event.target.value)} />
   </label>
 );
+
+const getAllowedCreateRoles = (creatorRole: Role): Role[] => {
+  if (creatorRole === 'Admin') return ['HR', 'Employee'];
+  if (creatorRole === 'HR') return ['Employee'];
+  return [];
+};
+
+const getAccountCreationErrorMessage = (error: unknown) => {
+  if (
+    typeof error === 'object' &&
+    error &&
+    'code' in error &&
+    (error as { code?: string }).code === 'auth/email-already-in-use'
+  ) {
+    return 'An account with this email already exists.';
+  }
+
+  return error instanceof Error ? error.message : 'Unable to create employee account.';
+};

@@ -80,6 +80,11 @@ service cloud.firestore {
       return request.resource.data.presenceStatus in ['Online', 'Away', 'On Break', 'In Meeting', 'Offline'];
     }
 
+    function canCreateManagedRole(companyId) {
+      return (isAdmin(companyId) && request.resource.data.role in ['HR', 'Employee']) ||
+        (isHr(companyId) && request.resource.data.role == 'Employee');
+    }
+
     function isConversationParticipant(data) {
       return authEmail() in data.participantEmails;
     }
@@ -99,7 +104,8 @@ service cloud.firestore {
 
       match /users/{userId} {
         allow read: if inCompany(companyId);
-        allow create, delete: if isAdmin(companyId);
+        allow create: if canCreateManagedRole(companyId);
+        allow delete: if isAdmin(companyId);
         allow update: if isAdmin(companyId) ||
           (inCompany(companyId) &&
             request.auth.uid == userId &&
@@ -109,7 +115,8 @@ service cloud.firestore {
 
       match /employees/{employeeId} {
         allow read: if isAdminOrHr(companyId);
-        allow create, update, delete: if isAdminOrHr(companyId);
+        allow create: if canCreateManagedRole(companyId);
+        allow update, delete: if isAdminOrHr(companyId);
       }
 
       match /attendance/{attendanceId} {

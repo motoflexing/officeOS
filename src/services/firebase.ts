@@ -25,3 +25,17 @@ export const isFirebaseConfigured = Boolean(
 export const app: FirebaseApp | null = isFirebaseConfigured ? initializeApp(firebaseConfig) : null;
 export const auth: Auth | null = app ? getAuth(app) : null;
 export const db: Firestore | null = app ? getFirestore(app) : null;
+
+let secondaryApp: FirebaseApp | null = null;
+
+export const getSecondaryAuth = () => {
+  if (!isFirebaseConfigured) {
+    throw new Error('Firebase is not configured.');
+  }
+
+  if (!secondaryApp) {
+    secondaryApp = initializeApp(firebaseConfig, 'officeos-account-creation');
+  }
+
+  return getAuth(secondaryApp);
+};

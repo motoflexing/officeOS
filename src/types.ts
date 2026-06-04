@@ -20,6 +20,9 @@ export interface UserProfile {
   employmentStatus?: EmploymentStatus;
   workMode: WorkMode;
   status: EmployeeStatus;
+  presenceStatus?: PresenceStatus;
+  createdAt?: string;
+  createdBy?: string;
 }
 
 export interface WorkspaceUser {
@@ -61,6 +64,10 @@ export interface Employee {
   designation: string;
   status: EmploymentStatus;
   joiningDate: string;
+  workMode?: WorkMode;
+  authUid?: string;
+  createdAt?: string;
+  createdBy?: string;
   phone?: string;
   location?: string;
 }
