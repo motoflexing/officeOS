@@ -1,0 +1,314 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    /*
+      OfficeOS MVP/demo rules.
+
+      These rules are role-based and tenant-scoped for the companies/{companyId}
+      data model. They are intentionally practical for demos, but should be
+      hardened before paid production use with stricter field validation,
+      immutable audit fields, audit logs, backups, and monitored billing limits.
+
+      Preferred role source:
+      - Firebase Auth custom claims from scripts/seedFirebase.js:
+        { companyId: "geekynd", role: "admin" | "hr" | "employee" }
+
+      MVP fallback:
+      - companies/{companyId}/users/{uid}.role using "Admin" | "HR" | "Employee"
+    */
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userDocPath(companyId) {
+      return /databases/$(database)/documents/companies/$(companyId)/users/$(request.auth.uid);
+    }
+
+    function developerDocPath() {
+      return /databases/$(database)/documents/developers/$(request.auth.uid);
+    }
+
+    function hasUserDoc(companyId) {
+      return signedIn() && exists(userDocPath(companyId));
+    }
+
+    function profileRole(companyId) {
+      return hasUserDoc(companyId) ? get(userDocPath(companyId)).data.role : null;
+    }
+
+    function inCompany(companyId) {
+      return signedIn() &&
+        (request.auth.token.companyId == companyId || hasUserDoc(companyId));
+    }
+
+    function hasRole(companyId, claimRoles, profileRoles) {
+      return inCompany(companyId) &&
+        (request.auth.token.role in claimRoles || profileRole(companyId) in profileRoles);
+    }
+
+    function isAdmin(companyId) {
+      return hasRole(companyId, ['admin'], ['Admin']);
+    }
+
+    function isHr(companyId) {
+      return hasRole(companyId, ['hr'], ['HR']);
+    }
+
+    function isEmployee(companyId) {
+      return hasRole(companyId, ['employee'], ['Employee']);
+    }
+
+    function isAdminOrHr(companyId) {
+      return isAdmin(companyId) || isHr(companyId);
+    }
+
+    function isDeveloper() {
+      return signedIn() &&
+        exists(developerDocPath()) &&
+        get(developerDocPath()).data.role == 'Developer' &&
+        get(developerDocPath()).data.status == 'Active';
+    }
+
+    function authEmail() {
+      return request.auth.token.email;
+    }
+
+    function writesOwnEmployeeEmail() {
+      return request.resource.data.employeeEmail == authEmail();
+    }
+
+    function readsOwnEmployeeEmail() {
+      return resource.data.employeeEmail == authEmail();
+    }
+
+    function writesValidAnnouncementRole() {
+      return request.resource.data.authorRole in ['Admin', 'HR'];
+    }
+
+    function writesValidPresenceStatus() {
+      return request.resource.data.presenceStatus in ['Online', 'Away', 'On Break', 'In Meeting', 'Offline'];
+    }
+
+    function canCreateManagedRole(companyId) {
+      return (isAdmin(companyId) && request.resource.data.role in ['HR', 'Employee']) ||
+        (isHr(companyId) && request.resource.data.role == 'Employee');
+    }
+
+    function writesValidFeedbackStatus() {
+      return request.resource.data.status in ['New', 'Reviewed', 'Planned', 'In Progress', 'Fixed', 'Rejected'];
+    }
+
+    function writesValidFeedbackCreate(companyId) {
+      return request.resource.data.companyId == companyId &&
+        request.resource.data.submittedByUid == request.auth.uid &&
+        request.resource.data.status == 'New' &&
+        request.resource.data.submittedByRole in ['Admin', 'HR', 'Employee'];
+    }
+
+    function updatesFeedbackReviewFields() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        'status',
+        'updatedAt',
+        'reviewedAt',
+        'reviewedByUid',
+        'reviewedByName',
+        'developerNotes'
+      ]) && writesValidFeedbackStatus();
+    }
+
+    function isConversationParticipant(data) {
+      return authEmail() in data.participantEmails;
+    }
+
+    function directConversationPath(companyId, conversationId) {
+      return /databases/$(database)/documents/companies/$(companyId)/directConversations/$(conversationId);
+    }
+
+    function isMessageParticipant(companyId, conversationId) {
+      return exists(directConversationPath(companyId, conversationId)) &&
+        authEmail() in get(directConversationPath(companyId, conversationId)).data.participantEmails;
+    }
+
+    match /developers/{uid} {
+      allow read: if signedIn() &&
+        request.auth.uid == uid &&
+        resource.data.role == 'Developer' &&
+        resource.data.status == 'Active';
+      allow create: if false;
+      allow update: if signedIn() &&
+        request.auth.uid == uid &&
+        resource.data.role == 'Developer' &&
+        resource.data.status == 'Active' &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLoginAt']);
+      allow delete: if false;
+    }
+
+    match /companies/{companyId} {
+      allow read: if inCompany(companyId);
+      allow write: if isAdmin(companyId);
+
+      match /users/{userId} {
+        allow read: if inCompany(companyId);
+        allow create: if canCreateManagedRole(companyId);
+        allow delete: if isAdmin(companyId);
+        allow update: if isAdmin(companyId) ||
+          (inCompany(companyId) &&
+            request.auth.uid == userId &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['presenceStatus', 'lastActiveAt']) &&
+            writesValidPresenceStatus());
+      }
+
+      match /employees/{employeeId} {
+        allow read: if isAdminOrHr(companyId);
+        allow create: if canCreateManagedRole(companyId);
+        allow update, delete: if isAdminOrHr(companyId);
+      }
+
+      match /attendance/{attendanceId} {
+        allow read: if isAdminOrHr(companyId) || (isEmployee(companyId) && readsOwnEmployeeEmail());
+        allow create: if isAdminOrHr(companyId) || (isEmployee(companyId) && writesOwnEmployeeEmail());
+        allow update: if isAdminOrHr(companyId) ||
+          (isEmployee(companyId) && readsOwnEmployeeEmail() && writesOwnEmployeeEmail());
+        allow delete: if isAdmin(companyId);
+      }
+
+      match /leaveRequests/{leaveRequestId} {
+        allow read: if isAdminOrHr(companyId) || (isEmployee(companyId) && readsOwnEmployeeEmail());
+        allow create: if isAdminOrHr(companyId) || (isEmployee(companyId) && writesOwnEmployeeEmail());
+        allow update: if isAdminOrHr(companyId);
+        allow delete: if isAdmin(companyId);
+      }
+
+      match /reports/{reportId} {
+        allow read: if isAdminOrHr(companyId) || (isEmployee(companyId) && readsOwnEmployeeEmail());
+        allow create: if isAdminOrHr(companyId) || (isEmployee(companyId) && writesOwnEmployeeEmail());
+        allow update: if isAdminOrHr(companyId);
+        allow delete: if isAdmin(companyId);
+      }
+
+      match /announcements/{announcementId} {
+        allow read: if inCompany(companyId);
+        allow create: if isAdmin(companyId) ||
+          (isHr(companyId) && writesValidAnnouncementRole());
+        allow update, delete: if isAdmin(companyId);
+      }
+
+      match /settings/{settingsId} {
+        allow read: if settingsId == 'main' && inCompany(companyId);
+        allow write: if settingsId == 'main' && isAdmin(companyId);
+      }
+
+      match /jobOpenings/{jobOpeningId} {
+        allow read, write: if isAdminOrHr(companyId);
+      }
+
+      match /candidates/{candidateId} {
+        allow read, write: if isAdminOrHr(companyId);
+      }
+
+      match /interviews/{interviewId} {
+        allow read, write: if isAdminOrHr(companyId);
+      }
+
+      match /conversations/{conversationId} {
+        allow read: if inCompany(companyId);
+        allow create: if inCompany(companyId);
+        allow update: if inCompany(companyId);
+        // No deletes for now.
+
+        match /messages/{messageId} {
+          allow read: if inCompany(companyId);
+          allow create: if inCompany(companyId) &&
+            request.resource.data.senderUid == request.auth.uid;
+          allow update: if signedIn() && resource.data.senderUid == request.auth.uid;
+          // No deletes for now.
+        }
+      }
+
+      match /feedback/{feedbackId} {
+        allow create: if inCompany(companyId) && writesValidFeedbackCreate(companyId);
+        allow read: if isDeveloper() ||
+          (inCompany(companyId) && resource.data.submittedByUid == request.auth.uid);
+        allow update: if isDeveloper() && updatesFeedbackReviewFields();
+        allow delete: if false;
+      }
+
+      match /clients/{clientId} {
+        allow read: if isAdminOrHr(companyId);
+        allow write: if isAdmin(companyId);
+
+        match /contacts/{contactId} {
+          allow read: if isAdminOrHr(companyId);
+          allow write: if isAdmin(companyId);
+        }
+        match /deals/{dealId} {
+          allow read: if isAdminOrHr(companyId);
+          allow write: if isAdmin(companyId);
+        }
+        match /activities/{activityId} {
+          allow read: if isAdminOrHr(companyId);
+          allow write: if isAdmin(companyId);
+        }
+        match /subscriptions/{subId} {
+          allow read: if isAdminOrHr(companyId);
+          allow write: if isAdmin(companyId);
+
+          // Onboarding checklist — Admin only (HR is excluded per the role matrix).
+          match /checklist/{docId} {
+            allow read: if isAdmin(companyId);
+            allow write: if isAdmin(companyId);
+          }
+        }
+        match /engagements/{engId} {
+          allow read: if isAdminOrHr(companyId);
+          allow write: if isAdmin(companyId);
+        }
+      }
+
+      match /pricingPlans/{planId} {
+        allow read: if isAdminOrHr(companyId);
+        allow write: if isAdmin(companyId);
+      }
+
+      match /directConversations/{conversationId} {
+        allow read: if inCompany(companyId) && isConversationParticipant(resource.data);
+        allow create: if inCompany(companyId) && isConversationParticipant(request.resource.data);
+        allow update: if inCompany(companyId) &&
+          isConversationParticipant(resource.data) &&
+          isConversationParticipant(request.resource.data);
+        allow delete: if isAdmin(companyId);
+
+        match /messages/{messageId} {
+          allow read: if inCompany(companyId) && isMessageParticipant(companyId, conversationId);
+          allow create: if inCompany(companyId) &&
+            isMessageParticipant(companyId, conversationId) &&
+            request.resource.data.senderEmail == authEmail();
+          allow update: if false;
+          allow delete: if isAdmin(companyId);
+        }
+      }
+
+      match /{document=**} {
+        allow read, write: if isAdmin(companyId);
+      }
+    }
+
+    // Collection-group read for the CRM pipeline view. A collectionGroup('deals')
+    // query is evaluated against this CG-scoped rule (not the nested
+    // /companies/{companyId}/clients/.../deals path rule), so it must live at the
+    // database documents scope. The client query always filters
+    // where('companyId','==', X); we authorize each matched doc against its own
+    // denormalized companyId field so reads stay tenant-scoped to Admin/HR.
+    match /{path=**}/deals/{dealId} {
+      allow read: if isAdminOrHr(resource.data.companyId);
+    }
+
+    // Collection-group read for cross-client subscription views (same pattern as the
+    // deals CG rule above). Scoped to each doc's denormalized companyId for tenant safety.
+    match /{path=**}/subscriptions/{subId} {
+      allow read: if isAdminOrHr(resource.data.companyId);
+    }
+  }
+}
