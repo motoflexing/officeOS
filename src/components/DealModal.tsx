@@ -94,26 +94,26 @@ export const DealModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 px-4 py-8 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay-65)] px-4 py-8 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-label="Deal"
       onClick={onClose}
     >
       <form
-        className="surface flex max-h-full w-full max-w-2xl flex-col border-accent-500/30 p-6 shadow-[0_0_44px_rgba(239,35,43,0.18)]"
+        className="surface flex max-h-full w-full max-w-2xl flex-col border-[color:var(--color-accent-30)] p-6 shadow-[var(--shadow-glow-44-18)]"
         onClick={(event) => event.stopPropagation()}
         onSubmit={submit}
       >
         <div className="flex items-start justify-between gap-3">
-          <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">
+          <p className="text-sm font-medium uppercase tracking-[0.14em] text-[color:var(--color-accent)]">
             {deal ? 'Edit Deal' : 'Add Deal'}
           </p>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-lg p-1 text-slate-400 transition hover:bg-white/[0.055] hover:text-white"
+            className="rounded-lg p-1 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
           >
             <X size={18} />
           </button>
@@ -121,11 +121,11 @@ export const DealModal = ({
 
         <div className="mt-5 grid gap-4 overflow-y-auto pr-1 md:grid-cols-2">
           <label className="block md:col-span-2">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Title</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Title</span>
             <input className="field" value={title} onChange={(event) => setTitle(event.target.value)} required autoFocus />
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Stage</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Stage</span>
             <select className="field" value={stage} onChange={(event) => setStage(event.target.value as DealStage)}>
               {DEAL_STAGES.map((option) => (
                 <option key={option}>{option}</option>
@@ -133,17 +133,17 @@ export const DealModal = ({
             </select>
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Plan Interest</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Plan Interest</span>
             <select className="field" value={planInterest} onChange={(event) => setPlanInterest(event.target.value)}>
               <option value="">—</option>
               {planOptions.map((option) => (
                 <option key={option}>{option}</option>
               ))}
             </select>
-            {hasNoPlans ? <span className="mt-2 block text-xs text-slate-500">Add plans in Settings</span> : null}
+            {hasNoPlans ? <span className="mt-2 block text-xs text-[color:var(--color-text-muted)]">Add plans in Settings</span> : null}
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Expected MRR</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Expected MRR</span>
             <input
               className="field"
               type="number"
@@ -152,7 +152,7 @@ export const DealModal = ({
             />
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Expected Setup Fee</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Expected Setup Fee</span>
             <input
               className="field"
               type="number"
@@ -161,7 +161,7 @@ export const DealModal = ({
             />
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Expected Close Date</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Expected Close Date</span>
             <input
               className="field"
               type="date"
@@ -170,11 +170,11 @@ export const DealModal = ({
             />
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Source</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Source</span>
             <input className="field" value={source} onChange={(event) => setSource(event.target.value)} placeholder="e.g. Referral" />
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Owner</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Owner</span>
             <select
               className="field"
               value={ownerEmployeeId}
@@ -190,18 +190,18 @@ export const DealModal = ({
           </label>
           {stage === 'Lost' ? (
             <label className="block md:col-span-2">
-              <span className="mb-2 block text-sm font-medium text-slate-300">Lost Reason</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Lost Reason</span>
               <input className="field" value={lostReason} onChange={(event) => setLostReason(event.target.value)} />
             </label>
           ) : null}
           <label className="block md:col-span-2">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Notes</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Notes</span>
             <textarea className="field min-h-[90px]" value={notes} onChange={(event) => setNotes(event.target.value)} />
           </label>
         </div>
 
         {error ? (
-          <p className="mt-4 rounded-lg border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+          <p className="mt-4 rounded-lg border border-[color:var(--color-error-line-25)] bg-[var(--color-error-fill-10)] px-4 py-3 text-sm text-[color:var(--color-error-text-200)]">
             {error}
           </p>
         ) : null}

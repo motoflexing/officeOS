@@ -125,7 +125,7 @@ export const HRPanelPage = () => {
   return (
     <div className="space-y-6">
       {toast ? <Toast message={toast} /> : null}
-      {loading ? <p className="text-sm text-slate-400">Loading HR data...</p> : null}
+      {loading ? <p className="text-sm text-[color:var(--color-text-secondary)]">Loading HR data...</p> : null}
       <PageHeader
         eyebrow="HR Panel"
         title="People Operations Dashboard"
@@ -141,8 +141,8 @@ export const HRPanelPage = () => {
               onClick={() => setActiveTab(tab)}
               className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
                 activeTab === tab
-                  ? 'bg-accent-500 text-white shadow-[0_0_24px_rgba(239,35,43,0.22)]'
-                  : 'text-slate-400 hover:bg-white/[0.055] hover:text-white'
+                  ? 'bg-[var(--color-accent)] text-[color:var(--color-on-accent)] shadow-[var(--shadow-glow-24-22)]'
+                  : 'text-[color:var(--color-text-secondary)] hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]'
               }`}
             >
               {tab}
@@ -232,19 +232,19 @@ const OverviewSection = ({
 
     <div className="grid gap-4 lg:grid-cols-3">
       <section className="surface p-5">
-        <h3 className="text-lg font-semibold text-white">Attendance Overview</h3>
+        <h3 className="text-lg font-semibold text-[color:var(--color-text-primary)]">Attendance Overview</h3>
         <div className="mt-5 space-y-4">
           {[
-            ['Active', stats.active, 'bg-emerald-400'],
+            ['Active', stats.active, 'bg-[var(--color-success-solid-400)]'],
             ['On Leave', stats.onLeave, 'bg-accent-400'],
-            ['Inactive', stats.inactive, 'bg-slate-400'],
+            ['Inactive', stats.inactive, 'bg-[var(--color-slate-bg-400)]'],
           ].map(([label, value, color]) => (
             <div key={label as string}>
               <div className="mb-2 flex justify-between text-sm">
-                <span className="text-slate-400">{label}</span>
-                <span className="font-medium text-white">{value as number}</span>
+                <span className="text-[color:var(--color-text-secondary)]">{label}</span>
+                <span className="font-medium text-[color:var(--color-text-primary)]">{value as number}</span>
               </div>
-              <div className="h-2 rounded-full bg-slate-800">
+              <div className="h-2 rounded-full bg-[var(--color-slate-bg-800)]">
                 <div
                   className={`h-2 rounded-full ${color}`}
                   style={{ width: `${employees.length ? ((value as number) / employees.length) * 100 : 0}%` }}
@@ -256,7 +256,7 @@ const OverviewSection = ({
       </section>
 
       <section className="surface p-5">
-        <h3 className="text-lg font-semibold text-white">Employee Onboarding</h3>
+        <h3 className="text-lg font-semibold text-[color:var(--color-text-primary)]">Employee Onboarding</h3>
         <div className="mt-5 space-y-4">
           <OnboardingItem title="Offer accepted" value="4 candidates" />
           <OnboardingItem title="Documents pending" value="2 candidates" />
@@ -265,13 +265,13 @@ const OverviewSection = ({
       </section>
 
       <section className="surface p-5">
-        <h3 className="text-lg font-semibold text-white">Employee Leave Requests</h3>
-        <p className="mt-2 text-sm text-slate-500">Review pending requests and update status.</p>
+        <h3 className="text-lg font-semibold text-[color:var(--color-text-primary)]">Employee Leave Requests</h3>
+        <p className="mt-2 text-sm text-[color:var(--color-text-muted)]">Review pending requests and update status.</p>
         <div className="mt-5 flex gap-3">
-          <span className="rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
+          <span className="rounded-lg bg-[var(--color-warning-fill-10)] px-3 py-2 text-sm text-[color:var(--color-warning-text-200)]">
             {leaveRequests.filter((request) => request.status === 'Pending').length} pending
           </span>
-          <span className="rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
+          <span className="rounded-lg bg-[var(--color-success-fill-10)] px-3 py-2 text-sm text-[color:var(--color-success-text-200)]">
             {leaveRequests.filter((request) => request.status === 'Approved').length} approved
           </span>
         </div>
@@ -279,8 +279,8 @@ const OverviewSection = ({
     </div>
 
     <section className="surface overflow-hidden">
-      <div className="border-b border-white/10 p-5">
-        <h3 className="text-lg font-semibold text-white">Employee Leave Requests Table</h3>
+      <div className="border-b border-[color:var(--color-border-weak)] p-5">
+        <h3 className="text-lg font-semibold text-[color:var(--color-text-primary)]">Employee Leave Requests Table</h3>
       </div>
       <div className="overflow-x-auto">
         {leaveRequests.length === 0 ? (
@@ -293,7 +293,7 @@ const OverviewSection = ({
           </div>
         ) : (
           <table className="w-full min-w-[760px] text-left">
-            <thead className="border-b border-white/10 bg-white/[0.035] text-xs uppercase tracking-[0.14em] text-slate-500">
+            <thead className="border-b border-[color:var(--color-border-weak)] bg-[var(--color-fill-035)] text-xs uppercase tracking-[0.14em] text-[color:var(--color-text-muted)]">
               <tr>
                 <th className="px-5 py-4">Employee Name</th>
                 <th className="px-5 py-4">Leave Type</th>
@@ -303,13 +303,13 @@ const OverviewSection = ({
                 <th className="px-5 py-4">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/10">
+            <tbody className="divide-y divide-[color:var(--color-divide)]">
               {leaveRequests.map((request) => (
-                <tr key={request.id} className="transition hover:bg-white/[0.035]">
-                  <td className="px-5 py-4 font-semibold text-white">{request.employeeName}</td>
-                  <td className="px-5 py-4 text-sm text-slate-300">{request.leaveType}</td>
-                  <td className="px-5 py-4 text-sm text-slate-300">{formatLeaveRange(request)}</td>
-                  <td className="max-w-xs px-5 py-4 text-sm text-slate-300">
+                <tr key={request.id} className="transition hover:bg-[var(--color-fill-035)]">
+                  <td className="px-5 py-4 font-semibold text-[color:var(--color-text-primary)]">{request.employeeName}</td>
+                  <td className="px-5 py-4 text-sm text-[color:var(--color-text-secondary)]">{request.leaveType}</td>
+                  <td className="px-5 py-4 text-sm text-[color:var(--color-text-secondary)]">{formatLeaveRange(request)}</td>
+                  <td className="max-w-xs px-5 py-4 text-sm text-[color:var(--color-text-secondary)]">
                     <p className="line-clamp-2">{request.reason || 'No reason provided.'}</p>
                   </td>
                   <td className="px-5 py-4">
@@ -396,7 +396,7 @@ const AtsTabHeader = ({
   title: string;
 }) => (
   <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-    <h3 className="text-xl font-semibold text-white">{title}</h3>
+    <h3 className="text-xl font-semibold text-[color:var(--color-text-primary)]">{title}</h3>
     <button type="button" className="btn-primary" onClick={onAction}>
       <Plus size={18} />
       {buttonLabel}
@@ -420,14 +420,14 @@ const FilterInput = ({
   type?: string;
 }) => (
   <label>
-    <span className="mb-2 block text-sm font-medium text-slate-300">{label}</span>
+    <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">{label}</span>
     <input className="field" type={type} placeholder={placeholder} />
   </label>
 );
 
 const FilterSelect = ({ label, options }: { label: string; options: string[] }) => (
   <label>
-    <span className="mb-2 block text-sm font-medium text-slate-300">{label}</span>
+    <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">{label}</span>
     <select className="field" defaultValue={options[0]}>
       {options.map((option) => (
         <option key={option} value={option}>
@@ -449,26 +449,26 @@ const AtsEmptyState = ({
 }) => (
   <div className="mx-auto w-full max-w-xl">
     <div className="surface px-6 py-14 text-center">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-xl bg-accent-500/10 text-accent-500">
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-xl bg-[var(--color-accent-10)] text-[color:var(--color-accent)]">
         <Icon size={40} />
       </div>
-      <h3 className="mt-5 text-lg font-semibold text-white">{title}</h3>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-400">{description}</p>
+      <h3 className="mt-5 text-lg font-semibold text-[color:var(--color-text-primary)]">{title}</h3>
+      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[color:var(--color-text-secondary)]">{description}</p>
     </div>
   </div>
 );
 
 const SectionEyebrow = ({ subtitle, title }: { subtitle: string; title: string }) => (
   <div>
-    <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">{title}</p>
-    <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+    <p className="text-sm font-medium uppercase tracking-[0.14em] text-[color:var(--color-accent)]">{title}</p>
+    <p className="mt-1 text-sm text-[color:var(--color-text-muted)]">{subtitle}</p>
   </div>
 );
 
 const OnboardingItem = ({ title, value }: { title: string; value: string }) => (
-  <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4">
-    <p className="font-medium text-white">{title}</p>
-    <p className="mt-1 text-sm text-slate-500">{value}</p>
+  <div className="rounded-lg border border-[color:var(--color-border-weak)] bg-[var(--color-fill-035)] p-4">
+    <p className="font-medium text-[color:var(--color-text-primary)]">{title}</p>
+    <p className="mt-1 text-sm text-[color:var(--color-text-muted)]">{value}</p>
   </div>
 );
 

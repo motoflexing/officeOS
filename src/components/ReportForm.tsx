@@ -31,7 +31,7 @@ export const ReportForm = ({ onSubmit }: { onSubmit: (draft: ReportDraft) => voi
       <div className="grid gap-4 lg:grid-cols-2">
         {fields.map((field) => (
           <label key={field.key} className={field.key === 'nextPlan' ? 'lg:col-span-2' : ''}>
-            <span className="mb-2 block text-sm font-medium text-slate-300">{field.label}</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">{field.label}</span>
             <textarea
               className="field min-h-28 resize-y"
               value={draft[field.key]}

@@ -109,24 +109,24 @@ export const SubscriptionQuickAddModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 px-4 py-8 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay-65)] px-4 py-8 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-label={title}
       onClick={onClose}
     >
       <form
-        className="surface flex max-h-full w-full max-w-xl flex-col border-accent-500/30 p-6 shadow-[0_0_44px_rgba(239,35,43,0.18)]"
+        className="surface flex max-h-full w-full max-w-xl flex-col border-[color:var(--color-accent-30)] p-6 shadow-[var(--shadow-glow-44-18)]"
         onClick={(event) => event.stopPropagation()}
         onSubmit={submit}
       >
         <div className="flex items-start justify-between gap-3">
-          <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">{title}</p>
+          <p className="text-sm font-medium uppercase tracking-[0.14em] text-[color:var(--color-accent)]">{title}</p>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-lg p-1 text-slate-400 transition hover:bg-white/[0.055] hover:text-white"
+            className="rounded-lg p-1 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
           >
             <X size={18} />
           </button>
@@ -134,7 +134,7 @@ export const SubscriptionQuickAddModal = ({
 
         <div className="mt-5 grid gap-4 overflow-y-auto pr-1 sm:grid-cols-2">
           <label className="block sm:col-span-2">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Team Label</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Team Label</span>
             <input
               className="field"
               value={teamLabel}
@@ -145,7 +145,7 @@ export const SubscriptionQuickAddModal = ({
             />
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Plan</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Plan</span>
             <select className="field" value={planValue} onChange={(event) => setPlanValue(event.target.value)}>
               <option value="">—</option>
               {activePlans.map((plan) => (
@@ -157,15 +157,15 @@ export const SubscriptionQuickAddModal = ({
             </select>
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">MRR</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">MRR</span>
             <input className="field" type="number" value={mrr} onChange={(event) => setMrr(event.target.value)} required />
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Setup Fee</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Setup Fee</span>
             <input className="field" type="number" value={setupFee} onChange={(event) => setSetupFee(event.target.value)} />
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Coverage Hours</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Coverage Hours</span>
             <select
               className="field"
               value={coverageHours}
@@ -179,7 +179,7 @@ export const SubscriptionQuickAddModal = ({
             </select>
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Billing Cycle</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Billing Cycle</span>
             <select
               className="field"
               value={billingCycle}
@@ -191,11 +191,11 @@ export const SubscriptionQuickAddModal = ({
             </select>
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Start Date</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Start Date</span>
             <input className="field" type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} />
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Account Manager</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Account Manager</span>
             <select
               className="field"
               value={accountManagerId}
@@ -210,7 +210,7 @@ export const SubscriptionQuickAddModal = ({
             </select>
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Status</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Status</span>
             <select
               className="field"
               value={status}
@@ -224,7 +224,7 @@ export const SubscriptionQuickAddModal = ({
         </div>
 
         {error ? (
-          <p className="mt-4 rounded-lg border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+          <p className="mt-4 rounded-lg border border-[color:var(--color-error-line-25)] bg-[var(--color-error-fill-10)] px-4 py-3 text-sm text-[color:var(--color-error-text-200)]">
             {error}
           </p>
         ) : null}

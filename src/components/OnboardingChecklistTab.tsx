@@ -136,7 +136,7 @@ export const OnboardingChecklistTab = ({
   };
 
   if (!checklist) {
-    return <p className="py-8 text-center text-sm text-slate-500">Loading checklist…</p>;
+    return <p className="py-8 text-center text-sm text-[color:var(--color-text-muted)]">Loading checklist…</p>;
   }
 
   return (
@@ -144,22 +144,22 @@ export const OnboardingChecklistTab = ({
       {/* Progress */}
       <div>
         <div className="mb-2 flex items-center justify-between text-sm">
-          <span className="font-medium text-slate-200">
+          <span className="font-medium text-[color:var(--color-text-soft)]">
             {doneCount} of {total} complete
           </span>
-          <span className="text-slate-500">{pct}%</span>
+          <span className="text-[color:var(--color-text-muted)]">{pct}%</span>
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-white/[0.06]">
+        <div className="h-2 overflow-hidden rounded-full bg-[var(--color-fill-06)]">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-red-600 to-accent-500 transition-all"
+            className="h-full rounded-full bg-gradient-to-r from-red-600 to-[var(--color-accent)] transition-all"
             style={{ width: `${pct}%` }}
           />
         </div>
       </div>
 
       {showActivatePrompt && canEdit ? (
-        <div className="flex items-center justify-between gap-3 rounded-lg border border-emerald-400/30 bg-emerald-500/10 px-4 py-3">
-          <p className="text-sm text-emerald-100">All onboarding items complete. Activate this subscription?</p>
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-[color:var(--color-success-line-30)] bg-[var(--color-success-fill-10)] px-4 py-3">
+          <p className="text-sm text-[color:var(--color-success-text-100)]">All onboarding items complete. Activate this subscription?</p>
           <button
             type="button"
             className="btn-primary"
@@ -285,7 +285,7 @@ const ChecklistRow = ({
             {...attributes}
             {...listeners}
             aria-label="Reorder"
-            className="cursor-grab touch-none text-slate-500 transition hover:text-slate-300"
+            className="cursor-grab touch-none text-[color:var(--color-text-muted)] transition hover:text-[color:var(--color-text-secondary)]"
           >
             <GripVertical size={16} />
           </button>
@@ -297,7 +297,7 @@ const ChecklistRow = ({
           onClick={onToggleDone}
           aria-label={done ? 'Mark not done' : 'Mark done'}
           className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border transition ${
-            done ? 'border-emerald-400 bg-emerald-500/80 text-white' : 'border-white/25 hover:border-accent-500'
+            done ? 'border-[color:var(--color-success-line)] bg-[var(--color-success-fill-80)] text-[color:var(--color-on-accent)]' : 'border-[color:var(--color-line-25)] hover:border-[color:var(--color-accent)]'
           }`}
         >
           {done ? <Check size={13} /> : null}
@@ -328,7 +328,7 @@ const ChecklistRow = ({
           <button
             type="button"
             onClick={() => canEdit && setEditingLabel(true)}
-            className={`min-w-0 flex-1 truncate text-left text-sm ${done ? 'text-slate-500 line-through' : 'text-slate-100'} ${canEdit ? 'hover:text-white' : ''}`}
+            className={`min-w-0 flex-1 truncate text-left text-sm ${done ? 'text-[color:var(--color-text-muted)] line-through' : 'text-[color:var(--color-text-bright)]'} ${canEdit ? 'hover:text-[color:var(--color-text-primary)]' : ''}`}
           >
             {item.label}
           </button>
@@ -350,12 +350,12 @@ const ChecklistRow = ({
               type="button"
               onClick={() => setMenuOpen((open) => !open)}
               aria-label="Item actions"
-              className="rounded-lg p-1.5 text-slate-400 transition hover:bg-white/[0.055] hover:text-white"
+              className="rounded-lg p-1.5 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
             >
               <MoreVertical size={16} />
             </button>
             {menuOpen ? (
-              <div className="absolute right-0 z-20 mt-1 w-44 rounded-lg border border-white/10 bg-black/90 p-1 shadow-glow backdrop-blur">
+              <div className="absolute right-0 z-20 mt-1 w-44 rounded-lg border border-[color:var(--color-border-weak)] bg-[var(--color-overlay-90)] p-1 shadow-glow backdrop-blur">
                 <MenuButton label="Mark In Progress" onClick={() => { setMenuOpen(false); onSetStatus('In Progress'); }} />
                 <MenuButton label="Mark Skipped" onClick={() => { setMenuOpen(false); onSetStatus('Skipped'); }} />
                 <MenuButton
@@ -371,7 +371,7 @@ const ChecklistRow = ({
                     setMenuOpen(false);
                     onRemove();
                   }}
-                  className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-rose-300 transition hover:bg-rose-500/15"
+                  className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-[color:var(--color-error-text-300)] transition hover:bg-[var(--color-error-fill-15)]"
                 >
                   <Trash2 size={14} />
                   Delete
@@ -383,7 +383,7 @@ const ChecklistRow = ({
       </div>
 
       {done && item.completedByNameSnapshot ? (
-        <p className="pl-8 text-xs text-slate-500">
+        <p className="pl-8 text-xs text-[color:var(--color-text-muted)]">
           Completed by {item.completedByNameSnapshot}
           {item.completedAt ? ` · ${formatRelativeTime(item.completedAt)}` : ''}
         </p>
@@ -403,14 +403,14 @@ const ChecklistRow = ({
               type="button"
               onClick={() => setNotesOpen(false)}
               aria-label="Hide notes"
-              className="rounded-lg p-1.5 text-slate-400 transition hover:bg-white/[0.055] hover:text-white"
+              className="rounded-lg p-1.5 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
             >
               <X size={14} />
             </button>
           ) : null}
         </div>
       ) : item.notes && !canEdit ? (
-        <p className="pl-8 text-xs text-slate-500">{item.notes}</p>
+        <p className="pl-8 text-xs text-[color:var(--color-text-muted)]">{item.notes}</p>
       ) : null}
     </li>
   );
@@ -420,7 +420,7 @@ const MenuButton = ({ label, onClick }: { label: string; onClick: () => void }) 
   <button
     type="button"
     onClick={onClick}
-    className="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-slate-300 transition hover:bg-white/[0.055] hover:text-white"
+    className="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
   >
     {label}
   </button>

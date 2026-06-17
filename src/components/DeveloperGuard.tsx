@@ -42,7 +42,7 @@ export const DeveloperGuard = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
-  if (loading) return <div className="min-h-screen p-6 text-sm text-slate-400">Checking developer access...</div>;
+  if (loading) return <div className="min-h-screen p-6 text-sm text-[color:var(--color-text-secondary)]">Checking developer access...</div>;
   if (!developer) return <Navigate to="/developer-login" replace />;
 
   return <>{children}</>;

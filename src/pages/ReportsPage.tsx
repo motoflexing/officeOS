@@ -135,7 +135,7 @@ export const ReportsPage = () => {
         <section className="surface p-5">
           <div className="grid gap-4 md:grid-cols-3">
             <label>
-              <span className="mb-2 block text-sm font-medium text-slate-300">Search Employee</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Search Employee</span>
               <input
                 className="field"
                 value={query}
@@ -144,7 +144,7 @@ export const ReportsPage = () => {
               />
             </label>
             <label>
-              <span className="mb-2 block text-sm font-medium text-slate-300">Date</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Date</span>
               <input
                 className="field"
                 type="date"
@@ -153,7 +153,7 @@ export const ReportsPage = () => {
               />
             </label>
             <label>
-              <span className="mb-2 block text-sm font-medium text-slate-300">Status</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Status</span>
               <select
                 className="field"
                 value={statusFilter}
@@ -171,7 +171,7 @@ export const ReportsPage = () => {
       ) : null}
 
       <section>
-        <h3 className="text-xl font-semibold text-white">Recent Reports</h3>
+        <h3 className="text-xl font-semibold text-[color:var(--color-text-primary)]">Recent Reports</h3>
         <div className="mt-4 grid gap-4">
           {loading ? (
             <EmptyState icon={FileText} title="Loading reports" description="Fetching daily reports." />
@@ -194,12 +194,12 @@ export const ReportsPage = () => {
               <article key={report.id} className="surface p-5">
                 <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-accent-500/10 p-2.5 text-accent-500">
+                    <div className="rounded-lg bg-[var(--color-accent-10)] p-2.5 text-[color:var(--color-accent)]">
                       <FileText size={20} />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-white">{report.employeeName}</h4>
-                      <p className="text-xs text-slate-500">
+                      <h4 className="font-semibold text-[color:var(--color-text-primary)]">{report.employeeName}</h4>
+                      <p className="text-xs text-[color:var(--color-text-muted)]">
                         {report.employeeEmail ? `${report.employeeEmail} | ` : ''}
                         {formatReportDate(report.date)}
                       </p>
@@ -221,7 +221,7 @@ export const ReportsPage = () => {
                   <ReportBlock title="Plan for Tomorrow" value={report.nextPlan} />
                 </div>
                 {report.status === 'Reviewed' ? (
-                  <p className="mt-5 text-xs text-slate-500">
+                  <p className="mt-5 text-xs text-[color:var(--color-text-muted)]">
                     Reviewed by {report.reviewedBy || 'HR/Admin'}
                     {report.reviewedAt ? ` on ${formatDateTime(report.reviewedAt)}` : ''}
                   </p>
@@ -238,8 +238,8 @@ export const ReportsPage = () => {
 
 const ReportBlock = ({ title, value, wide }: { title: string; value: string; wide?: boolean }) => (
   <div className={wide ? 'md:col-span-2' : ''}>
-    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{title}</p>
-    <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-300">{value || '-'}</p>
+    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--color-text-muted)]">{title}</p>
+    <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[color:var(--color-text-secondary)]">{value || '-'}</p>
   </div>
 );
 

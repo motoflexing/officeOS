@@ -68,15 +68,15 @@ export const ProfilePage = () => {
     <div className="space-y-6">
       {toast ? <Toast message={toast} /> : null}
       <div>
-        <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">Profile</p>
-        <h2 className="mt-2 text-3xl font-semibold text-white">My Profile</h2>
+        <p className="text-sm font-medium uppercase tracking-[0.14em] text-[color:var(--color-accent)]">Profile</p>
+        <h2 className="mt-2 text-3xl font-semibold text-[color:var(--color-text-primary)]">My Profile</h2>
       </div>
       <ProfileCard profile={profile} onSave={save} />
       <form onSubmit={updateAccountPassword} className="surface max-w-4xl p-6">
         <div>
-          <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">Account Security</p>
-          <h3 className="mt-2 text-xl font-semibold text-white">Account Security</h3>
-          <p className="mt-2 text-sm leading-6 text-slate-400">
+          <p className="text-sm font-medium uppercase tracking-[0.14em] text-[color:var(--color-accent)]">Account Security</p>
+          <h3 className="mt-2 text-xl font-semibold text-[color:var(--color-text-primary)]">Account Security</h3>
+          <p className="mt-2 text-sm leading-6 text-[color:var(--color-text-secondary)]">
             Use a strong password and do not share it with anyone.
           </p>
         </div>
@@ -100,7 +100,7 @@ export const ProfilePage = () => {
         </div>
 
         {passwordError ? (
-          <p className="mt-4 rounded-lg border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+          <p className="mt-4 rounded-lg border border-[color:var(--color-error-line-25)] bg-[var(--color-error-fill-10)] px-4 py-3 text-sm text-[color:var(--color-error-text-200)]">
             {passwordError}
           </p>
         ) : null}
@@ -123,7 +123,7 @@ const PasswordField = ({
   value: string;
 }) => (
   <label>
-    <span className="mb-2 block text-sm font-medium text-slate-300">{label}</span>
+    <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">{label}</span>
     <input className="field" required type="password" value={value} onChange={(event) => onChange(event.target.value)} />
   </label>
 );

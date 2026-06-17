@@ -184,7 +184,7 @@ export const PipelinePage = () => {
       <section className="surface p-5">
         <div className="grid gap-4 lg:grid-cols-[1fr_180px_200px]">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--color-text-muted)]" size={18} />
             <input
               className="field pl-10"
               placeholder="Search by deal title or client name"
@@ -234,7 +234,7 @@ export const PipelinePage = () => {
         <section className="surface overflow-x-auto p-0">
           <table className="w-full min-w-[900px] text-left text-sm">
             <thead>
-              <tr className="border-b border-white/10 text-xs uppercase tracking-wider text-slate-500">
+              <tr className="border-b border-[color:var(--color-border-weak)] text-xs uppercase tracking-wider text-[color:var(--color-text-muted)]">
                 <SortHeader label="Title" sortKey="title" activeKey={sortKey} dir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Client" sortKey="client" activeKey={sortKey} dir={sortDir} onSort={toggleSort} />
                 <SortHeader label="Stage" sortKey="stage" activeKey={sortKey} dir={sortDir} onSort={toggleSort} />
@@ -250,22 +250,22 @@ export const PipelinePage = () => {
                 <tr
                   key={deal.id}
                   onClick={() => openDeal(deal)}
-                  className="cursor-pointer border-b border-white/5 transition last:border-0 hover:bg-white/[0.04]"
+                  className="cursor-pointer border-b border-[color:var(--color-line-05)] transition last:border-0 hover:bg-[var(--color-fill-04)]"
                 >
-                  <td className="px-4 py-3 font-medium text-slate-100">{deal.title}</td>
+                  <td className="px-4 py-3 font-medium text-[color:var(--color-text-bright)]">{deal.title}</td>
                   <td className="px-4 py-3 text-accent-400">{clientNameById.get(deal.clientId) ?? '—'}</td>
                   <td className="px-4 py-3">
                     <DealStagePill stage={deal.stage} />
                   </td>
-                  <td className="px-4 py-3 text-slate-400">{deal.planInterest || '—'}</td>
-                  <td className="px-4 py-3 text-slate-300">{formatMRR(deal.expectedMRR)}</td>
-                  <td className="px-4 py-3 text-slate-400">
+                  <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">{deal.planInterest || '—'}</td>
+                  <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">{formatMRR(deal.expectedMRR)}</td>
+                  <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">
                     {deal.ownerEmployeeId ? employeeNameById.get(deal.ownerEmployeeId) ?? '—' : '—'}
                   </td>
-                  <td className="px-4 py-3 text-slate-400">
+                  <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">
                     {deal.expectedCloseDate ? formatShortDate(deal.expectedCloseDate) : '—'}
                   </td>
-                  <td className="px-4 py-3 text-slate-400">{formatShortDate(deal.updatedAt)}</td>
+                  <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">{formatShortDate(deal.updatedAt)}</td>
                 </tr>
               ))}
             </tbody>
@@ -292,8 +292,8 @@ const ViewToggle = ({
     onClick={onClick}
     className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition ${
       active
-        ? 'bg-accent-500 text-white shadow-[0_0_24px_rgba(239,35,43,0.22)]'
-        : 'text-slate-400 hover:bg-white/[0.055] hover:text-white'
+        ? 'bg-[var(--color-accent)] text-[color:var(--color-on-accent)] shadow-[var(--shadow-glow-24-22)]'
+        : 'text-[color:var(--color-text-secondary)] hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]'
     }`}
   >
     <Icon size={16} />
@@ -321,7 +321,7 @@ const SortHeader = ({
       <button
         type="button"
         onClick={() => onSort(sortKey)}
-        className={`inline-flex items-center gap-1 transition hover:text-slate-200 ${active ? 'text-slate-200' : ''}`}
+        className={`inline-flex items-center gap-1 transition hover:text-[color:var(--color-text-soft)] ${active ? 'text-[color:var(--color-text-soft)]' : ''}`}
       >
         {label}
         <Icon size={12} />

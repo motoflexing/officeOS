@@ -13,8 +13,8 @@ export const EmployeeTable = ({
   <div className="surface overflow-hidden">
     <div className="overflow-x-auto">
       <table className="w-full min-w-[980px] border-collapse text-left">
-        <thead className="border-b border-white/10 bg-white/[0.035]">
-          <tr className="text-xs uppercase tracking-[0.14em] text-slate-500">
+        <thead className="border-b border-[color:var(--color-border-weak)] bg-[var(--color-fill-035)]">
+          <tr className="text-xs uppercase tracking-[0.14em] text-[color:var(--color-text-muted)]">
             <th className="px-5 py-4 font-semibold">Name</th>
             <th className="px-5 py-4 font-semibold">Email</th>
             <th className="px-5 py-4 font-semibold">Role</th>
@@ -25,21 +25,21 @@ export const EmployeeTable = ({
             <th className="px-5 py-4 font-semibold">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/10">
+        <tbody className="divide-y divide-[color:var(--color-divide)]">
           {employees.map((employee) => (
-            <tr key={employee.id} className="transition hover:bg-white/[0.035]">
+            <tr key={employee.id} className="transition hover:bg-[var(--color-fill-035)]">
               <td className="px-5 py-4">
-                <p className="font-semibold text-white">{employee.name}</p>
-                <p className="mt-1 text-sm text-slate-500">{employee.location || 'Location not set'}</p>
+                <p className="font-semibold text-[color:var(--color-text-primary)]">{employee.name}</p>
+                <p className="mt-1 text-sm text-[color:var(--color-text-muted)]">{employee.location || 'Location not set'}</p>
               </td>
-              <td className="px-5 py-4 text-sm text-slate-300">{employee.email}</td>
-              <td className="px-5 py-4 text-sm text-slate-300">{employee.role}</td>
-              <td className="px-5 py-4 text-sm text-slate-300">{employee.department}</td>
-              <td className="px-5 py-4 text-sm text-slate-300">{employee.designation}</td>
+              <td className="px-5 py-4 text-sm text-[color:var(--color-text-secondary)]">{employee.email}</td>
+              <td className="px-5 py-4 text-sm text-[color:var(--color-text-secondary)]">{employee.role}</td>
+              <td className="px-5 py-4 text-sm text-[color:var(--color-text-secondary)]">{employee.department}</td>
+              <td className="px-5 py-4 text-sm text-[color:var(--color-text-secondary)]">{employee.designation}</td>
               <td className="px-5 py-4">
                 <StatusBadge status={employee.status} />
               </td>
-              <td className="px-5 py-4 text-sm text-slate-300">{employee.joiningDate}</td>
+              <td className="px-5 py-4 text-sm text-[color:var(--color-text-secondary)]">{employee.joiningDate}</td>
               <td className="px-5 py-4">
                 <div className="flex gap-2">
                   <button type="button" className="btn-secondary py-2" onClick={() => onEdit(employee)}>

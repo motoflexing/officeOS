@@ -125,7 +125,7 @@ export const ClientsListPage = () => {
       <section className="surface p-5">
         <div className="grid gap-4 lg:grid-cols-[1fr_180px_200px]">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--color-text-muted)]" size={18} />
             <input
               className="field pl-10"
               placeholder="Search by company, industry, or country"
@@ -179,7 +179,7 @@ export const ClientsListPage = () => {
         <section className="surface overflow-x-auto p-0">
           <table className="w-full min-w-[760px] text-left text-sm">
             <thead>
-              <tr className="border-b border-white/10 text-xs uppercase tracking-wider text-slate-500">
+              <tr className="border-b border-[color:var(--color-border-weak)] text-xs uppercase tracking-wider text-[color:var(--color-text-muted)]">
                 <th className="px-4 py-3 font-medium">Company Name</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Industry</th>
@@ -193,25 +193,25 @@ export const ClientsListPage = () => {
                 <tr
                   key={client.id}
                   onClick={() => navigate(`/clients/${client.id}`)}
-                  className="cursor-pointer border-b border-white/5 transition last:border-0 hover:bg-white/[0.04]"
+                  className="cursor-pointer border-b border-[color:var(--color-line-05)] transition last:border-0 hover:bg-[var(--color-fill-04)]"
                 >
-                  <td className="px-4 py-3 font-medium text-slate-100">{client.companyName}</td>
+                  <td className="px-4 py-3 font-medium text-[color:var(--color-text-bright)]">{client.companyName}</td>
                   <td className="px-4 py-3">
                     <ClientStatusPill status={client.status} />
                   </td>
-                  <td className="px-4 py-3 text-slate-400">{client.industry ?? '—'}</td>
-                  <td className="px-4 py-3 text-slate-400">
+                  <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">{client.industry ?? '—'}</td>
+                  <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">
                     {client.ownerEmployeeId ? employeeNameById.get(client.ownerEmployeeId) ?? '—' : '—'}
                   </td>
-                  <td className="px-4 py-3 text-slate-300">{openDealsByClient.get(client.id) ?? 0}</td>
-                  <td className="px-4 py-3 text-slate-400">—</td>
+                  <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">{openDealsByClient.get(client.id) ?? 0}</td>
+                  <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">—</td>
                 </tr>
               ))}
             </tbody>
           </table>
 
           {filteredClients.length > visibleCount ? (
-            <div className="flex justify-center border-t border-white/10 p-4">
+            <div className="flex justify-center border-t border-[color:var(--color-border-weak)] p-4">
               <button
                 type="button"
                 className="btn-secondary"

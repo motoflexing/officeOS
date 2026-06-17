@@ -10,7 +10,7 @@ export const AppLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (loading) {
-    return <div className="min-h-screen p-6 text-sm text-slate-400">Loading OfficeOS...</div>;
+    return <div className="min-h-screen p-6 text-sm text-[color:var(--color-text-secondary)]">Loading OfficeOS...</div>;
   }
 
   if (!role) {
@@ -23,7 +23,7 @@ export const AppLayout = () => {
       <div className="min-w-0 flex-1">
         <Topbar onMenu={() => setSidebarOpen(true)} />
         <main className="mx-auto w-full max-w-7xl px-4 py-6 lg:px-8">
-          <div className="mb-6 rounded-lg border border-white/10 bg-black/25 px-4 py-3 text-sm text-slate-400">
+          <div className="mb-6 rounded-lg border border-[color:var(--color-border-weak)] bg-[var(--color-overlay-25)] px-4 py-3 text-sm text-[color:var(--color-text-secondary)]">
             You are viewing the {BRANDING.workspaceName} workspace.
           </div>
           <Outlet />

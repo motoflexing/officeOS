@@ -84,7 +84,7 @@ export const ContactsTab = ({
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--color-text-muted)]" size={18} />
           <input
             className="field pl-10"
             placeholder="Search contacts"
@@ -120,7 +120,7 @@ export const ContactsTab = ({
         <section className="surface overflow-x-auto p-0">
           <table className="w-full min-w-[720px] text-left text-sm">
             <thead>
-              <tr className="border-b border-white/10 text-xs uppercase tracking-wider text-slate-500">
+              <tr className="border-b border-[color:var(--color-border-weak)] text-xs uppercase tracking-wider text-[color:var(--color-text-muted)]">
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Role</th>
                 <th className="px-4 py-3 font-medium">Email</th>
@@ -135,28 +135,28 @@ export const ContactsTab = ({
                 <tr
                   key={contact.id}
                   onClick={() => openEdit(contact)}
-                  className={`border-b border-white/5 transition last:border-0 ${
-                    canEdit ? 'cursor-pointer hover:bg-white/[0.04]' : ''
+                  className={`border-b border-[color:var(--color-line-05)] transition last:border-0 ${
+                    canEdit ? 'cursor-pointer hover:bg-[var(--color-fill-04)]' : ''
                   }`}
                 >
-                  <td className="px-4 py-3 font-medium text-slate-100">
+                  <td className="px-4 py-3 font-medium text-[color:var(--color-text-bright)]">
                     {contact.firstName} {contact.lastName}
                   </td>
-                  <td className="px-4 py-3 text-slate-400">{contact.role || '—'}</td>
-                  <td className="px-4 py-3 text-slate-300">
+                  <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">{contact.role || '—'}</td>
+                  <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">
                     <a
                       href={`mailto:${contact.email}`}
                       onClick={(event) => event.stopPropagation()}
-                      className="inline-flex items-center gap-1.5 text-slate-300 transition hover:text-accent-300"
+                      className="inline-flex items-center gap-1.5 text-[color:var(--color-text-secondary)] transition hover:text-accent-300"
                     >
-                      <Mail size={14} className="text-slate-500" />
+                      <Mail size={14} className="text-[color:var(--color-text-muted)]" />
                       {contact.email}
                     </a>
                   </td>
-                  <td className="px-4 py-3 text-slate-400">
+                  <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">
                     {contact.phone ? (
                       <span className="inline-flex items-center gap-1.5">
-                        <Phone size={14} className="text-slate-500" />
+                        <Phone size={14} className="text-[color:var(--color-text-muted)]" />
                         {contact.phone}
                       </span>
                     ) : (
@@ -165,14 +165,14 @@ export const ContactsTab = ({
                   </td>
                   <td className="px-4 py-3">
                     {contact.isPrimary ? (
-                      <span className="inline-flex rounded-full bg-accent-500/12 px-2.5 py-1 text-xs font-medium text-accent-300 ring-1 ring-accent-400/25">
+                      <span className="inline-flex rounded-full bg-[var(--color-accent-12)] px-2.5 py-1 text-xs font-medium text-accent-300 ring-1 ring-accent-400/25">
                         Primary
                       </span>
                     ) : (
-                      <span className="text-slate-600">—</span>
+                      <span className="text-[color:var(--color-text-faint)]">—</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-slate-400">
+                  <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">
                     {contact.lastContactedAt ? formatShortDate(contact.lastContactedAt) : '—'}
                   </td>
                   {canEdit ? (
@@ -185,7 +185,7 @@ export const ContactsTab = ({
                             openEdit(contact);
                           }}
                           aria-label="Edit contact"
-                          className="rounded-lg p-1.5 text-slate-400 transition hover:bg-white/[0.055] hover:text-white"
+                          className="rounded-lg p-1.5 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
                         >
                           <Pencil size={16} />
                         </button>
@@ -196,7 +196,7 @@ export const ContactsTab = ({
                             setDeletingContact(contact);
                           }}
                           aria-label="Delete contact"
-                          className="rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-500/15 hover:text-rose-300"
+                          className="rounded-lg p-1.5 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-error-fill-15)] hover:text-[color:var(--color-error-text-300)]"
                         >
                           <Trash2 size={16} />
                         </button>

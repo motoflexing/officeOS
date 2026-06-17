@@ -90,7 +90,7 @@ export const PipelineKanban = ({
           return (
             <KanbanColumn key={stage} stage={stage} count={stageDeals.length} totalMRR={stageMRR}>
               {stageDeals.length === 0 ? (
-                <p className="px-1 py-6 text-center text-sm text-slate-600">—</p>
+                <p className="px-1 py-6 text-center text-sm text-[color:var(--color-text-faint)]">—</p>
               ) : (
                 stageDeals.map((deal) => (
                   <KanbanCard
@@ -137,13 +137,13 @@ const KanbanColumn = ({
   return (
     <div
       ref={setNodeRef}
-      className={`flex min-h-[160px] flex-col rounded-xl border bg-white/[0.025] p-3 transition ${
-        isOver ? 'border-accent-500/60 bg-accent-500/[0.06]' : 'border-white/10'
+      className={`flex min-h-[160px] flex-col rounded-xl border bg-[var(--color-fill-005)] p-3 transition ${
+        isOver ? 'border-[color:var(--color-accent-60)] bg-[var(--color-accent)]/[0.06]' : 'border-[color:var(--color-border-weak)]'
       }`}
     >
       <div className="mb-3 flex items-baseline justify-between gap-2 px-1">
-        <span className="text-sm font-semibold text-slate-100">{stage}</span>
-        <span className="text-xs text-slate-500">
+        <span className="text-sm font-semibold text-[color:var(--color-text-bright)]">{stage}</span>
+        <span className="text-xs text-[color:var(--color-text-muted)]">
           {count} · {formatMRR(totalMRR)}
         </span>
       </div>
@@ -200,24 +200,24 @@ const CardBody = ({
   dragging?: boolean;
 }) => (
   <div
-    className={`rounded-lg border border-white/10 bg-black/40 p-3 shadow-sm ${
-      dragging ? 'border-accent-500/50 shadow-[0_0_24px_rgba(239,35,43,0.22)]' : ''
+    className={`rounded-lg border border-[color:var(--color-border-weak)] bg-[var(--color-overlay-40)] p-3 shadow-sm ${
+      dragging ? 'border-[color:var(--color-accent-50)] shadow-[var(--shadow-glow-24-22)]' : ''
     }`}
   >
-    <p className="truncate text-sm font-semibold text-slate-100">{deal.title}</p>
+    <p className="truncate text-sm font-semibold text-[color:var(--color-text-bright)]">{deal.title}</p>
     <p className="mt-0.5 truncate text-xs text-accent-400">{clientName}</p>
     <div className="mt-2 flex items-center justify-between gap-2">
-      <span className="text-sm font-medium text-slate-200">{formatMRR(deal.expectedMRR)}</span>
+      <span className="text-sm font-medium text-[color:var(--color-text-soft)]">{formatMRR(deal.expectedMRR)}</span>
       {deal.expectedCloseDate ? (
-        <span className="text-xs text-slate-500">{formatRelativeDeadline(deal.expectedCloseDate)}</span>
+        <span className="text-xs text-[color:var(--color-text-muted)]">{formatRelativeDeadline(deal.expectedCloseDate)}</span>
       ) : null}
     </div>
     {ownerName ? (
       <div className="mt-2 flex items-center gap-2">
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent-600 text-[10px] font-bold text-white">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-accent-hover)] text-[10px] font-bold text-[color:var(--color-on-accent)]">
           {initials(ownerName)}
         </span>
-        <span className="truncate text-xs text-slate-400">{ownerName}</span>
+        <span className="truncate text-xs text-[color:var(--color-text-secondary)]">{ownerName}</span>
       </div>
     ) : null}
   </div>

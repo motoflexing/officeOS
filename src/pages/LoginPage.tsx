@@ -57,33 +57,33 @@ export const LoginPage = () => {
       <button
         type="button"
         onClick={() => navigate('/developer-login')}
-        className="fixed right-4 top-4 z-10 rounded-lg border border-white/10 bg-black/45 px-3 py-2 text-sm font-black tracking-tight shadow-[0_0_22px_rgba(239,35,43,0.08)] backdrop-blur transition hover:border-accent-500/35 hover:bg-black/70"
+        className="fixed right-4 top-4 z-10 rounded-lg border border-[color:var(--color-border-weak)] bg-[var(--color-overlay-45)] px-3 py-2 text-sm font-black tracking-tight shadow-[var(--shadow-glow-22-08)] backdrop-blur transition hover:border-[color:var(--color-accent-35)] hover:bg-[var(--color-overlay-70)]"
         aria-label="MotoFlexing developer access"
       >
-        <span className="text-accent-500">M</span>
-        <span className="text-slate-100">F</span>
+        <span className="text-[color:var(--color-accent)]">M</span>
+        <span className="text-[color:var(--color-text-bright)]">F</span>
       </button>
       <section className="grid w-full max-w-6xl gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="flex flex-col justify-between rounded-xl border border-white/10 bg-black/55 p-8 shadow-glow backdrop-blur">
+        <div className="flex flex-col justify-between rounded-xl border border-[color:var(--color-border-weak)] bg-[var(--color-overlay-55)] p-8 shadow-glow backdrop-blur">
           <div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-accent-500 to-red-900 font-bold text-white shadow-[0_0_28px_rgba(239,35,43,0.28)]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--color-accent)] to-red-900 font-bold text-[color:var(--color-text-primary)] shadow-[var(--shadow-glow-28-28)]">
               GH
             </div>
-            <h1 className="mt-8 text-4xl font-semibold tracking-normal text-white">{BRANDING.workspaceName}</h1>
-            <p className="mt-3 text-lg text-slate-400">{BRANDING.tagline}</p>
+            <h1 className="mt-8 text-4xl font-semibold tracking-normal text-[color:var(--color-text-primary)]">{BRANDING.workspaceName}</h1>
+            <p className="mt-3 text-lg text-[color:var(--color-text-secondary)]">{BRANDING.tagline}</p>
           </div>
 
           <div className="mt-12">
-            <div className="rounded-lg border border-accent-500/20 bg-gradient-to-br from-accent-500/12 via-white/[0.04] to-black/20 p-5 shadow-[0_0_32px_rgba(239,35,43,0.12)]">
-              <div className="h-1 w-12 rounded-full bg-accent-500/80 shadow-[0_0_18px_rgba(239,35,43,0.45)]" />
-              <h2 className="mt-5 text-2xl font-semibold tracking-normal text-white">Welcome to Geekynd Hub</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-300">
+            <div className="rounded-lg border border-[color:var(--color-accent-20)] bg-gradient-to-br from-[var(--color-accent-12)] via-white/[0.04] to-black/20 p-5 shadow-[var(--shadow-glow-32-12)]">
+              <div className="h-1 w-12 rounded-full bg-[var(--color-accent-80)] shadow-[var(--shadow-glow-18-45)]" />
+              <h2 className="mt-5 text-2xl font-semibold tracking-normal text-[color:var(--color-text-primary)]">Welcome to Geekynd Hub</h2>
+              <p className="mt-3 text-sm leading-6 text-[color:var(--color-text-secondary)]">
                 Manage employees, attendance, reports, leave requests, and announcements from one secure portal.
               </p>
-              <p className="mt-3 text-sm leading-6 text-slate-400">
+              <p className="mt-3 text-sm leading-6 text-[color:var(--color-text-secondary)]">
                 Built to simplify daily operations and keep your team aligned.
               </p>
-              <p className="mt-5 border-t border-white/10 pt-4 text-xs font-medium uppercase tracking-[0.14em] text-accent-100/80">
+              <p className="mt-5 border-t border-[color:var(--color-border-weak)] pt-4 text-xs font-medium uppercase tracking-[0.14em] text-accent-100/80">
                 Designed for productivity and team collaboration.
               </p>
             </div>
@@ -92,8 +92,8 @@ export const LoginPage = () => {
 
         <form onSubmit={handleSubmit} className="surface p-6 md:p-8">
           <div>
-            <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">Secure portal</p>
-            <h2 className="mt-3 text-2xl font-semibold text-white">Sign in to your company portal</h2>
+            <p className="text-sm font-medium uppercase tracking-[0.14em] text-[color:var(--color-accent)]">Secure portal</p>
+            <h2 className="mt-3 text-2xl font-semibold text-[color:var(--color-text-primary)]">Sign in to your company portal</h2>
           </div>
 
           <div className="mt-7 grid gap-3 md:grid-cols-3">
@@ -104,24 +104,24 @@ export const LoginPage = () => {
                 onClick={() => chooseRole(item.role)}
                 className={`rounded-xl border p-4 text-left transition hover:-translate-y-0.5 ${
                   selectedRole === item.role
-                    ? 'border-accent-500 bg-accent-500/12 shadow-[0_0_30px_rgba(239,35,43,0.18)]'
-                    : 'border-white/10 bg-black/25 hover:border-accent-500/35 hover:bg-accent-500/[0.06]'
+                    ? 'border-[color:var(--color-accent)] bg-[var(--color-accent-12)] shadow-[var(--shadow-glow-30-18)]'
+                    : 'border-[color:var(--color-border-weak)] bg-[var(--color-overlay-25)] hover:border-[color:var(--color-accent-35)] hover:bg-[var(--color-accent)]/[0.06]'
                 }`}
               >
-                <item.icon className={selectedRole === item.role ? 'text-accent-500' : 'text-slate-400'} size={22} />
-                <p className="mt-4 font-semibold text-white">{item.label}</p>
-                <p className="mt-1 text-xs leading-5 text-slate-500">{item.copy}</p>
+                <item.icon className={selectedRole === item.role ? 'text-[color:var(--color-accent)]' : 'text-[color:var(--color-text-secondary)]'} size={22} />
+                <p className="mt-4 font-semibold text-[color:var(--color-text-primary)]">{item.label}</p>
+                <p className="mt-1 text-xs leading-5 text-[color:var(--color-text-muted)]">{item.copy}</p>
               </button>
             ))}
           </div>
 
           <div className="mt-7 grid gap-4">
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-300">Email</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Email</span>
               <input className="field" value={email} onChange={(event) => setEmail(event.target.value)} />
             </label>
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-300">Password</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Password</span>
               <input
                 className="field"
                 type="password"
@@ -132,7 +132,7 @@ export const LoginPage = () => {
           </div>
 
           {error ? (
-            <p className="mt-4 rounded-lg border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+            <p className="mt-4 rounded-lg border border-[color:var(--color-error-line-25)] bg-[var(--color-error-fill-10)] px-4 py-3 text-sm text-[color:var(--color-error-text-200)]">
               {error}
             </p>
           ) : null}

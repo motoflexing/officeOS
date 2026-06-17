@@ -132,22 +132,22 @@ export const SubscriptionDetailModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/65 px-4 py-8 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[var(--color-overlay-65)] px-4 py-8 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-label="Subscription detail"
       onClick={onClose}
     >
       <div
-        className="surface w-full max-w-3xl border-accent-500/30 p-6 shadow-[0_0_44px_rgba(239,35,43,0.18)]"
+        className="surface w-full max-w-3xl border-[color:var(--color-accent-30)] p-6 shadow-[var(--shadow-glow-44-18)]"
         onClick={(event) => event.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="truncate text-xl font-semibold text-white">{subscription.teamLabel}</h2>
+            <h2 className="truncate text-xl font-semibold text-[color:var(--color-text-primary)]">{subscription.teamLabel}</h2>
             <div className="mt-2 flex flex-wrap items-center gap-3">
-              <span className="text-sm text-slate-400">{planLabel}</span>
+              <span className="text-sm text-[color:var(--color-text-secondary)]">{planLabel}</span>
               <div className="relative">
                 <button
                   type="button"
@@ -158,13 +158,13 @@ export const SubscriptionDetailModal = ({
                   <SubscriptionStatusPill status={subscription.status} />
                 </button>
                 {statusMenuOpen ? (
-                  <div className="absolute left-0 z-20 mt-2 w-44 rounded-lg border border-white/10 bg-black/90 p-1 shadow-glow backdrop-blur">
+                  <div className="absolute left-0 z-20 mt-2 w-44 rounded-lg border border-[color:var(--color-border-weak)] bg-[var(--color-overlay-90)] p-1 shadow-glow backdrop-blur">
                     {SUBSCRIPTION_STATUSES.map((status) => (
                       <button
                         key={status}
                         type="button"
                         onClick={() => void changeStatus(status)}
-                        className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm text-slate-300 transition hover:bg-white/[0.055] hover:text-white"
+                        className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
                       >
                         {status}
                         {status === subscription.status ? <Check size={14} className="text-accent-400" /> : null}
@@ -179,14 +179,14 @@ export const SubscriptionDetailModal = ({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-lg p-1 text-slate-400 transition hover:bg-white/[0.055] hover:text-white"
+            className="rounded-lg p-1 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Sub-tabs */}
-        <div className="mt-5 flex flex-wrap gap-2 border-b border-white/10 pb-3">
+        <div className="mt-5 flex flex-wrap gap-2 border-b border-[color:var(--color-border-weak)] pb-3">
           {SUB_TABS.filter((item) => !item.hidden).map((item) => (
             <button
               key={item.id}
@@ -194,8 +194,8 @@ export const SubscriptionDetailModal = ({
               onClick={() => setTab(item.id)}
               className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
                 tab === item.id
-                  ? 'bg-accent-500 text-white shadow-[0_0_24px_rgba(239,35,43,0.22)]'
-                  : 'text-slate-400 hover:bg-white/[0.055] hover:text-white'
+                  ? 'bg-[var(--color-accent)] text-[color:var(--color-on-accent)] shadow-[var(--shadow-glow-24-22)]'
+                  : 'text-[color:var(--color-text-secondary)] hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]'
               }`}
             >
               {item.label}
@@ -230,15 +230,15 @@ export const SubscriptionDetailModal = ({
                   value={subscription.ticketCapPerMonth === undefined ? '—' : String(subscription.ticketCapPerMonth)}
                 />
                 <div className="sm:col-span-2">
-                  <span className="text-slate-500">Channels Covered</span>
+                  <span className="text-[color:var(--color-text-muted)]">Channels Covered</span>
                   <div className="mt-1 flex flex-wrap gap-1.5">
                     {subscription.channelsCovered.length === 0 ? (
-                      <span className="text-slate-300">—</span>
+                      <span className="text-[color:var(--color-text-secondary)]">—</span>
                     ) : (
                       subscription.channelsCovered.map((channel) => (
                         <span
                           key={channel}
-                          className="rounded-full bg-white/[0.06] px-2.5 py-1 text-xs font-medium text-slate-200 ring-1 ring-white/10"
+                          className="rounded-full bg-[var(--color-fill-06)] px-2.5 py-1 text-xs font-medium text-[color:var(--color-text-soft)] ring-1 ring-white/10"
                         >
                           {channel}
                         </span>
@@ -263,22 +263,22 @@ export const SubscriptionDetailModal = ({
 
               <Group title="Ownership">
                 <div className="sm:col-span-2 flex items-center gap-2">
-                  <span className="text-slate-500">Account Manager</span>
+                  <span className="text-[color:var(--color-text-muted)]">Account Manager</span>
                   {subscription.accountManagerNameSnapshot ? (
                     <span className="inline-flex items-center gap-2">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent-600 text-[10px] font-bold text-white">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-accent-hover)] text-[10px] font-bold text-[color:var(--color-on-accent)]">
                         {subscription.accountManagerNameSnapshot.trim().charAt(0).toUpperCase()}
                       </span>
-                      <span className="font-medium text-slate-300">{subscription.accountManagerNameSnapshot}</span>
+                      <span className="font-medium text-[color:var(--color-text-secondary)]">{subscription.accountManagerNameSnapshot}</span>
                     </span>
                   ) : (
-                    <span className="font-medium text-slate-300">Unassigned</span>
+                    <span className="font-medium text-[color:var(--color-text-secondary)]">Unassigned</span>
                   )}
                 </div>
               </Group>
 
               <section>
-                <h4 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-accent-500">Notes</h4>
+                <h4 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--color-accent)]">Notes</h4>
                 <textarea
                   className="field min-h-[90px]"
                   disabled={!canEdit}
@@ -300,7 +300,7 @@ export const SubscriptionDetailModal = ({
                 onToast={onToast}
               />
             ) : (
-              <p className="py-8 text-center text-sm text-slate-500">Loading engagement…</p>
+              <p className="py-8 text-center text-sm text-[color:var(--color-text-muted)]">Loading engagement…</p>
             )
           ) : (
             <OnboardingChecklistTab
@@ -331,14 +331,14 @@ export const SubscriptionDetailModal = ({
 
 const Group = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section>
-    <h4 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-accent-500">{title}</h4>
+    <h4 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--color-accent)]">{title}</h4>
     <dl className="grid gap-x-8 gap-y-2 text-sm sm:grid-cols-2">{children}</dl>
   </section>
 );
 
 const Row = ({ label, value }: { label: string; value: string }) => (
   <div className="flex gap-2">
-    <dt className="text-slate-500">{label}</dt>
-    <dd className="font-medium text-slate-300">{value}</dd>
+    <dt className="text-[color:var(--color-text-muted)]">{label}</dt>
+    <dd className="font-medium text-[color:var(--color-text-secondary)]">{value}</dd>
   </div>
 );

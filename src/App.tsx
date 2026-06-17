@@ -22,7 +22,7 @@ import { useAuth } from './state/AuthContext';
 
 const RoleRoute = ({ allow, children }: { allow: string[]; children: React.ReactNode }) => {
   const { loading, role } = useAuth();
-  if (loading) return <div className="p-6 text-sm text-slate-400">Loading OfficeOS...</div>;
+  if (loading) return <div className="p-6 text-sm text-[color:var(--color-text-secondary)]">Loading OfficeOS...</div>;
   if (!role) return <Navigate to="/login" replace />;
   if (!allow.includes(role)) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
@@ -32,7 +32,7 @@ export default function App() {
   const { loading, role } = useAuth();
 
   if (loading) {
-    return <div className="min-h-screen p-6 text-sm text-slate-400">Loading OfficeOS...</div>;
+    return <div className="min-h-screen p-6 text-sm text-[color:var(--color-text-secondary)]">Loading OfficeOS...</div>;
   }
 
   return (

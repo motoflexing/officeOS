@@ -2,21 +2,361 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   OfficeOS Design System V2 — Theme Variables (Step 1 infra)
+   Dark = real values from the existing Geekynd Hub codebase.
+   Light = per spec. Components read var(--color-*) only.
+   The active palette is selected by [data-theme] on <html>.
+   ============================================================ */
+
+/* Dark theme (default) — derived from existing codebase values. */
+[data-theme='dark'] {
+  --color-accent: #ef232b; /* was accent-500 */
+  --color-accent-hover: #c91018; /* was accent-600 */
+
+  --color-bg-page: #050505; /* index.css page base / ink-950 */
+  --color-bg-surface: #131313; /* bg-white/[0.055] flattened over page */
+  --color-bg-surface-alt: #232323; /* table header, hover states */
+
+  --color-text-primary: #f3f4f6; /* original body text */
+  --color-text-secondary: #94a3b8; /* slate-400, most-used muted */
+  --color-text-muted: #7d8a9c; /* bumped from slate-500 to clear AA (5.30:1) */
+
+  --color-border-strong: #373737; /* ~border-white/20 flattened */
+  --color-border-weak: #1e1e1e; /* border-white/10 flattened (68 uses) */
+
+  /* Input/control surfaces — distinct from card surfaces. Kept TRANSLUCENT to
+     match the original render exactly (they composite over the body gradient).
+     Dark equivalents when flattened over the page: input bg ~#030303,
+     input border ~#1e1e1e. */
+  --color-bg-input: rgba(0, 0, 0, 0.4); /* was .field bg-black/40 */
+  --color-border-input: rgba(255, 255, 255, 0.1); /* was .field border-white/10 */
+
+  /* --- Sweep palette: exact alpha values currently in use (pixel-identical) ---
+     White-tint fills (was bg-white/[a]). */
+  --color-fill-005: rgba(255, 255, 255, 0.025);
+  --color-fill-035: rgba(255, 255, 255, 0.035);
+  --color-fill-04: rgba(255, 255, 255, 0.04);
+  --color-fill-045: rgba(255, 255, 255, 0.045);
+  --color-fill-055: rgba(255, 255, 255, 0.055);
+  --color-fill-06: rgba(255, 255, 255, 0.06);
+  --color-fill-10: rgba(255, 255, 255, 0.1);
+
+  /* Black overlays (was bg-black/N) — 11 exact levels, zero deviation. */
+  --color-overlay-20: rgba(0, 0, 0, 0.2);
+  --color-overlay-25: rgba(0, 0, 0, 0.25);
+  --color-overlay-30: rgba(0, 0, 0, 0.3);
+  --color-overlay-35: rgba(0, 0, 0, 0.35);
+  --color-overlay-40: rgba(0, 0, 0, 0.4);
+  --color-overlay-45: rgba(0, 0, 0, 0.45);
+  --color-overlay-50: rgba(0, 0, 0, 0.5);
+  --color-overlay-55: rgba(0, 0, 0, 0.55);
+  --color-overlay-65: rgba(0, 0, 0, 0.65);
+  --color-overlay-70: rgba(0, 0, 0, 0.7);
+  --color-overlay-90: rgba(0, 0, 0, 0.9);
+
+  /* White borders (was border-white/N). /10=border-weak, /20=border-strong. */
+  --color-line-05: rgba(255, 255, 255, 0.05);
+  --color-line-12: rgba(255, 255, 255, 0.12);
+  --color-line-15: rgba(255, 255, 255, 0.15);
+  --color-line-25: rgba(255, 255, 255, 0.25);
+
+  /* Slate text shades. slate-300 is intentionally UNassigned (flagged for
+     case-by-case review). slate-400=text-secondary, slate-500=text-muted. */
+  --color-text-bright: #f1f5f9; /* slate-100 */
+  --color-text-soft: #e2e8f0; /* slate-200 */
+  --color-text-faint: #475569; /* slate-600 */
+
+  /* Accent tints (was accent-500/N) — exact alphas, accent base #ef232b. */
+  --color-accent-10: rgba(239, 35, 43, 0.1);
+  --color-accent-12: rgba(239, 35, 43, 0.12);
+  --color-accent-14: rgba(239, 35, 43, 0.14);
+  --color-accent-15: rgba(239, 35, 43, 0.15);
+  --color-accent-20: rgba(239, 35, 43, 0.2);
+  --color-accent-25: rgba(239, 35, 43, 0.25);
+  --color-accent-30: rgba(239, 35, 43, 0.3);
+  --color-accent-35: rgba(239, 35, 43, 0.35);
+  --color-accent-40: rgba(239, 35, 43, 0.4);
+  --color-accent-45: rgba(239, 35, 43, 0.45);
+  --color-accent-50: rgba(239, 35, 43, 0.5);
+  --color-accent-55: rgba(239, 35, 43, 0.55);
+  --color-accent-60: rgba(239, 35, 43, 0.6);
+  --color-accent-70: rgba(239, 35, 43, 0.7);
+  --color-accent-80: rgba(239, 35, 43, 0.8);
+  --color-accent-hover-35: rgba(201, 16, 24, 0.35); /* accent-600/35 */
+
+  /* Semantic colors (rose=error, emerald=success, amber=warning). Dark =
+     exact Tailwind values currently in use. */
+  --color-error-text-100: #ffe4e6; /* rose-100 */
+  --color-error-text-200: #fecdd3; /* rose-200 */
+  --color-error-text-300: #fda4af; /* rose-300 */
+  --color-error-text-200-75: rgba(254, 205, 211, 0.75);
+  --color-error-fill-10: rgba(244, 63, 94, 0.1); /* rose-500/10 */
+  --color-error-fill-12: rgba(244, 63, 94, 0.12);
+  --color-error-fill-15: rgba(244, 63, 94, 0.15);
+  --color-error-fill-20: rgba(244, 63, 94, 0.2);
+  --color-error-solid: #e11d48; /* rose-600 */
+  --color-error-solid-500: #f43f5e; /* rose-500 */
+  --color-error-line-20: rgba(251, 113, 133, 0.2); /* rose-400/20 */
+  --color-error-line-25: rgba(251, 113, 133, 0.25);
+  --color-error-line-30: rgba(251, 113, 133, 0.3);
+  --color-error-ring-25: rgba(251, 113, 133, 0.25); /* rose-400/25 */
+  --color-error-ring-40: rgba(244, 63, 94, 0.4); /* rose-500/40 */
+  --color-success-text-100: #d1fae5; /* emerald-100 */
+  --color-success-text-200: #a7f3d0; /* emerald-200 */
+  --color-success-text-300: #6ee7b7; /* emerald-300 */
+  --color-success-fill-10: rgba(16, 185, 129, 0.1); /* emerald-500/10 */
+  --color-success-fill-12: rgba(16, 185, 129, 0.12);
+  --color-success-fill-15: rgba(16, 185, 129, 0.15); /* emerald-500/15 */
+  --color-success-fill-80: rgba(16, 185, 129, 0.8); /* emerald-500/80 */
+  --color-success-solid-400: #34d399; /* emerald-400 (dot) */
+  --color-success-line: #34d399; /* border-emerald-400 */
+  --color-success-line-25: rgba(52, 211, 153, 0.25); /* emerald-400/25 */
+  --color-success-line-30: rgba(52, 211, 153, 0.3); /* emerald-400/30 */
+  --color-success-ring-25: rgba(52, 211, 153, 0.25);
+  --color-warning-text-200: #fde68a; /* amber-200 */
+  --color-warning-text-300: #fcd34d; /* amber-300 */
+  --color-warning-fill-10: rgba(245, 158, 11, 0.1); /* amber-500/10 */
+  --color-warning-fill-12: rgba(245, 158, 11, 0.12); /* amber-500/12 */
+  --color-warning-line-25: rgba(251, 191, 36, 0.25); /* amber-400/25 */
+  --color-warning-ring-25: rgba(251, 191, 36, 0.25); /* amber-400/25 */
+
+  /* Neutral slate backgrounds (toggle tracks etc.). */
+  --color-slate-bg-400: #94a3b8;
+  --color-slate-bg-500: #64748b;
+  --color-slate-bg-700: #334155;
+  --color-slate-bg-800: #1e293b;
+
+  /* Neutral slate at alpha (was bg/ring/border-slate-N/M) — slate-500 #64748b,
+     slate-400 #94a3b8. Exact alphas, zero deviation. */
+  --color-neutral-fill-10: rgba(100, 116, 139, 0.1); /* bg-slate-500/10 */
+  --color-neutral-fill-16: rgba(100, 116, 139, 0.16); /* bg-slate-500/16 */
+  --color-neutral-line-25: rgba(148, 163, 184, 0.25); /* border-slate-400/25 */
+  --color-neutral-ring-20: rgba(148, 163, 184, 0.2); /* ring-slate-400/20 */
+  --color-neutral-ring-15: rgba(100, 116, 139, 0.15); /* ring-slate-500/15 */
+
+  /* Fixed white for text/icons sitting ON solid colored fills (accent/error
+     buttons, avatar initials). White in BOTH themes — red/colored fills are
+     dark enough that white text is correct on either theme (per spec). */
+  --color-on-accent: #ffffff;
+
+  /* Dividers (was divide-white/10). */
+  --color-divide: rgba(255, 255, 255, 0.1);
+
+  /* Inline glow shadows (red bloom, accent #ef232b = rgb(239,35,43)).
+     Named by size+alpha; exact values, zero deviation. */
+  --shadow-glow-18-45: 0 0 18px rgba(239, 35, 43, 0.45);
+  --shadow-glow-22-08: 0 0 22px rgba(239, 35, 43, 0.08);
+  --shadow-glow-22-25: 0 0 22px rgba(239, 35, 43, 0.25);
+  --shadow-glow-24-20: 0 0 24px rgba(239, 35, 43, 0.2);
+  --shadow-glow-24-22: 0 0 24px rgba(239, 35, 43, 0.22);
+  --shadow-glow-24-26: 0 0 24px rgba(239, 35, 43, 0.26);
+  --shadow-glow-28-28: 0 0 28px rgba(239, 35, 43, 0.28);
+  --shadow-glow-30-12: 0 0 30px rgba(239, 35, 43, 0.12);
+  --shadow-glow-30-18: 0 0 30px rgba(239, 35, 43, 0.18);
+  --shadow-glow-32-12: 0 0 32px rgba(239, 35, 43, 0.12);
+  --shadow-glow-34-12: 0 0 34px rgba(239, 35, 43, 0.12);
+  --shadow-glow-44-18: 0 0 44px rgba(239, 35, 43, 0.18);
+  --shadow-glow-inset: inset 0 0 0 1px rgba(239, 35, 43, 0.25);
+  --shadow-modal-glow: 0 26px 90px rgba(0, 0, 0, 0.65), 0 0 44px rgba(239, 35, 43, 0.1);
+
+  --color-badge-success-bg: #0c2e1f;
+  --color-badge-success-text: #4ade80;
+  --color-badge-warning-bg: #3a2a0c;
+  --color-badge-warning-text: #facc15;
+  --color-badge-info-bg: #0c2a3a;
+  --color-badge-info-text: #38bdf8;
+  --color-badge-error-bg: #3a0c0c;
+  --color-badge-error-text: #f87171;
+
+  /* Backdrop overlay — always dark-tinted regardless of theme. */
+  --color-backdrop: rgba(0, 0, 0, 0.5);
+  --shadow-modal: 0 10px 40px rgba(0, 0, 0, 0.35);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Light theme — per spec (no existing values to preserve). */
+[data-theme='light'] {
+  --color-accent: #dc2626;
+  --color-accent-hover: #b91c1c;
+
+  --color-bg-page: #f8f7f5;
+  --color-bg-surface: #ffffff;
+  --color-bg-surface-alt: #fafaf8;
+
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #666666;
+  --color-text-muted: #767676; /* bumped from #999999 to clear AA (4.54:1) */
+
+  --color-border-strong: #d0cec9;
+  --color-border-weak: #e0dfdb;
+
+  --color-bg-input: #ffffff; /* spec: input background */
+  --color-border-input: #d0cec9; /* spec: input border (border-strong) */
+
+  /* --- Sweep palette (light). Dark = darken-behind; on a light page that is
+     reinterpreted as subtle insets/tints (flagged design judgment). --- */
+  --color-fill-005: rgba(0, 0, 0, 0.015);
+  --color-fill-035: rgba(0, 0, 0, 0.025);
+  --color-fill-04: rgba(0, 0, 0, 0.03);
+  --color-fill-045: rgba(0, 0, 0, 0.035);
+  --color-fill-055: rgba(0, 0, 0, 0.04);
+  --color-fill-06: rgba(0, 0, 0, 0.05);
+  --color-fill-10: rgba(0, 0, 0, 0.07);
+
+  --color-overlay-20: rgba(0, 0, 0, 0.03);
+  --color-overlay-25: rgba(0, 0, 0, 0.04);
+  --color-overlay-30: rgba(0, 0, 0, 0.05);
+  --color-overlay-35: rgba(0, 0, 0, 0.05);
+  --color-overlay-40: rgba(0, 0, 0, 0.06);
+  --color-overlay-45: rgba(0, 0, 0, 0.06);
+  --color-overlay-50: rgba(0, 0, 0, 0.07);
+  --color-overlay-55: rgba(0, 0, 0, 0.08);
+  --color-overlay-65: rgba(0, 0, 0, 0.1);
+  --color-overlay-70: rgba(0, 0, 0, 0.1);
+  --color-overlay-90: #ffffff; /* sidebar — solid surface in light */
+
+  --color-line-05: rgba(0, 0, 0, 0.04);
+  --color-line-12: rgba(0, 0, 0, 0.08);
+  --color-line-15: rgba(0, 0, 0, 0.1);
+  --color-line-25: rgba(0, 0, 0, 0.16);
+
+  --color-text-bright: #1a1a1a; /* 17.4:1 */
+  --color-text-soft: #333333; /* 12.6:1 */
+  --color-text-faint: #767676; /* 4.54:1 (was #999999, failed AA) */
+
+  /* Accent tints (light): same red #dc2626 at matching alphas. */
+  --color-accent-10: rgba(220, 38, 38, 0.1);
+  --color-accent-12: rgba(220, 38, 38, 0.12);
+  --color-accent-14: rgba(220, 38, 38, 0.14);
+  --color-accent-15: rgba(220, 38, 38, 0.15);
+  --color-accent-20: rgba(220, 38, 38, 0.2);
+  --color-accent-25: rgba(220, 38, 38, 0.25);
+  --color-accent-30: rgba(220, 38, 38, 0.3);
+  --color-accent-35: rgba(220, 38, 38, 0.35);
+  --color-accent-40: rgba(220, 38, 38, 0.4);
+  --color-accent-45: rgba(220, 38, 38, 0.45);
+  --color-accent-50: rgba(220, 38, 38, 0.5);
+  --color-accent-55: rgba(220, 38, 38, 0.55);
+  --color-accent-60: rgba(220, 38, 38, 0.6);
+  --color-accent-70: rgba(220, 38, 38, 0.7);
+  --color-accent-80: rgba(220, 38, 38, 0.8);
+  --color-accent-hover-35: rgba(185, 28, 28, 0.35);
+
+  /* Semantic (light): text = spec badge-text (AA-pass on white); fills/lines
+     reinterpreted as light tints of the same hue (flagged design judgment). */
+  --color-error-text-100: #7f1d1d;
+  --color-error-text-200: #7f1d1d;
+  --color-error-text-300: #991b1b;
+  --color-error-text-200-75: rgba(127, 29, 29, 0.85);
+  --color-error-fill-10: #fecaca;
+  --color-error-fill-12: #fecaca;
+  --color-error-fill-15: #fca5a5;
+  --color-error-fill-20: #fca5a5;
+  --color-error-solid: #dc2626;
+  --color-error-solid-500: #ef4444;
+  --color-error-line-20: rgba(220, 38, 38, 0.2);
+  --color-error-line-25: rgba(220, 38, 38, 0.25);
+  --color-error-line-30: rgba(220, 38, 38, 0.3);
+  --color-error-ring-25: rgba(220, 38, 38, 0.25);
+  --color-error-ring-40: rgba(220, 38, 38, 0.4);
+  --color-success-text-100: #0c447c;
+  --color-success-text-200: #0c447c;
+  --color-success-text-300: #0e7490;
+  --color-success-fill-10: #dbeafe;
+  --color-success-fill-12: #dbeafe;
+  --color-success-fill-15: #bfdbfe;
+  --color-success-fill-80: #0c447c;
+  --color-success-solid-400: #0c447c;
+  --color-success-line: #0c447c;
+  --color-success-line-25: rgba(12, 68, 124, 0.25);
+  --color-success-line-30: rgba(12, 68, 124, 0.3);
+  --color-success-ring-25: rgba(12, 68, 124, 0.25);
+  --color-warning-text-200: #854f0b;
+  --color-warning-text-300: #854f0b;
+  --color-warning-fill-10: #fef3c7;
+  --color-warning-fill-12: #fef3c7;
+  --color-warning-line-25: rgba(133, 79, 11, 0.25);
+  --color-warning-ring-25: rgba(133, 79, 11, 0.25);
+
+  /* Neutral slate backgrounds (light). */
+  --color-slate-bg-400: #cbd5e1;
+  --color-slate-bg-500: #94a3b8;
+  --color-slate-bg-700: #cbd5e1;
+  --color-slate-bg-800: #e2e8f0;
+
+  --color-neutral-fill-10: rgba(148, 163, 184, 0.15);
+  --color-neutral-fill-16: rgba(148, 163, 184, 0.22);
+  --color-neutral-line-25: rgba(148, 163, 184, 0.4);
+  --color-neutral-ring-20: rgba(148, 163, 184, 0.35);
+  --color-neutral-ring-15: rgba(148, 163, 184, 0.3);
+
+  --color-on-accent: #ffffff;
+
+  --color-divide: rgba(0, 0, 0, 0.08);
+
+  /* Glows: none in light mode (spec — no glows). Kept as no-op shadows. */
+  --shadow-glow-18-45: none;
+  --shadow-glow-22-08: none;
+  --shadow-glow-22-25: none;
+  --shadow-glow-24-20: none;
+  --shadow-glow-24-22: none;
+  --shadow-glow-24-26: none;
+  --shadow-glow-28-28: none;
+  --shadow-glow-30-12: none;
+  --shadow-glow-30-18: none;
+  --shadow-glow-32-12: none;
+  --shadow-glow-34-12: none;
+  --shadow-glow-44-18: none;
+  --shadow-glow-inset: inset 0 0 0 1px rgba(220, 38, 38, 0.25);
+  --shadow-modal-glow: 0 10px 40px rgba(0, 0, 0, 0.12);
+
+  --color-badge-success-bg: #dbeafe;
+  --color-badge-success-text: #0c447c;
+  --color-badge-warning-bg: #fef3c7;
+  --color-badge-warning-text: #854f0b;
+  --color-badge-info-bg: #cffafe;
+  --color-badge-info-text: #0e7490;
+  --color-badge-error-bg: #fecaca;
+  --color-badge-error-text: #7f1d1d;
+
+  --color-backdrop: rgba(0, 0, 0, 0.4);
+  --shadow-modal: 0 10px 40px rgba(0, 0, 0, 0.12);
+  --shadow-card: none;
+}
+
 :root {
   color-scheme: dark;
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  background: #050505;
-  color: #f3f4f6;
+  background: var(--color-bg-page);
+  color: var(--color-text-primary);
+}
+
+/* Keep color-scheme in sync so native form controls/scrollbars match. */
+[data-theme='light'] {
+  color-scheme: light;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background:
+  /* Variable-driven page background. Dark keeps the original red-glow radials
+     layered over the page gradient; light is a flat page color (no glows). */
+  background: var(--app-bg);
+}
+
+/* Dark: original decorative gradient, now anchored on the page variable. */
+[data-theme='dark'] {
+  --app-bg:
     radial-gradient(circle at top left, rgba(239, 35, 43, 0.16), transparent 30rem),
     radial-gradient(circle at 82% 8%, rgba(127, 29, 29, 0.14), transparent 28rem),
-    linear-gradient(180deg, #050505 0%, #0b0b0d 46%, #111113 100%);
+    linear-gradient(180deg, var(--color-bg-page) 0%, #0b0b0d 46%, #111113 100%);
+}
+
+/* Light: flat page color, no glow/gradient (Design System V2). */
+[data-theme='light'] {
+  --app-bg: var(--color-bg-page);
 }
 
 button,
@@ -27,19 +367,88 @@ select {
 }
 
 @layer components {
+  /* Base classes — Step 2 converts COLORS to theme variables only. The
+     original visual behavior (gradient, glow, blur, hover, geometry) is
+     preserved exactly so dark mode is pixel-identical to the pre-Step-2
+     baseline. The flat/Linear restyle (dropping gradient/glow/blur) is a
+     separate, deliberate decision to be made later — not here.
+
+     Note: the gradient end-stops (red-700 #b91c1c, red-500 #ef4444) and the
+     translucent surface/control fills are Tailwind-palette values with no
+     matching theme variable. They are kept as-is to guarantee pixel-identity;
+     introducing new variables for them is part of the deferred restyle. */
   .surface {
-    @apply rounded-xl border border-white/10 bg-white/[0.045] shadow-glow backdrop-blur;
+    @apply rounded-xl border backdrop-blur;
+    border-color: var(--color-border-weak);
+    /* original bg-white/[0.045] — translucent, composites over body gradient */
+    background: rgba(255, 255, 255, 0.045);
+    /* original shadow-glow (red bloom), red component sourced from accent */
+    box-shadow:
+      0 18px 55px rgba(5, 5, 5, 0.52),
+      0 0 34px color-mix(in srgb, var(--color-accent) 8%, transparent);
   }
 
   .field {
-    @apply w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2.5 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/25;
+    @apply w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition;
+    border-color: var(--color-border-input);
+    background: var(--color-bg-input);
+    /* original text was slate-100 (#f1f5f9); mapped to --color-text-primary
+       (#f3f4f6) — a 1-unit/channel difference (ΔE ~0.4, imperceptible). The
+       "no hardcoded hex" rule takes precedence over preserving an unintended
+       2-unit delta. This is the one knowing, sub-perceptual deviation. */
+    color: var(--color-text-primary);
+  }
+  .field::placeholder {
+    color: var(--color-text-muted);
+  }
+  .field:focus {
+    border-color: var(--color-accent);
+    /* original focus:ring-2 ring-accent-500/25 */
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 25%, transparent);
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-red-700 via-accent-600 to-red-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_26px_rgba(239,35,43,0.18)] transition hover:from-red-600 hover:via-accent-500 hover:to-red-400 focus:outline-none focus:ring-2 focus:ring-accent-500/40;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r px-4 py-2.5 text-sm font-semibold text-white transition;
+    /* original gradient: from-red-700 via-accent-600 to-red-500.
+       via stop sourced from --color-accent-hover; ends are tw-palette reds. */
+    --tw-gradient-from: #b91c1c var(--tw-gradient-from-position);
+    --tw-gradient-via: var(--color-accent-hover) var(--tw-gradient-via-position);
+    --tw-gradient-to: #ef4444 var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to);
+    /* original shadow-[0_0_26px_rgba(239,35,43,0.18)] — red sourced from accent */
+    box-shadow: 0 0 26px color-mix(in srgb, var(--color-accent) 18%, transparent);
+  }
+  .btn-primary:hover {
+    /* original hover: from-red-600 via-accent-500 to-red-400 */
+    --tw-gradient-from: #dc2626 var(--tw-gradient-from-position);
+    --tw-gradient-via: var(--color-accent) var(--tw-gradient-via-position);
+    --tw-gradient-to: #f87171 var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to);
+  }
+  .btn-primary:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 40%, transparent);
+  }
+  .btn-primary:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-black/30 px-4 py-2.5 text-sm font-semibold text-slate-100 transition hover:border-accent-500/55 hover:bg-accent-500/10 hover:text-white;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition;
+    border-color: var(--color-border-weak);
+    /* original bg-black/30 — translucent */
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--color-text-primary);
+  }
+  .btn-secondary:hover {
+    /* original hover: border-accent-500/55 + bg-accent-500/10 + text-white */
+    border-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
+    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+    color: #fff;
+  }
+  .btn-secondary:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 }

@@ -111,7 +111,7 @@ export const AttendancePage = () => {
         <section className="surface overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-left">
-              <thead className="border-b border-white/10 bg-white/[0.035] text-xs uppercase tracking-[0.14em] text-slate-500">
+              <thead className="border-b border-[color:var(--color-border-weak)] bg-[var(--color-fill-035)] text-xs uppercase tracking-[0.14em] text-[color:var(--color-text-muted)]">
                 <tr>
                   {showEmployeeColumn ? <th className="px-5 py-4">Employee</th> : null}
                   <th className="px-5 py-4">Date</th>
@@ -121,19 +121,19 @@ export const AttendancePage = () => {
                   <th className="px-5 py-4">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/10">
+              <tbody className="divide-y divide-[color:var(--color-divide)]">
                 {rows.map((row) => (
-                  <tr key={`${row.employeeEmail}-${row.date}`} className="transition hover:bg-white/[0.035]">
+                  <tr key={`${row.employeeEmail}-${row.date}`} className="transition hover:bg-[var(--color-fill-035)]">
                     {showEmployeeColumn ? (
                       <td className="px-5 py-4">
-                        <p className="font-semibold text-white">{row.employeeName}</p>
-                        <p className="mt-1 text-xs text-slate-500">{row.employeeEmail}</p>
+                        <p className="font-semibold text-[color:var(--color-text-primary)]">{row.employeeName}</p>
+                        <p className="mt-1 text-xs text-[color:var(--color-text-muted)]">{row.employeeEmail}</p>
                       </td>
                     ) : null}
-                    <td className="px-5 py-4 text-sm text-slate-300">{formatShortDate(row.date)}</td>
-                    <td className="px-5 py-4 text-sm text-slate-300">{row.checkIn ?? '--'}</td>
-                    <td className="px-5 py-4 text-sm text-slate-300">{row.checkOut ?? '--'}</td>
-                    <td className="px-5 py-4 text-sm text-slate-300">{row.workMode}</td>
+                    <td className="px-5 py-4 text-sm text-[color:var(--color-text-secondary)]">{formatShortDate(row.date)}</td>
+                    <td className="px-5 py-4 text-sm text-[color:var(--color-text-secondary)]">{row.checkIn ?? '--'}</td>
+                    <td className="px-5 py-4 text-sm text-[color:var(--color-text-secondary)]">{row.checkOut ?? '--'}</td>
+                    <td className="px-5 py-4 text-sm text-[color:var(--color-text-secondary)]">{row.workMode}</td>
                     <td className="px-5 py-4">
                       <AttendanceStatus status={row.status} />
                     </td>
@@ -186,9 +186,9 @@ const getAttendanceStatus = (record: Pick<AttendanceRecord, 'checkIn' | 'checkOu
 };
 
 const statusClass: Record<AttendanceRow['status'], string> = {
-  Present: 'bg-emerald-500/12 text-emerald-300 ring-emerald-400/25',
-  Active: 'bg-accent-500/12 text-accent-300 ring-accent-400/25',
-  Absent: 'bg-slate-500/16 text-slate-300 ring-slate-400/20',
+  Present: 'bg-[var(--color-success-fill-12)] text-[color:var(--color-success-text-300)] ring-[color:var(--color-success-ring-25)]',
+  Active: 'bg-[var(--color-accent-12)] text-accent-300 ring-accent-400/25',
+  Absent: 'bg-[var(--color-neutral-fill-16)] text-[color:var(--color-text-secondary)] ring-[color:var(--color-neutral-ring-20)]',
 };
 
 const AttendanceStatus = ({ status }: { status: AttendanceRow['status'] }) => (

@@ -129,26 +129,26 @@ export const ActivityModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 px-4 py-8 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay-65)] px-4 py-8 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-label="Activity"
       onClick={onClose}
     >
       <form
-        className="surface flex max-h-full w-full max-w-xl flex-col border-accent-500/30 p-6 shadow-[0_0_44px_rgba(239,35,43,0.18)]"
+        className="surface flex max-h-full w-full max-w-xl flex-col border-[color:var(--color-accent-30)] p-6 shadow-[var(--shadow-glow-44-18)]"
         onClick={(event) => event.stopPropagation()}
         onSubmit={submit}
       >
         <div className="flex items-start justify-between gap-3">
-          <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">
+          <p className="text-sm font-medium uppercase tracking-[0.14em] text-[color:var(--color-accent)]">
             {isEdit ? 'Edit Activity' : 'Log Activity'}
           </p>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-lg p-1 text-slate-400 transition hover:bg-white/[0.055] hover:text-white"
+            className="rounded-lg p-1 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
           >
             <X size={18} />
           </button>
@@ -156,7 +156,7 @@ export const ActivityModal = ({
 
         <div className="mt-5 grid gap-4 overflow-y-auto pr-1">
           <div>
-            <span className="mb-2 block text-sm font-medium text-slate-300">Type</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Type</span>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {ACTIVITY_TYPES.map((option) => {
                 const Icon = activityIcon(option);
@@ -168,8 +168,8 @@ export const ActivityModal = ({
                     onClick={() => onTypeChange(option)}
                     className={`inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition ${
                       active
-                        ? 'bg-accent-500 text-white shadow-[0_0_24px_rgba(239,35,43,0.22)]'
-                        : 'border border-white/10 bg-white/[0.035] text-slate-400 hover:text-white'
+                        ? 'bg-[var(--color-accent)] text-[color:var(--color-on-accent)] shadow-[var(--shadow-glow-24-22)]'
+                        : 'border border-[color:var(--color-border-weak)] bg-[var(--color-fill-035)] text-[color:var(--color-text-secondary)] hover:text-[color:var(--color-text-primary)]'
                     }`}
                   >
                     <Icon size={16} />
@@ -181,12 +181,12 @@ export const ActivityModal = ({
           </div>
 
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Subject</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Subject</span>
             <input className="field" value={subject} onChange={(event) => setSubject(event.target.value)} required autoFocus />
           </label>
 
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Body</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Body</span>
             <textarea
               ref={bodyRef}
               className="field min-h-[72px] resize-none"
@@ -198,7 +198,7 @@ export const ActivityModal = ({
           </label>
 
           <div>
-            <span className="mb-2 block text-sm font-medium text-slate-300">Linked to</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Linked to</span>
             <div className="flex flex-wrap gap-2">
               {(['none', 'deal', 'contact'] as const).map((option) => (
                 <button
@@ -207,8 +207,8 @@ export const ActivityModal = ({
                   onClick={() => onRelatedToChange(option)}
                   className={`rounded-lg px-3 py-2 text-sm font-semibold capitalize transition ${
                     relatedTo === option
-                      ? 'bg-accent-500 text-white shadow-[0_0_24px_rgba(239,35,43,0.22)]'
-                      : 'border border-white/10 bg-white/[0.035] text-slate-400 hover:text-white'
+                      ? 'bg-[var(--color-accent)] text-[color:var(--color-on-accent)] shadow-[var(--shadow-glow-24-22)]'
+                      : 'border border-[color:var(--color-border-weak)] bg-[var(--color-fill-035)] text-[color:var(--color-text-secondary)] hover:text-[color:var(--color-text-primary)]'
                   }`}
                 >
                   {option === 'none' ? 'None' : option}
@@ -229,7 +229,7 @@ export const ActivityModal = ({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-300">Scheduled At</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Scheduled At</span>
               <input
                 className="field"
                 type="datetime-local"
@@ -238,7 +238,7 @@ export const ActivityModal = ({
               />
             </label>
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-300">Completed At</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Completed At</span>
               <input
                 className="field"
                 type="datetime-local"
@@ -250,14 +250,14 @@ export const ActivityModal = ({
 
           {OUTCOME_TYPES.includes(type) ? (
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-300">Outcome</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Outcome</span>
               <input className="field" value={outcome} onChange={(event) => setOutcome(event.target.value)} />
             </label>
           ) : null}
         </div>
 
         {error ? (
-          <p className="mt-4 rounded-lg border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+          <p className="mt-4 rounded-lg border border-[color:var(--color-error-line-25)] bg-[var(--color-error-fill-10)] px-4 py-3 text-sm text-[color:var(--color-error-text-200)]">
             {error}
           </p>
         ) : null}

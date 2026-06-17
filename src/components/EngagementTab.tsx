@@ -24,15 +24,15 @@ const ENGAGEMENT_STATUSES: EngagementStatus[] = ['Onboarding', 'Active', 'Paused
 const HELPDESK_ACCESS_STATUSES: HelpdeskAccessStatus[] = ['Pending', 'Granted', 'Revoked'];
 
 const engagementStatusClass: Record<EngagementStatus, string> = {
-  Onboarding: 'bg-amber-500/12 text-amber-300 ring-amber-400/25',
-  Active: 'bg-emerald-500/12 text-emerald-300 ring-emerald-400/25',
+  Onboarding: 'bg-[var(--color-warning-fill-12)] text-[color:var(--color-warning-text-300)] ring-[color:var(--color-warning-ring-25)]',
+  Active: 'bg-[var(--color-success-fill-12)] text-[color:var(--color-success-text-300)] ring-[color:var(--color-success-ring-25)]',
   Paused: 'bg-orange-500/14 text-orange-300 ring-orange-400/25',
 };
 
 const accessStatusClass: Record<HelpdeskAccessStatus, string> = {
-  Pending: 'bg-amber-500/12 text-amber-300 ring-amber-400/25',
-  Granted: 'bg-emerald-500/12 text-emerald-300 ring-emerald-400/25',
-  Revoked: 'bg-slate-500/16 text-slate-400 ring-slate-400/20',
+  Pending: 'bg-[var(--color-warning-fill-12)] text-[color:var(--color-warning-text-300)] ring-[color:var(--color-warning-ring-25)]',
+  Granted: 'bg-[var(--color-success-fill-12)] text-[color:var(--color-success-text-300)] ring-[color:var(--color-success-ring-25)]',
+  Revoked: 'bg-[var(--color-neutral-fill-16)] text-[color:var(--color-text-secondary)] ring-[color:var(--color-neutral-ring-20)]',
 };
 
 export const EngagementTab = ({
@@ -109,7 +109,7 @@ export const EngagementTab = ({
             </span>
           </button>
           {statusMenuOpen ? (
-            <div className="absolute left-0 z-20 mt-2 w-40 rounded-lg border border-white/10 bg-black/90 p-1 shadow-glow backdrop-blur">
+            <div className="absolute left-0 z-20 mt-2 w-40 rounded-lg border border-[color:var(--color-border-weak)] bg-[var(--color-overlay-90)] p-1 shadow-glow backdrop-blur">
               {ENGAGEMENT_STATUSES.map((status) => (
                 <button
                   key={status}
@@ -118,7 +118,7 @@ export const EngagementTab = ({
                     setStatusMenuOpen(false);
                     if (status !== engagement.status) void save({ status });
                   }}
-                  className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm text-slate-300 transition hover:bg-white/[0.055] hover:text-white"
+                  className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
                 >
                   {status}
                   {status === engagement.status ? <Check size={14} className="text-accent-400" /> : null}
@@ -225,12 +225,12 @@ export const EngagementTab = ({
       <Section title="Helpdesk Access">
         <div className="space-y-2">
           {engagement.helpdeskAccountAccess.length === 0 ? (
-            <p className="text-sm text-slate-500">No access entries yet.</p>
+            <p className="text-sm text-[color:var(--color-text-muted)]">No access entries yet.</p>
           ) : (
             engagement.helpdeskAccountAccess.map((entry, index) => (
               <div
                 key={index}
-                className="grid gap-2 rounded-lg border border-white/10 bg-white/[0.025] p-3 sm:grid-cols-[160px_1fr_140px_auto] sm:items-center"
+                className="grid gap-2 rounded-lg border border-[color:var(--color-border-weak)] bg-[var(--color-fill-005)] p-3 sm:grid-cols-[160px_1fr_140px_auto] sm:items-center"
               >
                 <select
                   className="field"
@@ -273,7 +273,7 @@ export const EngagementTab = ({
                     type="button"
                     onClick={() => removeAccessEntry(index)}
                     aria-label="Remove access entry"
-                    className="justify-self-end rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-500/15 hover:text-rose-300"
+                    className="justify-self-end rounded-lg p-1.5 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-error-fill-15)] hover:text-[color:var(--color-error-text-300)]"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -317,14 +317,14 @@ export const EngagementTab = ({
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section>
-    <h4 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-accent-500">{title}</h4>
+    <h4 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--color-accent)]">{title}</h4>
     <div className="space-y-3">{children}</div>
   </section>
 );
 
 const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div>
-    <span className="mb-2 block text-sm font-medium text-slate-300">{label}</span>
+    <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">{label}</span>
     {children}
   </div>
 );

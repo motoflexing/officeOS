@@ -113,12 +113,12 @@ export const FeedbackPage = () => {
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <form onSubmit={submitFeedback} className="surface p-5 md:p-6">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-accent-500/25 bg-accent-500/10 text-accent-100">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[color:var(--color-accent-25)] bg-[var(--color-accent-10)] text-accent-100">
               <MessageSquare size={20} />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-white">Submit OfficeOS Feedback</h2>
-              <p className="mt-1 text-sm leading-6 text-slate-400">
+              <h2 className="text-xl font-semibold text-[color:var(--color-text-primary)]">Submit OfficeOS Feedback</h2>
+              <p className="mt-1 text-sm leading-6 text-[color:var(--color-text-secondary)]">
                 Send bugs, workflow friction, and product ideas directly to MotoFlexing.
               </p>
             </div>
@@ -147,7 +147,7 @@ export const FeedbackPage = () => {
 
           <div className="mt-4 grid gap-4">
             <label>
-              <span className="mb-2 block text-sm font-medium text-slate-300">Title</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Title</span>
               <input
                 className="field"
                 minLength={3}
@@ -158,7 +158,7 @@ export const FeedbackPage = () => {
               />
             </label>
             <label>
-              <span className="mb-2 block text-sm font-medium text-slate-300">Description</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Description</span>
               <textarea
                 className="field min-h-36 resize-y"
                 minLength={10}
@@ -171,7 +171,7 @@ export const FeedbackPage = () => {
           </div>
 
           {error ? (
-            <p className="mt-4 rounded-lg border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+            <p className="mt-4 rounded-lg border border-[color:var(--color-error-line-25)] bg-[var(--color-error-fill-10)] px-4 py-3 text-sm text-[color:var(--color-error-text-200)]">
               {error}
             </p>
           ) : null}
@@ -183,7 +183,7 @@ export const FeedbackPage = () => {
         </form>
 
         <aside className="surface h-fit p-5">
-          <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">What to send</p>
+          <p className="text-sm font-medium uppercase tracking-[0.14em] text-[color:var(--color-accent)]">What to send</p>
           <div className="mt-4 space-y-4">
             <GuidanceItem
               icon={Bug}
@@ -205,9 +205,9 @@ export const FeedbackPage = () => {
       </section>
 
       <section className="surface overflow-hidden">
-        <div className="border-b border-white/10 p-5">
-          <h2 className="text-xl font-semibold text-white">My Submitted Feedback</h2>
-          <p className="mt-1 text-sm text-slate-400">Track the items you have sent to MotoFlexing.</p>
+        <div className="border-b border-[color:var(--color-border-weak)] p-5">
+          <h2 className="text-xl font-semibold text-[color:var(--color-text-primary)]">My Submitted Feedback</h2>
+          <p className="mt-1 text-sm text-[color:var(--color-text-secondary)]">Track the items you have sent to MotoFlexing.</p>
         </div>
 
         {loading ? (
@@ -217,7 +217,7 @@ export const FeedbackPage = () => {
         ) : (
           <div className="max-w-full overflow-x-auto">
             <table className="w-full min-w-[760px] text-left">
-              <thead className="border-b border-white/10 bg-black/20 text-[11px] uppercase tracking-[0.14em] text-slate-500">
+              <thead className="border-b border-[color:var(--color-border-weak)] bg-[var(--color-overlay-20)] text-[11px] uppercase tracking-[0.14em] text-[color:var(--color-text-muted)]">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Title</th>
                   <th className="px-4 py-3 font-semibold">Type</th>
@@ -227,24 +227,24 @@ export const FeedbackPage = () => {
                   <th className="px-4 py-3 font-semibold">Submitted</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/10">
+              <tbody className="divide-y divide-[color:var(--color-divide)]">
                 {feedback.map((item) => (
-                  <tr key={item.path || item.id} className="transition hover:bg-white/[0.035]">
+                  <tr key={item.path || item.id} className="transition hover:bg-[var(--color-fill-035)]">
                     <td className="max-w-xs px-4 py-4">
-                      <p className="truncate font-medium text-white">{item.title}</p>
-                      <p className="mt-1 line-clamp-1 text-xs text-slate-500">{item.description}</p>
+                      <p className="truncate font-medium text-[color:var(--color-text-primary)]">{item.title}</p>
+                      <p className="mt-1 line-clamp-1 text-xs text-[color:var(--color-text-muted)]">{item.description}</p>
                     </td>
                     <td className="px-4 py-4">
                       <FeedbackBadge tone="type">{item.type}</FeedbackBadge>
                     </td>
-                    <td className="px-4 py-4 text-sm text-slate-300">{item.relatedModule}</td>
+                    <td className="px-4 py-4 text-sm text-[color:var(--color-text-secondary)]">{item.relatedModule}</td>
                     <td className="px-4 py-4">
                       <FeedbackBadge tone={priorityTone(item.priority)}>{item.priority}</FeedbackBadge>
                     </td>
                     <td className="px-4 py-4">
                       <FeedbackBadge tone={statusTone(item.status)}>{item.status}</FeedbackBadge>
                     </td>
-                    <td className="px-4 py-4 text-sm text-slate-400">{formatDate(item.createdAt)}</td>
+                    <td className="px-4 py-4 text-sm text-[color:var(--color-text-secondary)]">{formatDate(item.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -268,7 +268,7 @@ const FeedbackSelect = <Value extends string>({
   value: Value;
 }) => (
   <label>
-    <span className="mb-2 block text-sm font-medium text-slate-300">{label}</span>
+    <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">{label}</span>
     <select className="field" required value={value} onChange={(event) => onChange(event.target.value as Value)}>
       {options.map((option) => (
         <option key={option} value={option}>
@@ -288,13 +288,13 @@ const GuidanceItem = ({
   icon: typeof Bug;
   title: string;
 }) => (
-  <div className="flex gap-3 rounded-lg border border-white/10 bg-white/[0.035] p-4">
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-500/10 text-accent-100">
+  <div className="flex gap-3 rounded-lg border border-[color:var(--color-border-weak)] bg-[var(--color-fill-035)] p-4">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-accent-10)] text-accent-100">
       <Icon size={18} />
     </div>
     <div>
-      <h3 className="text-sm font-semibold text-white">{title}</h3>
-      <p className="mt-1 text-sm leading-6 text-slate-400">{description}</p>
+      <h3 className="text-sm font-semibold text-[color:var(--color-text-primary)]">{title}</h3>
+      <p className="mt-1 text-sm leading-6 text-[color:var(--color-text-secondary)]">{description}</p>
     </div>
   </div>
 );
@@ -325,16 +325,16 @@ const statusTone = (status: FeedbackStatus): BadgeTone => {
 
 const badgeClass = (tone: BadgeTone) => {
   if (tone === 'critical') return 'border-red-400/30 bg-red-500/10 text-red-200';
-  if (tone === 'high') return 'border-accent-400/30 bg-accent-500/10 text-accent-100';
+  if (tone === 'high') return 'border-accent-400/30 bg-[var(--color-accent-10)] text-accent-100';
   if (tone === 'medium') return 'border-orange-400/25 bg-orange-500/10 text-orange-200';
-  if (tone === 'low') return 'border-emerald-400/25 bg-emerald-500/10 text-emerald-200';
+  if (tone === 'low') return 'border-[color:var(--color-success-line-25)] bg-[var(--color-success-fill-10)] text-[color:var(--color-success-text-200)]';
   if (tone === 'reviewed') return 'border-sky-400/25 bg-sky-500/10 text-sky-200';
   if (tone === 'planned') return 'border-violet-400/25 bg-violet-500/10 text-violet-200';
   if (tone === 'progress') return 'border-blue-400/25 bg-blue-500/10 text-blue-200';
-  if (tone === 'fixed') return 'border-emerald-400/25 bg-emerald-500/10 text-emerald-200';
-  if (tone === 'rejected') return 'border-slate-400/25 bg-slate-500/10 text-slate-300';
-  if (tone === 'new') return 'border-white/15 bg-white/[0.055] text-slate-200';
-  return 'border-accent-400/25 bg-accent-500/10 text-accent-100';
+  if (tone === 'fixed') return 'border-[color:var(--color-success-line-25)] bg-[var(--color-success-fill-10)] text-[color:var(--color-success-text-200)]';
+  if (tone === 'rejected') return 'border-[color:var(--color-neutral-line-25)] bg-[var(--color-neutral-fill-10)] text-[color:var(--color-text-secondary)]';
+  if (tone === 'new') return 'border-[color:var(--color-line-15)] bg-[var(--color-fill-055)] text-[color:var(--color-text-soft)]';
+  return 'border-accent-400/25 bg-[var(--color-accent-10)] text-accent-100';
 };
 
 const validateFeedbackForm = (form: typeof initialForm) => {

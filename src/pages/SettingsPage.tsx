@@ -6,6 +6,7 @@ import { firestoreService } from '../services/firestoreService';
 import { isFirebaseConfigured } from '../services/firebase';
 import { storage } from '../services/storage';
 import { useAuth } from '../state/AuthContext';
+import { ThemeToggle } from '../components/ThemeToggle';
 import type { CompanySettings, WorkModePolicy } from '../types';
 
 const workModePolicies: WorkModePolicy[] = ['Office Only', 'Hybrid', 'Remote Friendly'];
@@ -60,17 +61,27 @@ export const SettingsPage = () => {
         title="Company Settings"
         subtitle="Manage tenant branding, office policy, and local communication preferences."
       />
-      {loading ? <p className="text-sm text-slate-400">Loading company settings...</p> : null}
+      {loading ? <p className="text-sm text-[color:var(--color-text-secondary)]">Loading company settings...</p> : null}
+
+      <section className="surface p-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-semibold text-[color:var(--color-text-primary)]">Appearance</h3>
+            <p className="mt-1 text-sm text-[color:var(--color-text-muted)]">Choose the theme for this workspace on this device.</p>
+          </div>
+          <ThemeToggle variant="segments" />
+        </div>
+      </section>
 
       <form onSubmit={submit} className="space-y-6">
         <section className="surface p-6">
           <div>
-            <h3 className="text-lg font-semibold text-white">Company Branding</h3>
-            <p className="mt-1 text-sm text-slate-500">Local tenant details used for this company.</p>
+            <h3 className="text-lg font-semibold text-[color:var(--color-text-primary)]">Company Branding</h3>
+            <p className="mt-1 text-sm text-[color:var(--color-text-muted)]">Local tenant details used for this company.</p>
           </div>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <label>
-              <span className="mb-2 block text-sm font-medium text-slate-300">Company Name</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Company Name</span>
               <input
                 className="field"
                 value={settings.workspaceName}
@@ -79,7 +90,7 @@ export const SettingsPage = () => {
               />
             </label>
             <label>
-              <span className="mb-2 block text-sm font-medium text-slate-300">Product Name</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Product Name</span>
               <input
                 className="field"
                 value={settings.productName}
@@ -88,7 +99,7 @@ export const SettingsPage = () => {
               />
             </label>
             <label>
-              <span className="mb-2 block text-sm font-medium text-slate-300">Website URL</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Website URL</span>
               <input
                 className="field"
                 type="url"
@@ -98,7 +109,7 @@ export const SettingsPage = () => {
               />
             </label>
             <label>
-              <span className="mb-2 block text-sm font-medium text-slate-300">Website Label</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Website Label</span>
               <input
                 className="field"
                 value={settings.websiteLabel}
@@ -111,12 +122,12 @@ export const SettingsPage = () => {
 
         <section className="surface p-6">
           <div>
-            <h3 className="text-lg font-semibold text-white">Office Policy</h3>
-            <p className="mt-1 text-sm text-slate-500">Define the expected working rhythm for this company.</p>
+            <h3 className="text-lg font-semibold text-[color:var(--color-text-primary)]">Office Policy</h3>
+            <p className="mt-1 text-sm text-[color:var(--color-text-muted)]">Define the expected working rhythm for this company.</p>
           </div>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <label>
-              <span className="mb-2 block text-sm font-medium text-slate-300">Office Start Time</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Office Start Time</span>
               <input
                 className="field"
                 type="time"
@@ -126,7 +137,7 @@ export const SettingsPage = () => {
               />
             </label>
             <label>
-              <span className="mb-2 block text-sm font-medium text-slate-300">Office End Time</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Office End Time</span>
               <input
                 className="field"
                 type="time"
@@ -136,7 +147,7 @@ export const SettingsPage = () => {
               />
             </label>
             <label>
-              <span className="mb-2 block text-sm font-medium text-slate-300">Work Mode Policy</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Work Mode Policy</span>
               <select
                 className="field"
                 value={settings.workModePolicy}
@@ -148,7 +159,7 @@ export const SettingsPage = () => {
               </select>
             </label>
             <label>
-              <span className="mb-2 block text-sm font-medium text-slate-300">Default Timezone</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Default Timezone</span>
               <input
                 className="field"
                 value={settings.timezone}
@@ -162,8 +173,8 @@ export const SettingsPage = () => {
 
         <section className="surface p-6">
           <div>
-            <h3 className="text-lg font-semibold text-white">Communication & Reports</h3>
-            <p className="mt-1 text-sm text-slate-500">Control announcement permissions and reporting rules.</p>
+            <h3 className="text-lg font-semibold text-[color:var(--color-text-primary)]">Communication & Reports</h3>
+            <p className="mt-1 text-sm text-[color:var(--color-text-muted)]">Control announcement permissions and reporting rules.</p>
           </div>
           <div className="mt-5 grid gap-3">
             <PreferenceToggle
@@ -180,7 +191,7 @@ export const SettingsPage = () => {
         </section>
 
         <section className="surface p-6">
-          <h3 className="text-lg font-semibold text-white">Platform Information</h3>
+          <h3 className="text-lg font-semibold text-[color:var(--color-text-primary)]">Platform Information</h3>
           <div className="mt-4 grid gap-3 text-sm">
             <PlatformInfoRow label="Platform" value={settings.productName} />
             <PlatformInfoRow label="Version" value="v0.1 Prototype" />
@@ -211,18 +222,18 @@ const PreferenceToggle = ({
   <button
     type="button"
     onClick={onChange}
-    className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.035] px-4 py-3 text-left transition hover:border-accent-500/40"
+    className="flex items-center justify-between rounded-lg border border-[color:var(--color-border-weak)] bg-[var(--color-fill-035)] px-4 py-3 text-left transition hover:border-[color:var(--color-accent-40)]"
   >
-    <span className="font-medium text-slate-200">{label}</span>
-    <span className={`relative h-6 w-11 rounded-full transition ${checked ? 'bg-accent-600' : 'bg-slate-700'}`}>
+    <span className="font-medium text-[color:var(--color-text-soft)]">{label}</span>
+    <span className={`relative h-6 w-11 rounded-full transition ${checked ? 'bg-[var(--color-accent-hover)]' : 'bg-[var(--color-slate-bg-700)]'}`}>
       <span className={`absolute top-1 h-4 w-4 rounded-full bg-white transition ${checked ? 'left-6' : 'left-1'}`} />
     </span>
   </button>
 );
 
 const PlatformInfoRow = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex items-center justify-between gap-4 rounded-lg border border-white/10 bg-ink-950/35 px-4 py-3">
-    <span className="text-slate-500">{label}</span>
-    <span className="font-medium text-slate-200">{value}</span>
+  <div className="flex items-center justify-between gap-4 rounded-lg border border-[color:var(--color-border-weak)] bg-[var(--color-overlay-35)] px-4 py-3">
+    <span className="text-[color:var(--color-text-muted)]">{label}</span>
+    <span className="font-medium text-[color:var(--color-text-soft)]">{value}</span>
   </div>
 );

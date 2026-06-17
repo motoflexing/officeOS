@@ -64,26 +64,26 @@ export const ContactModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 px-4 py-8 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay-65)] px-4 py-8 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-label="Contact"
       onClick={onClose}
     >
       <form
-        className="surface flex max-h-full w-full max-w-lg flex-col border-accent-500/30 p-6 shadow-[0_0_44px_rgba(239,35,43,0.18)]"
+        className="surface flex max-h-full w-full max-w-lg flex-col border-[color:var(--color-accent-30)] p-6 shadow-[var(--shadow-glow-44-18)]"
         onClick={(event) => event.stopPropagation()}
         onSubmit={submit}
       >
         <div className="flex items-start justify-between gap-3">
-          <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">
+          <p className="text-sm font-medium uppercase tracking-[0.14em] text-[color:var(--color-accent)]">
             {contact ? 'Edit Contact' : 'Add Contact'}
           </p>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-lg p-1 text-slate-400 transition hover:bg-white/[0.055] hover:text-white"
+            className="rounded-lg p-1 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
           >
             <X size={18} />
           </button>
@@ -91,27 +91,27 @@ export const ContactModal = ({
 
         <div className="mt-5 grid gap-4 overflow-y-auto pr-1 sm:grid-cols-2">
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">First Name</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">First Name</span>
             <input className="field" value={firstName} onChange={(event) => setFirstName(event.target.value)} required autoFocus />
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Last Name</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Last Name</span>
             <input className="field" value={lastName} onChange={(event) => setLastName(event.target.value)} required />
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Role</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Role</span>
             <input className="field" value={role} onChange={(event) => setRole(event.target.value)} placeholder="e.g. Head of Support" />
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Email</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Email</span>
             <input className="field" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Phone</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Phone</span>
             <input className="field" value={phone} onChange={(event) => setPhone(event.target.value)} />
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Last Contacted</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Last Contacted</span>
             <input
               className="field"
               type="date"
@@ -120,7 +120,7 @@ export const ContactModal = ({
             />
           </label>
           <label className="block sm:col-span-2">
-            <span className="mb-2 block text-sm font-medium text-slate-300">LinkedIn URL</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">LinkedIn URL</span>
             <input
               className="field"
               type="url"
@@ -132,17 +132,17 @@ export const ContactModal = ({
           <button
             type="button"
             onClick={() => setIsPrimary((value) => !value)}
-            className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.035] px-4 py-3 text-left transition hover:border-accent-500/40 sm:col-span-2"
+            className="flex items-center justify-between rounded-lg border border-[color:var(--color-border-weak)] bg-[var(--color-fill-035)] px-4 py-3 text-left transition hover:border-[color:var(--color-accent-40)] sm:col-span-2"
           >
-            <span className="font-medium text-slate-200">Primary contact</span>
-            <span className={`relative h-6 w-11 rounded-full transition ${isPrimary ? 'bg-accent-600' : 'bg-slate-700'}`}>
+            <span className="font-medium text-[color:var(--color-text-soft)]">Primary contact</span>
+            <span className={`relative h-6 w-11 rounded-full transition ${isPrimary ? 'bg-[var(--color-accent-hover)]' : 'bg-[var(--color-slate-bg-700)]'}`}>
               <span className={`absolute top-1 h-4 w-4 rounded-full bg-white transition ${isPrimary ? 'left-6' : 'left-1'}`} />
             </span>
           </button>
         </div>
 
         {error ? (
-          <p className="mt-4 rounded-lg border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+          <p className="mt-4 rounded-lg border border-[color:var(--color-error-line-25)] bg-[var(--color-error-fill-10)] px-4 py-3 text-sm text-[color:var(--color-error-text-200)]">
             {error}
           </p>
         ) : null}

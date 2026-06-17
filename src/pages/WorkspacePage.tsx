@@ -137,11 +137,11 @@ export const WorkspacePage = () => {
         <PageHeader eyebrow="Workspace" title="Workspace" subtitle="Internal chat and collaboration." />
         <div className="surface flex min-h-[20rem] items-center justify-center p-6 text-center">
           <div>
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-accent-500/10 text-accent-500">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--color-accent-10)] text-[color:var(--color-accent)]">
               <MessageCircle size={24} />
             </div>
-            <h3 className="mt-4 text-lg font-semibold text-white">Sign in required</h3>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-400">
+            <h3 className="mt-4 text-lg font-semibold text-[color:var(--color-text-primary)]">Sign in required</h3>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[color:var(--color-text-secondary)]">
               Workspace chat needs a signed-in account. Please sign in with your OfficeOS credentials to start
               messaging.
             </p>
@@ -158,11 +158,11 @@ export const WorkspacePage = () => {
       <div className="surface flex h-[calc(100vh-16rem)] min-h-[28rem] overflow-hidden p-0">
         {/* Left pane — conversation list */}
         <aside
-          className={`w-full flex-col border-r border-white/10 md:flex md:w-80 ${
+          className={`w-full flex-col border-r border-[color:var(--color-border-weak)] md:flex md:w-80 ${
             mobileView === 'list' ? 'flex' : 'hidden'
           }`}
         >
-          <div className="border-b border-white/10 p-4">
+          <div className="border-b border-[color:var(--color-border-weak)] p-4">
             <button type="button" className="btn-primary w-full" onClick={openNewChat}>
               <Plus size={18} />
               New Chat
@@ -235,10 +235,10 @@ const ConversationSection = ({
   title: string;
 }) => (
   <div>
-    <p className="px-1 text-xs font-medium uppercase tracking-[0.14em] text-accent-500">{title}</p>
+    <p className="px-1 text-xs font-medium uppercase tracking-[0.14em] text-[color:var(--color-accent)]">{title}</p>
     <div className="mt-2 space-y-1">
       {conversations.length === 0 ? (
-        <p className="px-1 py-1 text-sm text-slate-600">{emptyLabel}</p>
+        <p className="px-1 py-1 text-sm text-[color:var(--color-text-faint)]">{emptyLabel}</p>
       ) : (
         conversations.map((conversation) => {
           const active = conversation.id === selectedId;
@@ -249,14 +249,14 @@ const ConversationSection = ({
               onClick={() => onSelect(conversation.id)}
               className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium transition ${
                 active
-                  ? 'bg-gradient-to-r from-red-950 via-red-900/75 to-accent-600/35 text-white shadow-[inset_0_0_0_1px_rgba(239,35,43,0.25)]'
-                  : 'text-slate-400 hover:bg-white/[0.055] hover:text-slate-100'
+                  ? 'bg-gradient-to-r from-red-950 via-red-900/75 to-[color:var(--color-accent-hover-35)] text-[color:var(--color-text-primary)] shadow-[var(--shadow-glow-inset)]'
+                  : 'text-[color:var(--color-text-secondary)] hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-bright)]'
               }`}
             >
               {conversation.type === 'channel' ? (
-                <Hash size={16} className="shrink-0 text-slate-500" />
+                <Hash size={16} className="shrink-0 text-[color:var(--color-text-muted)]" />
               ) : (
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-accent-600 text-xs font-bold text-white">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[var(--color-accent-hover)] text-xs font-bold text-[color:var(--color-on-accent)]">
                   {conversationDisplayName(conversation, currentUid).charAt(0).toUpperCase()}
                 </span>
               )}
@@ -295,26 +295,26 @@ const ChatPane = ({
   return (
     <div className="flex h-full min-h-0 flex-col">
       {/* Header */}
-      <div className="flex items-center gap-3 border-b border-white/10 p-4">
+      <div className="flex items-center gap-3 border-b border-[color:var(--color-border-weak)] p-4">
         <button
           type="button"
           onClick={onBack}
           aria-label="Back to conversations"
-          className="rounded-lg p-1 text-slate-400 transition hover:bg-white/[0.055] hover:text-white md:hidden"
+          className="rounded-lg p-1 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)] md:hidden"
         >
           <ChevronLeft size={20} />
         </button>
-        {conversation.type === 'channel' ? <Hash size={18} className="text-slate-500" /> : null}
+        {conversation.type === 'channel' ? <Hash size={18} className="text-[color:var(--color-text-muted)]" /> : null}
         <div className="min-w-0">
-          <p className="truncate font-semibold text-white">
+          <p className="truncate font-semibold text-[color:var(--color-text-primary)]">
             {conversation.type === 'channel'
               ? `#${conversation.name ?? 'channel'}`
               : conversationDisplayName(conversation, currentUid)}
           </p>
           {conversation.type === 'channel' && conversation.description ? (
-            <p className="truncate text-xs text-slate-500">{conversation.description}</p>
+            <p className="truncate text-xs text-[color:var(--color-text-muted)]">{conversation.description}</p>
           ) : conversation.type === 'dm' ? (
-            <p className="truncate text-xs text-slate-500">{conversationDisplayEmail(conversation, currentUid)}</p>
+            <p className="truncate text-xs text-[color:var(--color-text-muted)]">{conversationDisplayEmail(conversation, currentUid)}</p>
           ) : null}
         </div>
       </div>
@@ -323,7 +323,7 @@ const ChatPane = ({
       <div className="min-h-0 flex-1 space-y-1 overflow-y-auto p-4">
         {messages.length === 0 ? (
           <div className="flex h-full items-center justify-center">
-            <p className="text-sm text-slate-500">No messages yet. Say hi.</p>
+            <p className="text-sm text-[color:var(--color-text-muted)]">No messages yet. Say hi.</p>
           </div>
         ) : (
           messages.map((message, index) => {
@@ -347,21 +347,21 @@ const MessageRow = ({ grouped, message }: { grouped: boolean; message: Message }
   if (grouped) {
     return (
       <div className="flex gap-3 pl-12">
-        <p className="whitespace-pre-wrap break-words text-sm leading-6 text-slate-300">{message.text}</p>
+        <p className="whitespace-pre-wrap break-words text-sm leading-6 text-[color:var(--color-text-secondary)]">{message.text}</p>
       </div>
     );
   }
   return (
     <div className="flex gap-3 pt-3">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-600 text-sm font-bold text-white">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-accent-hover)] text-sm font-bold text-[color:var(--color-on-accent)]">
         {message.senderName.trim().charAt(0).toUpperCase() || '?'}
       </span>
       <div className="min-w-0">
         <p className="flex items-baseline gap-2">
-          <span className="text-sm font-semibold text-white">{message.senderName}</span>
-          <span className="text-xs text-slate-500">{relativeTime(message.createdAt)}</span>
+          <span className="text-sm font-semibold text-[color:var(--color-text-primary)]">{message.senderName}</span>
+          <span className="text-xs text-[color:var(--color-text-muted)]">{relativeTime(message.createdAt)}</span>
         </p>
-        <p className="mt-0.5 whitespace-pre-wrap break-words text-sm leading-6 text-slate-300">{message.text}</p>
+        <p className="mt-0.5 whitespace-pre-wrap break-words text-sm leading-6 text-[color:var(--color-text-secondary)]">{message.text}</p>
       </div>
     </div>
   );
@@ -393,7 +393,7 @@ const MessageComposer = ({ onSend }: { onSend: (text: string) => void }) => {
   };
 
   return (
-    <div className="border-t border-white/10 p-4">
+    <div className="border-t border-[color:var(--color-border-weak)] p-4">
       <div className="flex items-end gap-2">
         <textarea
           ref={textareaRef}
@@ -421,10 +421,10 @@ const MessageComposer = ({ onSend }: { onSend: (text: string) => void }) => {
 const EmptyChat = () => (
   <div className="flex h-full items-center justify-center p-6 text-center">
     <div>
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-accent-500/10 text-accent-500">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--color-accent-10)] text-[color:var(--color-accent)]">
         <MessageCircle size={24} />
       </div>
-      <p className="mt-4 text-sm text-slate-400">Select a conversation or start a new one</p>
+      <p className="mt-4 text-sm text-[color:var(--color-text-secondary)]">Select a conversation or start a new one</p>
     </div>
   </div>
 );

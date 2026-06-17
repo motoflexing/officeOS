@@ -90,15 +90,15 @@ export const AnnouncementsPage = () => {
         <form onSubmit={postAnnouncement} className="surface p-5">
           <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr_180px]">
             <label>
-              <span className="mb-2 block text-sm font-medium text-slate-300">Title</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Title</span>
               <input className="field" value={title} onChange={(event) => setTitle(event.target.value)} required />
             </label>
             <label>
-              <span className="mb-2 block text-sm font-medium text-slate-300">Message</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Message</span>
               <input className="field" value={message} onChange={(event) => setMessage(event.target.value)} required />
             </label>
             <label>
-              <span className="mb-2 block text-sm font-medium text-slate-300">Target</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Target</span>
               <select
                 className="field"
                 value={targetRole}

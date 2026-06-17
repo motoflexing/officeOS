@@ -39,7 +39,7 @@ export const EmployeeMultiSelect = ({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {selectedIds.length === 0 && !adding ? <span className="text-sm text-slate-500">{emptyLabel}</span> : null}
+      {selectedIds.length === 0 && !adding ? <span className="text-sm text-[color:var(--color-text-muted)]">{emptyLabel}</span> : null}
 
       {selectedIds.map((id) => {
         const employee = byId.get(id);
@@ -47,9 +47,9 @@ export const EmployeeMultiSelect = ({
         return (
           <span
             key={id}
-            className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.06] py-1 pl-1 pr-2 text-xs font-medium text-slate-200 ring-1 ring-white/10"
+            className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-fill-06)] py-1 pl-1 pr-2 text-xs font-medium text-[color:var(--color-text-soft)] ring-1 ring-white/10"
           >
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-600 text-[10px] font-bold text-white">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-accent-hover)] text-[10px] font-bold text-[color:var(--color-on-accent)]">
               {name.trim().charAt(0).toUpperCase() || '?'}
             </span>
             {name}
@@ -58,7 +58,7 @@ export const EmployeeMultiSelect = ({
                 type="button"
                 onClick={() => remove(id)}
                 aria-label={`Remove ${name}`}
-                className="rounded-full p-0.5 text-slate-400 transition hover:bg-white/10 hover:text-white"
+                className="rounded-full p-0.5 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-10)] hover:text-[color:var(--color-text-primary)]"
               >
                 <X size={12} />
               </button>
@@ -89,7 +89,7 @@ export const EmployeeMultiSelect = ({
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="inline-flex items-center gap-1 rounded-full border border-dashed border-white/20 px-2.5 py-1 text-xs font-medium text-slate-400 transition hover:border-accent-500/50 hover:text-white"
+            className="inline-flex items-center gap-1 rounded-full border border-dashed border-[color:var(--color-border-strong)] px-2.5 py-1 text-xs font-medium text-[color:var(--color-text-secondary)] transition hover:border-[color:var(--color-accent-50)] hover:text-[color:var(--color-text-primary)]"
           >
             <Plus size={12} />
             Add

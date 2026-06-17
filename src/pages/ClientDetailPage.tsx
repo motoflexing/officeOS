@@ -205,7 +205,7 @@ export const ClientDetailPage = () => {
         <button
           type="button"
           onClick={() => navigate('/clients')}
-          className="inline-flex items-center gap-2 text-sm text-slate-400 transition hover:text-white"
+          className="inline-flex items-center gap-2 text-sm text-[color:var(--color-text-secondary)] transition hover:text-[color:var(--color-text-primary)]"
         >
           <ArrowLeft size={16} />
           Back to Clients
@@ -222,7 +222,7 @@ export const ClientDetailPage = () => {
       <button
         type="button"
         onClick={() => navigate('/clients')}
-        className="inline-flex items-center gap-2 text-sm text-slate-400 transition hover:text-white"
+        className="inline-flex items-center gap-2 text-sm text-[color:var(--color-text-secondary)] transition hover:text-[color:var(--color-text-primary)]"
       >
         <ArrowLeft size={16} />
         Back to Clients
@@ -248,7 +248,7 @@ export const ClientDetailPage = () => {
                     type="button"
                     onClick={() => void saveName()}
                     aria-label="Save name"
-                    className="rounded-lg p-1.5 text-emerald-300 transition hover:bg-emerald-500/15"
+                    className="rounded-lg p-1.5 text-[color:var(--color-success-text-300)] transition hover:bg-[var(--color-success-fill-15)]"
                   >
                     <Check size={18} />
                   </button>
@@ -256,14 +256,14 @@ export const ClientDetailPage = () => {
                     type="button"
                     onClick={() => setEditingName(false)}
                     aria-label="Cancel"
-                    className="rounded-lg p-1.5 text-slate-400 transition hover:bg-white/[0.055] hover:text-white"
+                    className="rounded-lg p-1.5 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
                   >
                     <X size={18} />
                   </button>
                 </div>
               ) : (
                 <>
-                  <h2 className="truncate text-2xl font-semibold text-white">{client.companyName}</h2>
+                  <h2 className="truncate text-2xl font-semibold text-[color:var(--color-text-primary)]">{client.companyName}</h2>
                   {canEdit ? (
                     <button
                       type="button"
@@ -272,7 +272,7 @@ export const ClientDetailPage = () => {
                         setEditingName(true);
                       }}
                       aria-label="Edit name"
-                      className="rounded-lg p-1.5 text-slate-400 transition hover:bg-white/[0.055] hover:text-white"
+                      className="rounded-lg p-1.5 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
                     >
                       <Pencil size={16} />
                     </button>
@@ -291,13 +291,13 @@ export const ClientDetailPage = () => {
                 <ClientStatusPill status={client.status} />
               </button>
               {statusMenuOpen ? (
-                <div className="absolute left-0 z-20 mt-2 w-44 rounded-lg border border-white/10 bg-black/90 p-1 shadow-glow backdrop-blur">
+                <div className="absolute left-0 z-20 mt-2 w-44 rounded-lg border border-[color:var(--color-border-weak)] bg-[var(--color-overlay-90)] p-1 shadow-glow backdrop-blur">
                   {CLIENT_STATUSES.map((status) => (
                     <button
                       key={status}
                       type="button"
                       onClick={() => void changeStatus(status)}
-                      className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm text-slate-300 transition hover:bg-white/[0.055] hover:text-white"
+                      className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
                     >
                       {status}
                       {status === client.status ? <Check size={14} className="text-accent-400" /> : null}
@@ -313,7 +313,7 @@ export const ClientDetailPage = () => {
               <MetaRow label="Helpdesk Tool" value={client.helpdeskTool ?? '—'} />
               <MetaRow label="Owner" value={ownerName ?? '—'} />
               <div className="flex gap-2">
-                <dt className="text-slate-500">Website</dt>
+                <dt className="text-[color:var(--color-text-muted)]">Website</dt>
                 <dd>
                   {client.website ? (
                     <a
@@ -325,7 +325,7 @@ export const ClientDetailPage = () => {
                       Visit <ExternalLink size={13} />
                     </a>
                   ) : (
-                    <span className="text-slate-300">—</span>
+                    <span className="text-[color:var(--color-text-secondary)]">—</span>
                   )}
                 </dd>
               </div>
@@ -341,7 +341,7 @@ export const ClientDetailPage = () => {
               <button
                 type="button"
                 onClick={() => setDeleteOpen(true)}
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-rose-400/30 bg-rose-500/10 px-4 py-2.5 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/20"
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-[color:var(--color-error-line-30)] bg-[var(--color-error-fill-10)] px-4 py-2.5 text-sm font-semibold text-[color:var(--color-error-text-200)] transition hover:bg-[var(--color-error-fill-20)]"
               >
                 <Trash2 size={16} />
                 Delete
@@ -359,8 +359,8 @@ export const ClientDetailPage = () => {
             onClick={() => setTab(item.id)}
             className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
               tab === item.id
-                ? 'bg-accent-500 text-white shadow-[0_0_24px_rgba(239,35,43,0.22)]'
-                : 'text-slate-400 hover:bg-white/[0.055] hover:text-white'
+                ? 'bg-[var(--color-accent)] text-[color:var(--color-on-accent)] shadow-[var(--shadow-glow-24-22)]'
+                : 'text-[color:var(--color-text-secondary)] hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]'
             }`}
           >
             {item.label}
@@ -378,17 +378,17 @@ export const ClientDetailPage = () => {
           </div>
 
           <section className="surface p-6">
-            <h3 className="text-lg font-semibold text-white">Recent Activities</h3>
+            <h3 className="text-lg font-semibold text-[color:var(--color-text-primary)]">Recent Activities</h3>
             {recentActivities.length === 0 ? (
-              <p className="mt-3 text-sm text-slate-500">No activities yet</p>
+              <p className="mt-3 text-sm text-[color:var(--color-text-muted)]">No activities yet</p>
             ) : (
               <ul className="mt-4 space-y-3">
                 {recentActivities.map((activity) => (
-                  <li key={activity.id} className="rounded-lg border border-white/10 bg-white/[0.035] px-4 py-3">
-                    <p className="text-sm font-medium text-slate-200">
+                  <li key={activity.id} className="rounded-lg border border-[color:var(--color-border-weak)] bg-[var(--color-fill-035)] px-4 py-3">
+                    <p className="text-sm font-medium text-[color:var(--color-text-soft)]">
                       <span className="text-accent-400">{activity.type}</span> · {activity.subject}
                     </p>
-                    {activity.body ? <p className="mt-1 text-sm text-slate-500">{activity.body}</p> : null}
+                    {activity.body ? <p className="mt-1 text-sm text-[color:var(--color-text-muted)]">{activity.body}</p> : null}
                   </li>
                 ))}
               </ul>
@@ -396,7 +396,7 @@ export const ClientDetailPage = () => {
           </section>
 
           <section className="surface p-6">
-            <h3 className="text-lg font-semibold text-white">Notes</h3>
+            <h3 className="text-lg font-semibold text-[color:var(--color-text-primary)]">Notes</h3>
             <textarea
               className="field mt-4 min-h-[120px]"
               value={notesDraft}
@@ -468,7 +468,7 @@ export const ClientDetailPage = () => {
 
 const MetaRow = ({ label, value }: { label: string; value: string }) => (
   <div className="flex gap-2">
-    <dt className="text-slate-500">{label}</dt>
-    <dd className="truncate font-medium text-slate-300">{value}</dd>
+    <dt className="text-[color:var(--color-text-muted)]">{label}</dt>
+    <dd className="truncate font-medium text-[color:var(--color-text-secondary)]">{value}</dd>
   </div>
 );

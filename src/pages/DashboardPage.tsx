@@ -171,13 +171,13 @@ export const DashboardPage = () => {
         title={`Today at ${BRANDING.workspaceName}`}
         subtitle={`${BRANDING.productName} keeps attendance, reports, leave, and announcements ready for the team.`}
         action={
-          <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3">
-            <MonitorSmartphone size={18} className="text-accent-500" />
-            <span className="text-sm font-medium text-slate-300">Remote Work</span>
+          <div className="flex items-center gap-3 rounded-lg border border-[color:var(--color-border-weak)] bg-[var(--color-fill-04)] px-4 py-3">
+            <MonitorSmartphone size={18} className="text-[color:var(--color-accent)]" />
+            <span className="text-sm font-medium text-[color:var(--color-text-secondary)]">Remote Work</span>
             <button
               type="button"
               onClick={toggleRemote}
-              className={`relative h-6 w-11 rounded-full transition ${today.remote ? 'bg-accent-600' : 'bg-slate-700'}`}
+              className={`relative h-6 w-11 rounded-full transition ${today.remote ? 'bg-[var(--color-accent-hover)]' : 'bg-[var(--color-slate-bg-700)]'}`}
               aria-label="Toggle remote work"
             >
               <span
@@ -193,8 +193,8 @@ export const DashboardPage = () => {
       <section className="surface p-5">
         <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
           <div>
-            <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
-            <p className="mt-1 text-sm text-slate-500">Jump into the most common workflows for your role.</p>
+            <h3 className="text-lg font-semibold text-[color:var(--color-text-primary)]">Quick Actions</h3>
+            <p className="mt-1 text-sm text-[color:var(--color-text-muted)]">Jump into the most common workflows for your role.</p>
           </div>
         </div>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -202,9 +202,9 @@ export const DashboardPage = () => {
             <Link
               key={action.label}
               to={action.to}
-              className="group flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.035] px-4 py-3 text-sm font-medium text-slate-200 transition hover:border-accent-500/35 hover:bg-accent-500/10"
+              className="group flex items-center gap-3 rounded-lg border border-[color:var(--color-border-weak)] bg-[var(--color-fill-035)] px-4 py-3 text-sm font-medium text-[color:var(--color-text-soft)] transition hover:border-[color:var(--color-accent-35)] hover:bg-[var(--color-accent-10)]"
             >
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-500/10 text-accent-500 transition group-hover:bg-accent-500/15">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--color-accent-10)] text-[color:var(--color-accent)] transition group-hover:bg-[var(--color-accent-15)]">
                 <action.icon size={18} />
               </span>
               {action.label}
@@ -214,14 +214,14 @@ export const DashboardPage = () => {
       </section>
 
       {canReviewActions && pendingActions ? (
-        <section className="surface border-accent-500/25 p-5 shadow-[0_0_34px_rgba(239,35,43,0.12)]">
+        <section className="surface border-[color:var(--color-accent-25)] p-5 shadow-[var(--shadow-glow-12)]">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">Pending Actions</p>
-              <p className="mt-1 text-sm text-slate-500">Items waiting on your review today.</p>
+              <p className="text-sm font-medium uppercase tracking-[0.14em] text-[color:var(--color-accent)]">Pending Actions</p>
+              <p className="mt-1 text-sm text-[color:var(--color-text-muted)]">Items waiting on your review today.</p>
             </div>
           </div>
-          <div className="mt-4 divide-y divide-white/10 overflow-hidden rounded-lg border border-white/10">
+          <div className="mt-4 divide-y divide-[color:var(--color-divide)] overflow-hidden rounded-lg border border-[color:var(--color-border-weak)]">
             <PendingActionRow
               to="/leave"
               icon={CalendarDays}
@@ -249,7 +249,7 @@ export const DashboardPage = () => {
         <StatCard title="Check-In Time" value={today.checkIn ?? '--'} icon={Clock} caption="Saved in localStorage" />
         <StatCard title="Check-Out Time" value={today.checkOut ?? '--'} icon={Timer} caption="Visible after checkout" />
         <article className="surface p-5">
-          <p className="text-sm font-medium text-slate-400">Current Status</p>
+          <p className="text-sm font-medium text-[color:var(--color-text-secondary)]">Current Status</p>
           <div className="mt-4">
             <StatusBadge status={today.status} />
           </div>
@@ -267,7 +267,7 @@ export const DashboardPage = () => {
         </article>
       </div>
       {attendanceError ? (
-        <p className="rounded-lg border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+        <p className="rounded-lg border border-[color:var(--color-error-line-25)] bg-[var(--color-error-fill-10)] px-4 py-3 text-sm text-[color:var(--color-error-text-200)]">
           {attendanceError}
         </p>
       ) : null}
@@ -298,16 +298,16 @@ const PendingActionRow = ({
   return (
     <Link
       to={to}
-      className={`flex items-center gap-3 px-4 py-3 text-sm transition hover:bg-accent-500/10 ${
+      className={`flex items-center gap-3 px-4 py-3 text-sm transition hover:bg-[var(--color-accent-10)] ${
         isEmpty ? 'opacity-50' : ''
       }`}
     >
-      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-500/10 text-accent-500">
+      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--color-accent-10)] text-[color:var(--color-accent)]">
         <Icon size={18} />
       </span>
-      <span className="min-w-0 flex-1 font-medium text-slate-200">{label}</span>
-      <span className="text-lg font-semibold text-white tabular-nums">{count}</span>
-      <ChevronRight size={16} className="shrink-0 text-slate-500" />
+      <span className="min-w-0 flex-1 font-medium text-[color:var(--color-text-soft)]">{label}</span>
+      <span className="text-lg font-semibold text-[color:var(--color-text-primary)] tabular-nums">{count}</span>
+      <ChevronRight size={16} className="shrink-0 text-[color:var(--color-text-muted)]" />
     </Link>
   );
 };

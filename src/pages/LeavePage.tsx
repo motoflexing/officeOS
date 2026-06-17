@@ -170,7 +170,7 @@ export const LeavePage = () => {
         <form onSubmit={submit} className="surface max-w-4xl p-6">
           <div className="grid gap-4 md:grid-cols-2">
             <label>
-              <span className="mb-2 block text-sm font-medium text-slate-300">Leave Type</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Leave Type</span>
               <select
                 className="field"
                 value={form.leaveType}
@@ -184,7 +184,7 @@ export const LeavePage = () => {
               </select>
             </label>
             <label>
-              <span className="mb-2 block text-sm font-medium text-slate-300">Start Date</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Start Date</span>
               <input
                 className="field"
                 type="date"
@@ -194,7 +194,7 @@ export const LeavePage = () => {
               />
             </label>
             <label>
-              <span className="mb-2 block text-sm font-medium text-slate-300">End Date</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">End Date</span>
               <input
                 className="field"
                 type="date"
@@ -205,7 +205,7 @@ export const LeavePage = () => {
               />
             </label>
             <label className="md:col-span-2">
-              <span className="mb-2 block text-sm font-medium text-slate-300">Reason</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Reason</span>
               <textarea
                 className="field min-h-32 resize-y"
                 value={form.reason}
@@ -216,7 +216,7 @@ export const LeavePage = () => {
           </div>
 
           {error ? (
-            <p className="mt-4 rounded-lg border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+            <p className="mt-4 rounded-lg border border-[color:var(--color-error-line-25)] bg-[var(--color-error-fill-10)] px-4 py-3 text-sm text-[color:var(--color-error-text-200)]">
               {error}
             </p>
           ) : null}
@@ -227,7 +227,7 @@ export const LeavePage = () => {
           </button>
         </form>
       ) : error ? (
-        <p className="rounded-lg border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+        <p className="rounded-lg border border-[color:var(--color-error-line-25)] bg-[var(--color-error-fill-10)] px-4 py-3 text-sm text-[color:var(--color-error-text-200)]">
           {error}
         </p>
       ) : null}
@@ -279,7 +279,7 @@ const LeaveRequestSection = ({
   title: string;
 }) => (
   <section>
-    <h3 className="text-xl font-semibold text-white">{title}</h3>
+    <h3 className="text-xl font-semibold text-[color:var(--color-text-primary)]">{title}</h3>
     <div className="mt-4 grid gap-4">
       {loading ? (
         <EmptyState icon={CalendarDays} title="Loading leave requests" description="Fetching leave request records." />
@@ -293,9 +293,9 @@ const LeaveRequestSection = ({
             <article key={request.id} className="surface p-5">
               <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
                 <div>
-                  <h4 className="font-semibold text-white">{request.leaveType}</h4>
-                  <p className="mt-1 text-sm text-slate-400">{formatLeaveRange(request)}</p>
-                  <p className="mt-2 text-sm text-slate-500">
+                  <h4 className="font-semibold text-[color:var(--color-text-primary)]">{request.leaveType}</h4>
+                  <p className="mt-1 text-sm text-[color:var(--color-text-secondary)]">{formatLeaveRange(request)}</p>
+                  <p className="mt-2 text-sm text-[color:var(--color-text-muted)]">
                     {request.requesterName || request.employeeName}
                     {request.requesterRole ? ` | ${request.requesterRole}` : ''}
                   </p>
@@ -314,7 +314,7 @@ const LeaveRequestSection = ({
                   ) : null}
                 </div>
               </div>
-              <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-slate-400">
+              <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-[color:var(--color-text-secondary)]">
                 {request.reason || 'No reason provided.'}
               </p>
             </article>

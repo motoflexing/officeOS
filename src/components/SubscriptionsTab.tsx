@@ -135,7 +135,7 @@ export const SubscriptionsTab = ({
         <section className="surface overflow-x-auto p-0">
           <table className="w-full min-w-[820px] text-left text-sm">
             <thead>
-              <tr className="border-b border-white/10 text-xs uppercase tracking-wider text-slate-500">
+              <tr className="border-b border-[color:var(--color-border-weak)] text-xs uppercase tracking-wider text-[color:var(--color-text-muted)]">
                 <th className="px-4 py-3 font-medium">Team Label</th>
                 <th className="px-4 py-3 font-medium">Plan</th>
                 <th className="px-4 py-3 font-medium">MRR</th>
@@ -150,18 +150,18 @@ export const SubscriptionsTab = ({
                 <tr
                   key={sub.id}
                   onClick={() => openDetail(sub)}
-                  className={`cursor-pointer border-b border-white/5 transition last:border-0 hover:bg-white/[0.04] ${
-                    sub.id === selectedId ? 'bg-accent-500/[0.06]' : ''
+                  className={`cursor-pointer border-b border-[color:var(--color-line-05)] transition last:border-0 hover:bg-[var(--color-fill-04)] ${
+                    sub.id === selectedId ? 'bg-[var(--color-accent)]/[0.06]' : ''
                   }`}
                 >
-                  <td className="px-4 py-3 font-medium text-slate-100">{sub.teamLabel}</td>
-                  <td className="px-4 py-3 text-slate-400">{planLabel(sub)}</td>
-                  <td className="px-4 py-3 text-slate-300">{formatMRR(sub.mrr, sub.currency)}</td>
+                  <td className="px-4 py-3 font-medium text-[color:var(--color-text-bright)]">{sub.teamLabel}</td>
+                  <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">{planLabel(sub)}</td>
+                  <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">{formatMRR(sub.mrr, sub.currency)}</td>
                   <td className="px-4 py-3">
                     <SubscriptionStatusPill status={sub.status} />
                   </td>
-                  <td className="px-4 py-3 text-slate-400">{sub.startDate ? formatShortDate(sub.startDate) : '—'}</td>
-                  <td className="px-4 py-3 text-slate-400">{sub.renewalDate ? formatShortDate(sub.renewalDate) : '—'}</td>
+                  <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">{sub.startDate ? formatShortDate(sub.startDate) : '—'}</td>
+                  <td className="px-4 py-3 text-[color:var(--color-text-secondary)]">{sub.renewalDate ? formatShortDate(sub.renewalDate) : '—'}</td>
                   {canEdit ? (
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-1">
@@ -172,7 +172,7 @@ export const SubscriptionsTab = ({
                             openDetail(sub);
                           }}
                           aria-label="Open subscription"
-                          className="rounded-lg p-1.5 text-slate-400 transition hover:bg-white/[0.055] hover:text-white"
+                          className="rounded-lg p-1.5 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
                         >
                           <Pencil size={16} />
                         </button>
@@ -183,7 +183,7 @@ export const SubscriptionsTab = ({
                             setDeletingSub(sub);
                           }}
                           aria-label="Delete subscription"
-                          className="rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-500/15 hover:text-rose-300"
+                          className="rounded-lg p-1.5 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-error-fill-15)] hover:text-[color:var(--color-error-text-300)]"
                         >
                           <Trash2 size={16} />
                         </button>

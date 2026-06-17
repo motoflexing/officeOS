@@ -142,8 +142,8 @@ export const PricingPlansSection = ({ onToast }: { onToast: (message: string) =>
     <section className="surface p-6">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
-          <h3 className="text-lg font-semibold text-white">Pricing Plans</h3>
-          <p className="mt-1 text-sm text-slate-500">Plans referenced by CRM clients and deals.</p>
+          <h3 className="text-lg font-semibold text-[color:var(--color-text-primary)]">Pricing Plans</h3>
+          <p className="mt-1 text-sm text-[color:var(--color-text-muted)]">Plans referenced by CRM clients and deals.</p>
         </div>
         <button type="button" className="btn-primary" onClick={openAdd}>
           <Plus size={18} />
@@ -152,9 +152,9 @@ export const PricingPlansSection = ({ onToast }: { onToast: (message: string) =>
       </div>
 
       {sortedPlans.length === 0 ? (
-        <div className="mt-5 rounded-lg border border-white/10 bg-white/[0.035] p-6 text-center">
-          <p className="text-sm font-medium text-slate-200">No pricing plans yet</p>
-          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+        <div className="mt-5 rounded-lg border border-[color:var(--color-border-weak)] bg-[var(--color-fill-035)] p-6 text-center">
+          <p className="text-sm font-medium text-[color:var(--color-text-soft)]">No pricing plans yet</p>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[color:var(--color-text-muted)]">
             Get started quickly with suggested plans: {DEFAULT_PLAN_SUGGESTIONS.map((plan) => plan.name).join(' / ')}.
           </p>
           <button type="button" className="btn-secondary mt-4" onClick={createDefaultPlans} disabled={seeding}>
@@ -165,7 +165,7 @@ export const PricingPlansSection = ({ onToast }: { onToast: (message: string) =>
         <div className="mt-5 overflow-x-auto">
           <table className="w-full min-w-[640px] text-left text-sm">
             <thead>
-              <tr className="border-b border-white/10 text-xs uppercase tracking-wider text-slate-500">
+              <tr className="border-b border-[color:var(--color-border-weak)] text-xs uppercase tracking-wider text-[color:var(--color-text-muted)]">
                 <th className="px-3 py-2 font-medium">Sort</th>
                 <th className="px-3 py-2 font-medium">Name</th>
                 <th className="px-3 py-2 font-medium">Monthly Price</th>
@@ -176,17 +176,17 @@ export const PricingPlansSection = ({ onToast }: { onToast: (message: string) =>
             </thead>
             <tbody>
               {sortedPlans.map((plan) => (
-                <tr key={plan.id} className="border-b border-white/5 last:border-0">
-                  <td className="px-3 py-3 text-slate-400">{plan.sortOrder}</td>
-                  <td className="px-3 py-3 font-medium text-slate-100">{plan.name}</td>
-                  <td className="px-3 py-3 text-slate-300">{formatPrice(plan.monthlyPrice)}</td>
-                  <td className="px-3 py-3 text-slate-400">{plan.description || '—'}</td>
+                <tr key={plan.id} className="border-b border-[color:var(--color-line-05)] last:border-0">
+                  <td className="px-3 py-3 text-[color:var(--color-text-secondary)]">{plan.sortOrder}</td>
+                  <td className="px-3 py-3 font-medium text-[color:var(--color-text-bright)]">{plan.name}</td>
+                  <td className="px-3 py-3 text-[color:var(--color-text-secondary)]">{formatPrice(plan.monthlyPrice)}</td>
+                  <td className="px-3 py-3 text-[color:var(--color-text-secondary)]">{plan.description || '—'}</td>
                   <td className="px-3 py-3">
                     <span
                       className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${
                         plan.isActive
-                          ? 'bg-emerald-500/12 text-emerald-300 ring-emerald-400/25'
-                          : 'bg-slate-500/16 text-slate-300 ring-slate-400/20'
+                          ? 'bg-[var(--color-success-fill-12)] text-[color:var(--color-success-text-300)] ring-[color:var(--color-success-ring-25)]'
+                          : 'bg-[var(--color-neutral-fill-16)] text-[color:var(--color-text-secondary)] ring-[color:var(--color-neutral-ring-20)]'
                       }`}
                     >
                       {plan.isActive ? 'Active' : 'Inactive'}
@@ -198,7 +198,7 @@ export const PricingPlansSection = ({ onToast }: { onToast: (message: string) =>
                         type="button"
                         onClick={() => openEdit(plan)}
                         aria-label={`Edit ${plan.name}`}
-                        className="rounded-lg p-1.5 text-slate-400 transition hover:bg-white/[0.055] hover:text-white"
+                        className="rounded-lg p-1.5 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
                       >
                         <Pencil size={16} />
                       </button>
@@ -206,7 +206,7 @@ export const PricingPlansSection = ({ onToast }: { onToast: (message: string) =>
                         type="button"
                         onClick={() => setDeletingPlan(plan)}
                         aria-label={`Delete ${plan.name}`}
-                        className="rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-500/15 hover:text-rose-300"
+                        className="rounded-lg p-1.5 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-error-fill-15)] hover:text-[color:var(--color-error-text-300)]"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -221,26 +221,26 @@ export const PricingPlansSection = ({ onToast }: { onToast: (message: string) =>
 
       {modalOpen ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 px-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay-65)] px-4 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-label={editingPlan ? 'Edit plan' : 'Add plan'}
           onClick={closeModal}
         >
           <form
-            className="surface w-full max-w-lg border-accent-500/30 p-6 shadow-[0_0_44px_rgba(239,35,43,0.18)]"
+            className="surface w-full max-w-lg border-[color:var(--color-accent-30)] p-6 shadow-[var(--shadow-glow-44-18)]"
             onClick={(event) => event.stopPropagation()}
             onSubmit={save}
           >
             <div className="flex items-start justify-between gap-3">
-              <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">
+              <p className="text-sm font-medium uppercase tracking-[0.14em] text-[color:var(--color-accent)]">
                 {editingPlan ? 'Edit Plan' : 'Add Plan'}
               </p>
               <button
                 type="button"
                 onClick={closeModal}
                 aria-label="Close"
-                className="rounded-lg p-1 text-slate-400 transition hover:bg-white/[0.055] hover:text-white"
+                className="rounded-lg p-1 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
               >
                 <X size={18} />
               </button>
@@ -248,7 +248,7 @@ export const PricingPlansSection = ({ onToast }: { onToast: (message: string) =>
 
             <div className="mt-5 grid gap-4">
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-slate-300">Name</span>
+                <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Name</span>
                 <input
                   className="field"
                   value={form.name}
@@ -259,7 +259,7 @@ export const PricingPlansSection = ({ onToast }: { onToast: (message: string) =>
               </label>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-slate-300">Monthly Price (optional)</span>
+                  <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Monthly Price (optional)</span>
                   <input
                     className="field"
                     type="number"
@@ -269,7 +269,7 @@ export const PricingPlansSection = ({ onToast }: { onToast: (message: string) =>
                   />
                 </label>
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-slate-300">Sort Order</span>
+                  <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Sort Order</span>
                   <input
                     className="field"
                     type="number"
@@ -279,7 +279,7 @@ export const PricingPlansSection = ({ onToast }: { onToast: (message: string) =>
                 </label>
               </div>
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-slate-300">Description (optional)</span>
+                <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Description (optional)</span>
                 <textarea
                   className="field min-h-[80px]"
                   value={form.description}
@@ -290,11 +290,11 @@ export const PricingPlansSection = ({ onToast }: { onToast: (message: string) =>
               <button
                 type="button"
                 onClick={() => setForm({ ...form, isActive: !form.isActive })}
-                className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.035] px-4 py-3 text-left transition hover:border-accent-500/40"
+                className="flex items-center justify-between rounded-lg border border-[color:var(--color-border-weak)] bg-[var(--color-fill-035)] px-4 py-3 text-left transition hover:border-[color:var(--color-accent-40)]"
               >
-                <span className="font-medium text-slate-200">Active</span>
+                <span className="font-medium text-[color:var(--color-text-soft)]">Active</span>
                 <span
-                  className={`relative h-6 w-11 rounded-full transition ${form.isActive ? 'bg-accent-600' : 'bg-slate-700'}`}
+                  className={`relative h-6 w-11 rounded-full transition ${form.isActive ? 'bg-[var(--color-accent-hover)]' : 'bg-[var(--color-slate-bg-700)]'}`}
                 >
                   <span
                     className={`absolute top-1 h-4 w-4 rounded-full bg-white transition ${form.isActive ? 'left-6' : 'left-1'}`}
@@ -304,7 +304,7 @@ export const PricingPlansSection = ({ onToast }: { onToast: (message: string) =>
             </div>
 
             {error ? (
-              <p className="mt-4 rounded-lg border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+              <p className="mt-4 rounded-lg border border-[color:var(--color-error-line-25)] bg-[var(--color-error-fill-10)] px-4 py-3 text-sm text-[color:var(--color-error-text-200)]">
                 {error}
               </p>
             ) : null}

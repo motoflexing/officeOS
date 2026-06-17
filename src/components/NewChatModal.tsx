@@ -50,23 +50,23 @@ export const NewChatModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 px-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay-65)] px-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-label="New chat"
       onClick={onClose}
     >
       <div
-        className="surface flex max-h-[80vh] w-full max-w-lg flex-col border-accent-500/30 p-6 shadow-[0_0_44px_rgba(239,35,43,0.18)]"
+        className="surface flex max-h-[80vh] w-full max-w-lg flex-col border-[color:var(--color-accent-30)] p-6 shadow-[var(--shadow-glow-44-18)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
-          <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">New Chat</p>
+          <p className="text-sm font-medium uppercase tracking-[0.14em] text-[color:var(--color-accent)]">New Chat</p>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-lg p-1 text-slate-400 transition hover:bg-white/[0.055] hover:text-white"
+            className="rounded-lg p-1 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
           >
             <X size={18} />
           </button>
@@ -80,7 +80,7 @@ export const NewChatModal = ({
         {tab === 'dm' ? (
           <div className="mt-5 flex min-h-0 flex-1 flex-col">
             <label className="relative block">
-              <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--color-text-muted)]" />
               <input
                 className="field pl-9"
                 placeholder="Search employees by name or email"
@@ -91,21 +91,21 @@ export const NewChatModal = ({
 
             <div className="mt-4 min-h-0 flex-1 space-y-1 overflow-y-auto">
               {employeesError ? (
-                <p className="px-1 py-6 text-center text-sm text-slate-500">{employeesError}</p>
+                <p className="px-1 py-6 text-center text-sm text-[color:var(--color-text-muted)]">{employeesError}</p>
               ) : filteredEmployees.length === 0 ? (
-                <p className="px-1 py-6 text-center text-sm text-slate-500">No employees found.</p>
+                <p className="px-1 py-6 text-center text-sm text-[color:var(--color-text-muted)]">No employees found.</p>
               ) : (
                 filteredEmployees.map((employee) => (
                   <button
                     key={employee.id}
                     type="button"
                     onClick={() => onStartDM(employee)}
-                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition hover:bg-white/[0.055]"
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition hover:bg-[var(--color-fill-055)]"
                   >
                     <Avatar name={employee.name} />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium text-slate-100">{employee.name}</span>
-                      <span className="block truncate text-xs text-slate-500">{employee.email}</span>
+                      <span className="block truncate text-sm font-medium text-[color:var(--color-text-bright)]">{employee.name}</span>
+                      <span className="block truncate text-xs text-[color:var(--color-text-muted)]">{employee.email}</span>
                     </span>
                   </button>
                 ))
@@ -115,7 +115,7 @@ export const NewChatModal = ({
         ) : (
           <div className="mt-5 space-y-4">
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-300">Channel name</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Channel name</span>
               <input
                 className="field"
                 placeholder="e.g. design-team"
@@ -129,7 +129,7 @@ export const NewChatModal = ({
               ) : null}
             </label>
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-300">Description (optional)</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Description (optional)</span>
               <input
                 className="field"
                 placeholder="What is this channel about?"
@@ -164,8 +164,8 @@ const TabButton = ({
     onClick={onClick}
     className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition ${
       active
-        ? 'bg-accent-500 text-white shadow-[0_0_24px_rgba(239,35,43,0.22)]'
-        : 'text-slate-400 hover:bg-white/[0.055] hover:text-white'
+        ? 'bg-[var(--color-accent)] text-[color:var(--color-on-accent)] shadow-[var(--shadow-glow-24-22)]'
+        : 'text-[color:var(--color-text-secondary)] hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]'
     }`}
   >
     <Icon size={16} />
@@ -174,7 +174,7 @@ const TabButton = ({
 );
 
 const Avatar = ({ name }: { name: string }) => (
-  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-600 text-sm font-bold text-white">
+  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-accent-hover)] text-sm font-bold text-[color:var(--color-on-accent)]">
     {name.trim().charAt(0).toUpperCase() || '?'}
   </span>
 );

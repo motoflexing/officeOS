@@ -132,7 +132,7 @@ export const ActivitiesTab = ({
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div className="grid w-full gap-3 sm:grid-cols-[160px_1fr_1fr] lg:max-w-2xl">
           <label className="block">
-            <span className="mb-2 block text-xs font-medium uppercase tracking-wider text-slate-500">Type</span>
+            <span className="mb-2 block text-xs font-medium uppercase tracking-wider text-[color:var(--color-text-muted)]">Type</span>
             <select
               className="field"
               value={typeFilter}
@@ -144,11 +144,11 @@ export const ActivitiesTab = ({
             </select>
           </label>
           <label className="block">
-            <span className="mb-2 block text-xs font-medium uppercase tracking-wider text-slate-500">From</span>
+            <span className="mb-2 block text-xs font-medium uppercase tracking-wider text-[color:var(--color-text-muted)]">From</span>
             <input className="field" type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} />
           </label>
           <label className="block">
-            <span className="mb-2 block text-xs font-medium uppercase tracking-wider text-slate-500">To</span>
+            <span className="mb-2 block text-xs font-medium uppercase tracking-wider text-[color:var(--color-text-muted)]">To</span>
             <input className="field" type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} />
           </label>
         </div>
@@ -238,19 +238,19 @@ const ActivityTimelineItem = ({
   return (
     <li
       onClick={canEdit ? onEdit : undefined}
-      className={`surface flex gap-3 p-4 ${canEdit ? 'cursor-pointer transition hover:border-accent-500/30' : ''}`}
+      className={`surface flex gap-3 p-4 ${canEdit ? 'cursor-pointer transition hover:border-[color:var(--color-accent-30)]' : ''}`}
     >
       <ActivityTypeIcon type={activity.type} />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <p className="font-semibold text-slate-100">{activity.subject}</p>
-          <span className="text-xs text-slate-500">· {employeeName}</span>
-          <span className="text-xs text-slate-500">· {formatRelativeTime(activity.createdAt)}</span>
+          <p className="font-semibold text-[color:var(--color-text-bright)]">{activity.subject}</p>
+          <span className="text-xs text-[color:var(--color-text-muted)]">· {employeeName}</span>
+          <span className="text-xs text-[color:var(--color-text-muted)]">· {formatRelativeTime(activity.createdAt)}</span>
         </div>
 
         {activity.body ? (
           <>
-            <p className={`mt-1 whitespace-pre-line text-sm text-slate-400 ${isLong && !expanded ? 'line-clamp-3' : ''}`}>
+            <p className={`mt-1 whitespace-pre-line text-sm text-[color:var(--color-text-secondary)] ${isLong && !expanded ? 'line-clamp-3' : ''}`}>
               {activity.body}
             </p>
             {isLong ? (
@@ -268,11 +268,11 @@ const ActivityTimelineItem = ({
           </>
         ) : null}
 
-        {activity.outcome ? <p className="mt-1 text-xs text-slate-500">Outcome: {activity.outcome}</p> : null}
+        {activity.outcome ? <p className="mt-1 text-xs text-[color:var(--color-text-muted)]">Outcome: {activity.outcome}</p> : null}
 
         {linkedLabel ? (
-          <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/[0.06] px-2.5 py-1 text-xs font-medium text-slate-300 ring-1 ring-white/10">
-            <Link2 size={12} className="text-slate-500" />
+          <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--color-fill-06)] px-2.5 py-1 text-xs font-medium text-[color:var(--color-text-secondary)] ring-1 ring-white/10">
+            <Link2 size={12} className="text-[color:var(--color-text-muted)]" />
             Linked to: {linkedLabel}
           </span>
         ) : null}
@@ -287,7 +287,7 @@ const ActivityTimelineItem = ({
               onEdit();
             }}
             aria-label="Edit activity"
-            className="h-fit rounded-lg p-1.5 text-slate-400 transition hover:bg-white/[0.055] hover:text-white"
+            className="h-fit rounded-lg p-1.5 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
           >
             <Pencil size={16} />
           </button>
@@ -298,7 +298,7 @@ const ActivityTimelineItem = ({
               onDelete();
             }}
             aria-label="Delete activity"
-            className="h-fit rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-500/15 hover:text-rose-300"
+            className="h-fit rounded-lg p-1.5 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-error-fill-15)] hover:text-[color:var(--color-error-text-300)]"
           >
             <Trash2 size={16} />
           </button>

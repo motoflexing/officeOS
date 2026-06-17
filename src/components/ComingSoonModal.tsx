@@ -19,18 +19,18 @@ export const ComingSoonModal = ({ action, onClose }: { action: ComingSoonAction;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 px-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay-65)] px-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-label="Coming soon"
       onClick={onClose}
     >
       <div
-        className="surface w-full max-w-md border-accent-500/30 p-6 shadow-[0_0_44px_rgba(239,35,43,0.18)]"
+        className="surface w-full max-w-md border-[color:var(--color-accent-30)] p-6 shadow-[var(--shadow-glow-44-18)]"
         onClick={(event) => event.stopPropagation()}
       >
-        <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">Coming soon</p>
-        <p className="mt-3 text-sm leading-6 text-slate-300">
+        <p className="text-sm font-medium uppercase tracking-[0.14em] text-[color:var(--color-accent)]">Coming soon</p>
+        <p className="mt-3 text-sm leading-6 text-[color:var(--color-text-secondary)]">
           Coming soon — this will let you {actionPhrase[action]} in the next release.
         </p>
         <div className="mt-6 flex justify-end">

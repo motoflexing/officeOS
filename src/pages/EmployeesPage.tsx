@@ -282,7 +282,7 @@ export const EmployeesPage = () => {
       <section className="surface p-5">
         <div className="grid gap-4 lg:grid-cols-[1fr_180px_180px]">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--color-text-muted)]" size={18} />
             <input
               className="field pl-10"
               placeholder="Search by name, email, department, or designation"
@@ -371,8 +371,8 @@ const EmployeeFormPanel = ({
   <form onSubmit={onSubmit} className="surface p-5">
     <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
       <div>
-        <h3 className="text-lg font-semibold text-white">{editing ? 'Edit Employee' : 'Add Employee'}</h3>
-        <p className="mt-1 text-sm text-slate-500">Keep employee directory details current.</p>
+        <h3 className="text-lg font-semibold text-[color:var(--color-text-primary)]">{editing ? 'Edit Employee' : 'Add Employee'}</h3>
+        <p className="mt-1 text-sm text-[color:var(--color-text-muted)]">Keep employee directory details current.</p>
       </div>
       <button type="button" className="btn-secondary" onClick={onCancel}>
         Cancel
@@ -383,7 +383,7 @@ const EmployeeFormPanel = ({
       <EmployeeField label="Name" value={form.name} onChange={(value) => onChange({ ...form, name: value })} />
       <EmployeeField label="Email" value={form.email} onChange={(value) => onChange({ ...form, email: value })} type="email" />
       <label>
-        <span className="mb-2 block text-sm font-medium text-slate-300">Role</span>
+        <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Role</span>
         <select className="field" value={form.role} onChange={(event) => onChange({ ...form, role: event.target.value as Role })}>
           {roleOptions.map((role) => (
             <option key={role}>{role}</option>
@@ -393,7 +393,7 @@ const EmployeeFormPanel = ({
       <EmployeeField label="Department" value={form.department} onChange={(value) => onChange({ ...form, department: value })} />
       <EmployeeField label="Designation" value={form.designation} onChange={(value) => onChange({ ...form, designation: value })} />
       <label>
-        <span className="mb-2 block text-sm font-medium text-slate-300">Work Mode</span>
+        <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Work Mode</span>
         <select
           className="field"
           value={form.workMode}
@@ -405,7 +405,7 @@ const EmployeeFormPanel = ({
         </select>
       </label>
       <label>
-        <span className="mb-2 block text-sm font-medium text-slate-300">Status</span>
+        <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Status</span>
         <select
           className="field"
           value={form.status}
@@ -445,7 +445,7 @@ const EmployeeFormPanel = ({
     </div>
 
     {error ? (
-      <p className="mt-4 rounded-lg border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+      <p className="mt-4 rounded-lg border border-[color:var(--color-error-line-25)] bg-[var(--color-error-fill-10)] px-4 py-3 text-sm text-[color:var(--color-error-text-200)]">
         {error}
       </p>
     ) : null}
@@ -471,7 +471,7 @@ const EmployeeField = ({
   type?: string;
 }) => (
   <label>
-    <span className="mb-2 block text-sm font-medium text-slate-300">{label}</span>
+    <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">{label}</span>
     <input className="field" required={required} type={type} value={value} onChange={(event) => onChange(event.target.value)} />
   </label>
 );

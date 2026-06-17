@@ -78,24 +78,24 @@ export const ClientQuickAddModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 px-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay-65)] px-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-label="Add client"
       onClick={onClose}
     >
       <form
-        className="surface w-full max-w-lg border-accent-500/30 p-6 shadow-[0_0_44px_rgba(239,35,43,0.18)]"
+        className="surface w-full max-w-lg border-[color:var(--color-accent-30)] p-6 shadow-[var(--shadow-glow-44-18)]"
         onClick={(event) => event.stopPropagation()}
         onSubmit={onFormSubmit}
       >
         <div className="flex items-start justify-between gap-3">
-          <p className="text-sm font-medium uppercase tracking-[0.14em] text-accent-500">Add Client</p>
+          <p className="text-sm font-medium uppercase tracking-[0.14em] text-[color:var(--color-accent)]">Add Client</p>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-lg p-1 text-slate-400 transition hover:bg-white/[0.055] hover:text-white"
+            className="rounded-lg p-1 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
           >
             <X size={18} />
           </button>
@@ -103,7 +103,7 @@ export const ClientQuickAddModal = ({
 
         <div className="mt-5 grid gap-4">
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Company Name</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Company Name</span>
             <input
               className="field"
               value={companyName}
@@ -115,7 +115,7 @@ export const ClientQuickAddModal = ({
           </label>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-300">Status</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Status</span>
               <select className="field" value={status} onChange={(event) => setStatus(event.target.value as ClientStatus)}>
                 {CLIENT_STATUSES.map((option) => (
                   <option key={option}>{option}</option>
@@ -123,7 +123,7 @@ export const ClientQuickAddModal = ({
               </select>
             </label>
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-300">Industry (optional)</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Industry (optional)</span>
               <select
                 className="field"
                 value={industry}
@@ -137,7 +137,7 @@ export const ClientQuickAddModal = ({
             </label>
           </div>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Owner (optional)</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--color-text-secondary)]">Owner (optional)</span>
             <select
               className="field"
               value={ownerEmployeeId}
@@ -154,7 +154,7 @@ export const ClientQuickAddModal = ({
         </div>
 
         {error ? (
-          <p className="mt-4 rounded-lg border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+          <p className="mt-4 rounded-lg border border-[color:var(--color-error-line-25)] bg-[var(--color-error-fill-10)] px-4 py-3 text-sm text-[color:var(--color-error-text-200)]">
             {error}
           </p>
         ) : null}
