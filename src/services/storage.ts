@@ -30,6 +30,7 @@ import type {
   OnboardingChecklist,
   PricingPlan,
   Role,
+  Shift,
   Subscription,
   UserProfile,
 } from '../types';
@@ -127,6 +128,9 @@ const engagementsKey = (companyId: string, clientId: string) => `geekynd:engagem
 // One onboarding checklist per subscription.
 const checklistKey = (companyId: string, clientId: string, subId: string) =>
   `geekynd:checklist:${companyId}:${clientId}:${subId}`;
+// Shifts per engagement (always viewed scoped to a single engagement).
+const shiftsKey = (companyId: string, clientId: string, engagementId: string) =>
+  `geekynd:shifts:${companyId}:${clientId}:${engagementId}`;
 
 const buildDefaultChecklistItemsLocal = (): ChecklistItem[] =>
   DEFAULT_CHECKLIST_ITEMS.map((item) => ({
@@ -172,6 +176,14 @@ const resolveContactNameLocal = (companyId: string, clientId: string, contactId?
   const contact = read<Contact[]>(contactsKey(companyId, clientId), []).find((item) => item.id === contactId);
   return contact ? `${contact.firstName} ${contact.lastName}`.trim() || undefined : undefined;
 };
+
+// Renewals: ascending sort by renewalDate, missing dates last (mirrors firestoreService).
+const sortByRenewalAscLocal = (subscriptions: Subscription[]): Subscription[] =>
+  [...subscriptions].sort((a, b) => {
+    if (!a.renewalDate) return b.renewalDate ? 1 : 0;
+    if (!b.renewalDate) return -1;
+    return a.renewalDate.localeCompare(b.renewalDate);
+  });
 
 const createId = (prefix: string) => `${prefix}-${Date.now()}-${Math.round(Math.random() * 1000)}`;
 const dmConversationId = (uidA: string, uidB: string) => {
@@ -708,6 +720,15 @@ export const storage = {
     run();
     return subscribeKey(key, run);
   },
+  // Renewals view (Phase 3B): compose on the existing cross-client cache, adding a
+  // client-side ascending sort by renewalDate (missing dates last). No new key.
+  listAllSubscriptionsSortedByRenewal: async (targetCompanyId: string): Promise<Subscription[]> =>
+    sortByRenewalAscLocal(await storage.listAllSubscriptions(targetCompanyId)),
+  subscribeToAllSubscriptionsSortedByRenewal: (
+    targetCompanyId: string,
+    callback: (subscriptions: Subscription[]) => void,
+  ): (() => void) =>
+    storage.subscribeToAllSubscriptions(targetCompanyId, (subs) => callback(sortByRenewalAscLocal(subs))),
   getSubscription: async (
     targetCompanyId: string,
     clientId: string,
@@ -894,6 +915,101 @@ export const storage = {
     const key = engagementsKey(targetCompanyId, clientId);
     write(key, read<Engagement[]>(key, []).filter((eng) => eng.id !== engId));
     emit(key);
+  },
+
+  // ── CRM: shifts / coverage calendar ──────────────────────────────────
+  // Shifts are stored per engagement; the [startDate, endDate] window is applied
+  // client-side, mirroring the firestoreService equality-only query.
+  listShiftsForEngagement: async (
+    targetCompanyId: string,
+    clientId: string,
+    engagementId: string,
+    startDate: string,
+    endDate: string,
+  ): Promise<Shift[]> =>
+    read<Shift[]>(shiftsKey(targetCompanyId, clientId, engagementId), []).filter(
+      (shift) => shift.date >= startDate && shift.date <= endDate,
+    ),
+  subscribeToShiftsForEngagement: (
+    targetCompanyId: string,
+    clientId: string,
+    engagementId: string,
+    startDate: string,
+    endDate: string,
+    callback: (shifts: Shift[]) => void,
+  ): (() => void) => {
+    const key = shiftsKey(targetCompanyId, clientId, engagementId);
+    const run = () =>
+      callback(read<Shift[]>(key, []).filter((shift) => shift.date >= startDate && shift.date <= endDate));
+    run();
+    return subscribeKey(key, run);
+  },
+  createShift: async (
+    targetCompanyId: string,
+    clientId: string,
+    data: Omit<Shift, 'id' | 'companyId' | 'clientId' | 'agentNameSnapshot' | 'createdAt' | 'updatedAt'>,
+  ): Promise<Shift> => {
+    const now = new Date().toISOString();
+    const shift: Shift = {
+      ...data,
+      id: createId('shift'),
+      companyId: targetCompanyId,
+      clientId,
+      agentNameSnapshot: resolveEmployeeNameLocal(data.agentId),
+      createdAt: now,
+      updatedAt: now,
+    };
+    const key = shiftsKey(targetCompanyId, clientId, data.engagementId);
+    write(key, [shift, ...read<Shift[]>(key, [])]);
+    emit(key);
+    return shift;
+  },
+  updateShift: async (
+    targetCompanyId: string,
+    clientId: string,
+    shiftId: string,
+    patch: Partial<Shift>,
+  ): Promise<void> => {
+    const next: Partial<Shift> = { ...patch, updatedAt: new Date().toISOString() };
+    if ('agentId' in patch) next.agentNameSnapshot = resolveEmployeeNameLocal(patch.agentId);
+    // The shift's engagementId scopes its storage key; locate the right bucket. If the
+    // patch moves it to a different engagement, the engagementId stays on the record so
+    // the same key still applies (engagement reassignment isn't a supported edit here).
+    const engagementId = patch.engagementId;
+    const keyFor = (id: string) => shiftsKey(targetCompanyId, clientId, id);
+    if (engagementId) {
+      const key = keyFor(engagementId);
+      write(key, read<Shift[]>(key, []).map((shift) => (shift.id === shiftId ? { ...shift, ...next } : shift)));
+      emit(key);
+      return;
+    }
+    // No engagementId in the patch: scan known engagement buckets for this shift. In
+    // practice the calendar always edits within its own engagement, so look it up by
+    // matching the stored record's engagementId.
+    const allKeys = Object.keys(localStorage).filter((k) =>
+      k.startsWith(`geekynd:shifts:${targetCompanyId}:${clientId}:`),
+    );
+    for (const key of allKeys) {
+      const shifts = read<Shift[]>(key, []);
+      if (shifts.some((shift) => shift.id === shiftId)) {
+        write(key, shifts.map((shift) => (shift.id === shiftId ? { ...shift, ...next } : shift)));
+        emit(key);
+        return;
+      }
+    }
+  },
+  deleteShift: async (targetCompanyId: string, clientId: string, shiftId: string): Promise<void> => {
+    const allKeys = Object.keys(localStorage).filter((k) =>
+      k.startsWith(`geekynd:shifts:${targetCompanyId}:${clientId}:`),
+    );
+    for (const key of allKeys) {
+      const shifts = read<Shift[]>(key, []);
+      if (shifts.some((shift) => shift.id === shiftId)) {
+        write(key, shifts.filter((shift) => shift.id !== shiftId));
+        emit(key);
+        return;
+      }
+    }
   },
 
   // ── CRM: onboarding checklist ────────────────────────────────────────

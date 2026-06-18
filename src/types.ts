@@ -421,6 +421,27 @@ export interface OnboardingChecklist {
   updatedAt: string;
 }
 
+// ── CRM (Phase 3): Shifts & Coverage ─────────────────────────────────────
+export type ShiftRole = 'Primary' | 'Backup';
+export type ShiftStatus = 'Scheduled' | 'Completed' | 'Missed' | 'Swapped';
+
+export interface Shift {
+  id: string;
+  companyId: string;
+  clientId: string;
+  engagementId: string;
+  agentId: string;
+  agentNameSnapshot?: string;
+  date: string;           // ISO date, e.g. "2026-06-22"
+  startTime: string;       // "09:00"
+  endTime: string;         // "17:00"
+  role: ShiftRole;
+  status: ShiftStatus;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CompanySettings {
   workspaceName: string;
   productName: string;

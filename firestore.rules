@@ -265,6 +265,10 @@ service cloud.firestore {
           allow read: if isAdminOrHr(companyId);
           allow write: if isAdmin(companyId);
         }
+        match /shifts/{shiftId} {
+          allow read: if isAdminOrHr(companyId);
+          allow write: if isAdmin(companyId);
+        }
       }
 
       match /pricingPlans/{planId} {

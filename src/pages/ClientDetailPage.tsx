@@ -52,9 +52,15 @@ export const ClientDetailPage = () => {
   const canEdit = role === 'Admin';
 
   // Arriving from the pipeline: ?dealsTab=open opens the Deals tab; highlightDealId
-  // opens/tints that deal there (DealsTab handles the highlight prop).
+  // opens/tints that deal there (DealsTab handles the highlight prop). Arriving from the
+  // Renewals dashboard: ?tab=subscriptions opens the Subscriptions tab.
   const highlightDealId = searchParams.get('highlightDealId');
-  const initialTab: DetailTab = searchParams.get('dealsTab') === 'open' || highlightDealId ? 'deals' : 'overview';
+  const initialTab: DetailTab =
+    searchParams.get('tab') === 'subscriptions'
+      ? 'subscriptions'
+      : searchParams.get('dealsTab') === 'open' || highlightDealId
+        ? 'deals'
+        : 'overview';
 
   const [client, setClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);

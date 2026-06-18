@@ -14,6 +14,7 @@ import type {
   HelpdeskTool,
   ShiftPattern,
 } from '../types';
+import { CoverageCalendar } from './CoverageCalendar';
 import { EmployeeMultiSelect } from './EmployeeMultiSelect';
 
 // One indirection so call sites are identical in Firebase and localStorage modes.
@@ -310,6 +311,17 @@ export const EngagementTab = ({
             onBlur={() => saveIfChanged('notes', notes)}
           />
         </Field>
+      </Section>
+
+      {/* Coverage Calendar (Phase 3A) */}
+      <Section title="Coverage Calendar">
+        <CoverageCalendar
+          clientId={clientId}
+          engagement={engagement}
+          employees={employees}
+          canEdit={canEdit}
+          onToast={onToast}
+        />
       </Section>
     </div>
   );

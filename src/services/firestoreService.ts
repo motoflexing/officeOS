@@ -42,6 +42,7 @@ import type {
   OnboardingChecklist,
   PricingPlan,
   Role,
+  Shift,
   Subscription,
   UserProfile,
 } from '../types';
@@ -103,6 +104,8 @@ const subscriptionsCollection = (clientId: string) => collection(clientDocument(
 const subscriptionDocument = (clientId: string, subId: string) => doc(subscriptionsCollection(clientId), subId);
 const engagementsCollection = (clientId: string) => collection(clientDocument(clientId), 'engagements');
 const engagementDocument = (clientId: string, engId: string) => doc(engagementsCollection(clientId), engId);
+const shiftsCollection = (clientId: string) => collection(clientDocument(clientId), 'shifts');
+const shiftDocument = (clientId: string, shiftId: string) => doc(shiftsCollection(clientId), shiftId);
 // One checklist per subscription, fixed doc id 'main'.
 const checklistDocument = (clientId: string, subId: string) =>
   doc(collection(subscriptionDocument(clientId, subId), 'checklist'), 'main');
@@ -140,6 +143,15 @@ const resolveContactName = async (clientId: string, contactId?: string): Promise
   const data = snapshot.data();
   return `${data.firstName ?? ''} ${data.lastName ?? ''}`.trim() || undefined;
 };
+
+// Renewals: ascending sort by renewalDate, with missing dates pushed to the end.
+// Returns a new array (does not mutate the input).
+const sortByRenewalAsc = (subscriptions: Subscription[]): Subscription[] =>
+  [...subscriptions].sort((a, b) => {
+    if (!a.renewalDate) return b.renewalDate ? 1 : 0;
+    if (!b.renewalDate) return -1;
+    return a.renewalDate.localeCompare(b.renewalDate);
+  });
 
 const sortConversations = (conversations: Conversation[]) =>
   [...conversations].sort(
@@ -793,6 +805,16 @@ export const firestoreService = {
         callback(snapshot.docs.map((item) => docToEntity<Subscription>(item)));
       },
     ),
+  // Renewals view (Phase 3B): composes on the existing collectionGroup query above,
+  // adding a client-side ascending sort by renewalDate (subs without a renewalDate sort
+  // last). No new query, no new index — reuses the already-indexed Phase 2A CG query.
+  listAllSubscriptionsSortedByRenewal: async (targetCompanyId: string): Promise<Subscription[]> =>
+    sortByRenewalAsc(await firestoreService.listAllSubscriptions(targetCompanyId)),
+  subscribeToAllSubscriptionsSortedByRenewal: (
+    targetCompanyId: string,
+    callback: (subscriptions: Subscription[]) => void,
+  ): (() => void) =>
+    firestoreService.subscribeToAllSubscriptions(targetCompanyId, (subs) => callback(sortByRenewalAsc(subs))),
   getSubscription: async (_companyId: string, clientId: string, subId: string): Promise<Subscription | null> => {
     const snapshot = await getDoc(subscriptionDocument(clientId, subId));
     if (!snapshot.exists()) return null;
@@ -942,6 +964,66 @@ export const firestoreService = {
   },
   deleteEngagement: async (_companyId: string, clientId: string, engId: string): Promise<void> => {
     await deleteDoc(engagementDocument(clientId, engId));
+  },
+
+  // ── CRM: shifts / coverage calendar ──────────────────────────────────
+  // Shifts are always viewed scoped to one engagement, so we query by the
+  // engagementId equality filter only (no composite index needed) and apply the
+  // [startDate, endDate] window CLIENT-SIDE. An engagement's shift count is small
+  // and bounded, so this stays cheap and keeps Phase 3A index-free.
+  listShiftsForEngagement: async (
+    _companyId: string,
+    clientId: string,
+    engagementId: string,
+    startDate: string,
+    endDate: string,
+  ): Promise<Shift[]> => {
+    const snapshot = await getDocs(query(shiftsCollection(clientId), where('engagementId', '==', engagementId)));
+    return snapshot.docs
+      .map((item) => docToEntity<Shift>(item))
+      .filter((shift) => shift.date >= startDate && shift.date <= endDate);
+  },
+  subscribeToShiftsForEngagement: (
+    _companyId: string,
+    clientId: string,
+    engagementId: string,
+    startDate: string,
+    endDate: string,
+    callback: (shifts: Shift[]) => void,
+  ): (() => void) =>
+    onSnapshot(query(shiftsCollection(clientId), where('engagementId', '==', engagementId)), (snapshot) => {
+      callback(
+        snapshot.docs
+          .map((item) => docToEntity<Shift>(item))
+          .filter((shift) => shift.date >= startDate && shift.date <= endDate),
+      );
+    }),
+  createShift: async (
+    targetCompanyId: string,
+    clientId: string,
+    data: Omit<Shift, 'id' | 'companyId' | 'clientId' | 'agentNameSnapshot' | 'createdAt' | 'updatedAt'>,
+  ): Promise<Shift> => {
+    const now = new Date().toISOString();
+    const shift: Shift = {
+      ...data,
+      id: createId('shift'),
+      companyId: targetCompanyId,
+      clientId,
+      agentNameSnapshot: await resolveEmployeeName(data.agentId),
+      createdAt: now,
+      updatedAt: now,
+    };
+    await setDoc(shiftDocument(clientId, shift.id), clean({ ...shift }));
+    return shift;
+  },
+  updateShift: async (_companyId: string, clientId: string, shiftId: string, patch: Partial<Shift>): Promise<void> => {
+    const next: Partial<Shift> = { ...patch, updatedAt: new Date().toISOString() };
+    // Re-snapshot the agent display name whenever the underlying agentId changes.
+    if ('agentId' in patch) next.agentNameSnapshot = await resolveEmployeeName(patch.agentId);
+    await updateDoc(shiftDocument(clientId, shiftId), clean({ ...next }));
+  },
+  deleteShift: async (_companyId: string, clientId: string, shiftId: string): Promise<void> => {
+    await deleteDoc(shiftDocument(clientId, shiftId));
   },
 
   // ── CRM: onboarding checklist ────────────────────────────────────────

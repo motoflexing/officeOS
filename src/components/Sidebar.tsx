@@ -4,6 +4,7 @@ import {
   Briefcase,
   Building2,
   CalendarCheck,
+  CalendarClock,
   CalendarDays,
   ChevronDown,
   ClipboardList,
@@ -65,11 +66,12 @@ const employeesGroupEmployee: GroupItem = {
 // CRM "Clients" accordion — Admin/HR only (Employee has no CRM access at all).
 const allClientsChild: NavLinkItem = { label: 'All Clients', to: '/clients', icon: Building2 };
 const pipelineChild: NavLinkItem = { label: 'Pipeline', to: '/clients/pipeline', icon: TrendingUp };
+const renewalsChild: NavLinkItem = { label: 'Renewals', to: '/clients/renewals', icon: CalendarClock };
 const clientsGroup: GroupItem = {
   label: 'Clients',
   group: true,
   icon: Briefcase,
-  children: [allClientsChild, pipelineChild],
+  children: [allClientsChild, pipelineChild, renewalsChild],
   storageKey: 'sidebar:clients:open',
   groupId: 'sidebar-clients-group',
 };
