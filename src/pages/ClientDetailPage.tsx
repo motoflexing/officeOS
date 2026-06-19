@@ -80,7 +80,8 @@ export const ClientDetailPage = () => {
   const [notesDraft, setNotesDraft] = useState('');
   const [toast, setToast] = useState('');
   // After a Won→Subscription conversion, auto-open the new sub on the Subscriptions tab.
-  const [autoOpenSubId, setAutoOpenSubId] = useState<string | null>(null);
+  // Also honors ?sub={id} from the Finance dashboard's row navigation (best-effort open).
+  const [autoOpenSubId, setAutoOpenSubId] = useState<string | null>(() => searchParams.get('sub'));
   const notesInitialized = useRef(false);
 
   const showToast = (message: string) => {
@@ -432,6 +433,7 @@ export const ClientDetailPage = () => {
       ) : tab === 'subscriptions' ? (
         <SubscriptionsTab
           clientId={clientId}
+          clientName={client.companyName}
           subscriptions={subscriptions}
           plans={plans}
           employees={employees}

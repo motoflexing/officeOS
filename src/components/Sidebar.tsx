@@ -15,6 +15,7 @@ import {
   TrendingUp,
   User,
   Users,
+  Wallet,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
@@ -67,11 +68,12 @@ const employeesGroupEmployee: GroupItem = {
 const allClientsChild: NavLinkItem = { label: 'All Clients', to: '/clients', icon: Building2 };
 const pipelineChild: NavLinkItem = { label: 'Pipeline', to: '/clients/pipeline', icon: TrendingUp };
 const renewalsChild: NavLinkItem = { label: 'Renewals', to: '/clients/renewals', icon: CalendarClock };
+const financeChild: NavLinkItem = { label: 'Finance', to: '/clients/finance', icon: Wallet };
 const clientsGroup: GroupItem = {
   label: 'Clients',
   group: true,
   icon: Briefcase,
-  children: [allClientsChild, pipelineChild, renewalsChild],
+  children: [allClientsChild, pipelineChild, renewalsChild, financeChild],
   storageKey: 'sidebar:clients:open',
   groupId: 'sidebar-clients-group',
 };

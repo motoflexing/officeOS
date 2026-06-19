@@ -357,6 +357,9 @@ export interface Subscription {
   accountManagerId?: string;
   accountManagerNameSnapshot?: string;
   notes?: string;
+  // Client-specific KPI definitions tracked in SLA reports (Phase 4). Lives on the
+  // subscription doc; report values are keyed by these metric ids.
+  customMetrics?: CustomMetricDefinition[];
   createdAt: string;
   updatedAt: string;
 }
@@ -440,6 +443,102 @@ export interface Shift {
   notes?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// ── CRM (Phase 4): SLA Reporting ─────────────────────────────────────────
+export type ReportPeriod = 'Weekly' | 'Monthly' | 'Custom';
+// NOTE: the bare name `ReportStatus` is already taken by the Daily Reports module
+// ('Submitted' | 'Reviewed'). The SLA report status is named SlaReportStatus to
+// avoid colliding with — and breaking — that existing module.
+export type SlaReportStatus = 'Draft' | 'Sent';
+
+export interface CustomMetricDefinition {
+  id: string;
+  label: string;
+  unit?: string;
+  description?: string;
+  sortOrder: number;
+}
+
+export interface StandardMetrics {
+  firstResponseTimeAvgMinutes?: number;
+  ticketsHandled?: number;
+  resolutionRatePercent?: number;
+  csatScorePercent?: number;
+  escalationCount?: number;
+  slaBreachCount?: number;
+}
+
+export interface SlaReport {
+  id: string;
+  companyId: string;
+  clientId: string;
+  subscriptionId: string;
+  period: ReportPeriod;
+  periodStart: string;          // ISO date
+  periodEnd: string;            // ISO date
+  status: SlaReportStatus;
+  sentAt?: string;
+  sentBy?: string;
+  sentByNameSnapshot?: string;
+  standardMetrics: StandardMetrics;
+  customMetricValues: { [metricId: string]: number };
+  narrative?: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+}
+
+// ── CRM (Phase 5): Invoicing & Finance ───────────────────────────────────
+export type InvoiceStatus = 'Draft' | 'Sent' | 'Paid' | 'Void';
+// Note: 'Overdue' is computed client-side, not stored. See getEffectiveStatus.
+
+export interface InvoiceLineItem {
+  id: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  amount: number;           // = quantity * unitPrice, computed on save
+}
+
+export interface Invoice {
+  id: string;
+  companyId: string;
+  clientId: string;
+  subscriptionId: string;
+  invoiceNumber: string;            // INV-YYYY-NNNN
+  periodStart: string;              // ISO date
+  periodEnd: string;                // ISO date
+  issueDate: string;                // ISO date
+  dueDate: string;                  // ISO date
+  lineItems: InvoiceLineItem[];
+  subtotal: number;
+  taxRate?: number;                 // percent, 0-100
+  taxAmount?: number;
+  total: number;
+  currency: string;                 // 'USD' for V1
+  status: InvoiceStatus;
+  sentAt?: string;
+  sentBy?: string;
+  sentByNameSnapshot?: string;
+  paidAt?: string;
+  paidBy?: string;
+  paidByNameSnapshot?: string;
+  paymentMethod?: string;
+  paymentReference?: string;
+  voidedAt?: string;
+  voidedBy?: string;
+  voidReason?: string;
+  notes?: string;                   // internal
+  clientFacingNotes?: string;       // appears on the invoice
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+}
+
+export interface InvoiceCounter {
+  year: number;
+  nextNumber: number;
 }
 
 export interface CompanySettings {

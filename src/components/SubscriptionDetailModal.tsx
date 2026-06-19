@@ -7,14 +7,16 @@ import { storage } from '../services/storage';
 import type { Contact, Employee, Engagement, PricingPlan, Subscription, SubscriptionStatus } from '../types';
 import { formatShortDate } from '../utils/format';
 import { EngagementTab } from './EngagementTab';
+import { InvoicesTab } from './InvoicesTab';
 import { OnboardingChecklistTab } from './OnboardingChecklistTab';
+import { ReportsTab } from './ReportsTab';
 import { SubscriptionEditModal } from './SubscriptionEditModal';
 import { SubscriptionStatusPill } from './SubscriptionStatusPill';
 
 // One indirection so call sites are identical in Firebase and localStorage modes.
 const crm = isFirebaseConfigured ? firestoreService : storage;
 
-type SubTab = 'overview' | 'engagement' | 'checklist';
+type SubTab = 'overview' | 'engagement' | 'checklist' | 'reports' | 'invoices';
 
 const formatMoney = (value: number | undefined, currency: string) =>
   value === undefined ? '—' : `${currency === 'USD' ? '$' : `${currency} `}${value.toLocaleString()}`;
@@ -22,6 +24,7 @@ const formatMoney = (value: number | undefined, currency: string) =>
 export const SubscriptionDetailModal = ({
   subscription,
   clientId,
+  clientName,
   plans,
   employees,
   contacts,
@@ -32,6 +35,7 @@ export const SubscriptionDetailModal = ({
 }: {
   subscription: Subscription;
   clientId: string;
+  clientName: string;
   plans: PricingPlan[];
   employees: Employee[];
   contacts: Contact[];
@@ -128,6 +132,10 @@ export const SubscriptionDetailModal = ({
     { id: 'engagement', label: 'Engagement' },
     // HR does not see the checklist (per the role matrix). Hidden for non-Admins.
     { id: 'checklist', label: 'Onboarding Checklist', hidden: !canEdit },
+    // Reports are visible to HR too (read-only); Admin gets full CRUD.
+    { id: 'reports', label: 'Reports' },
+    // Invoices visible to HR (read-only); Admin gets full CRUD.
+    { id: 'invoices', label: 'Invoices' },
   ];
 
   return (
@@ -293,6 +301,7 @@ export const SubscriptionDetailModal = ({
             engagement ? (
               <EngagementTab
                 clientId={clientId}
+                subscription={subscription}
                 engagement={engagement}
                 employees={employees}
                 contacts={contacts}
@@ -302,6 +311,24 @@ export const SubscriptionDetailModal = ({
             ) : (
               <p className="py-8 text-center text-sm text-[color:var(--color-text-muted)]">Loading engagement…</p>
             )
+          ) : tab === 'reports' ? (
+            <ReportsTab
+              subscription={subscription}
+              clientName={clientName}
+              currentUser={currentUser}
+              canEdit={canEdit}
+              onToast={onToast}
+              onGoToEngagement={() => setTab('engagement')}
+            />
+          ) : tab === 'invoices' ? (
+            <InvoicesTab
+              subscription={subscription}
+              clientName={clientName}
+              contacts={contacts}
+              currentUser={currentUser}
+              canEdit={canEdit}
+              onToast={onToast}
+            />
           ) : (
             <OnboardingChecklistTab
               clientId={clientId}

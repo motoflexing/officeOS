@@ -8,6 +8,7 @@ import {
   onSnapshot,
   orderBy,
   query,
+  runTransaction,
   setDoc,
   updateDoc,
   where,
@@ -26,6 +27,7 @@ import type {
   CompanySettings,
   Contact,
   Conversation,
+  CustomMetricDefinition,
   DailyReport,
   Deal,
   DeveloperProfile,
@@ -35,6 +37,8 @@ import type {
   FeedbackItem,
   FeedbackStatus,
   Interview,
+  Invoice,
+  InvoiceCounter,
   JobOpening,
   LeaveRequest,
   LeaveStatus,
@@ -43,6 +47,7 @@ import type {
   PricingPlan,
   Role,
   Shift,
+  SlaReport,
   Subscription,
   UserProfile,
 } from '../types';
@@ -109,6 +114,30 @@ const shiftDocument = (clientId: string, shiftId: string) => doc(shiftsCollectio
 // One checklist per subscription, fixed doc id 'main'.
 const checklistDocument = (clientId: string, subId: string) =>
   doc(collection(subscriptionDocument(clientId, subId), 'checklist'), 'main');
+// SLA reports per subscription (Phase 4).
+const slaReportsCollection = (clientId: string, subId: string) =>
+  collection(subscriptionDocument(clientId, subId), 'slaReports');
+const slaReportDocument = (clientId: string, subId: string, reportId: string) =>
+  doc(slaReportsCollection(clientId, subId), reportId);
+// Invoices per client (Phase 5). Subscription is referenced via a field, not the path,
+// so the per-client collection backs both the per-subscription view and the CG query.
+const invoicesCollection = (clientId: string) => collection(clientDocument(clientId), 'invoices');
+const invoiceDocument = (clientId: string, invoiceId: string) => doc(invoicesCollection(clientId), invoiceId);
+// Single per-company invoice-number counter doc.
+const invoiceCounterDocument = () => doc(companyCollection('counters'), 'invoices');
+
+// Compute subtotal / taxAmount / total from line items + optional tax rate. Line item
+// amounts are recomputed (quantity * unitPrice) so they can't drift from their inputs.
+const computeInvoiceTotals = (
+  lineItems: Invoice['lineItems'],
+  taxRate?: number,
+): { lineItems: Invoice['lineItems']; subtotal: number; taxAmount?: number; total: number } => {
+  const items = lineItems.map((item) => ({ ...item, amount: item.quantity * item.unitPrice }));
+  const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
+  const taxAmount = taxRate ? Math.round(subtotal * (taxRate / 100) * 100) / 100 : undefined;
+  const total = subtotal + (taxAmount ?? 0);
+  return { lineItems: items, subtotal, taxAmount, total };
+};
 
 // Build the seeded checklist items from the default template.
 const buildDefaultChecklistItems = (): ChecklistItem[] =>
@@ -1110,6 +1139,367 @@ export const firestoreService = {
       .map((item) => ({ ...item, sortOrder: orderIndex.get(item.id) ?? item.sortOrder }))
       .map((item) => clean({ ...item }));
     await updateDoc(ref, { items, updatedAt: new Date().toISOString() });
+  },
+
+  // ── CRM: SLA reports (Phase 4) ───────────────────────────────────────
+  // Reports are always viewed scoped to one subscription, so they live in a
+  // subcollection and are sorted CLIENT-SIDE by createdAt (newest first). No
+  // collectionGroup query → no composite index needed.
+  listReportsForSubscription: async (
+    _companyId: string,
+    clientId: string,
+    subId: string,
+  ): Promise<SlaReport[]> => {
+    const snapshot = await getDocs(slaReportsCollection(clientId, subId));
+    return snapshot.docs
+      .map((item) => docToEntity<SlaReport>(item))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  },
+  subscribeToReportsForSubscription: (
+    _companyId: string,
+    clientId: string,
+    subId: string,
+    callback: (reports: SlaReport[]) => void,
+  ): (() => void) =>
+    onSnapshot(slaReportsCollection(clientId, subId), (snapshot) => {
+      callback(
+        snapshot.docs
+          .map((item) => docToEntity<SlaReport>(item))
+          .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+      );
+    }),
+  getReport: async (
+    _companyId: string,
+    clientId: string,
+    subId: string,
+    reportId: string,
+  ): Promise<SlaReport | null> => {
+    const snapshot = await getDoc(slaReportDocument(clientId, subId, reportId));
+    if (!snapshot.exists()) return null;
+    return { id: snapshot.id, ...(snapshot.data() as Omit<SlaReport, 'id'>) };
+  },
+  createReport: async (
+    targetCompanyId: string,
+    clientId: string,
+    subId: string,
+    data: Omit<SlaReport, 'id' | 'companyId' | 'clientId' | 'subscriptionId' | 'createdAt' | 'updatedAt'>,
+  ): Promise<SlaReport> => {
+    const now = new Date().toISOString();
+    const report: SlaReport = {
+      ...data,
+      id: createId('report'),
+      companyId: targetCompanyId,
+      clientId,
+      subscriptionId: subId,
+      createdAt: now,
+      updatedAt: now,
+    };
+    await setDoc(slaReportDocument(clientId, subId, report.id), clean({ ...report }));
+    return report;
+  },
+  // NB: named updateSlaReport (not updateReport) — the bare `updateReport` is already
+  // taken by the Daily Reports module above. Same collision class as SlaReportStatus.
+  updateSlaReport: async (
+    _companyId: string,
+    clientId: string,
+    subId: string,
+    reportId: string,
+    patch: Partial<SlaReport>,
+  ): Promise<void> => {
+    await updateDoc(
+      slaReportDocument(clientId, subId, reportId),
+      clean({ ...patch, updatedAt: new Date().toISOString() }),
+    );
+  },
+  deleteReport: async (_companyId: string, clientId: string, subId: string, reportId: string): Promise<void> => {
+    await deleteDoc(slaReportDocument(clientId, subId, reportId));
+  },
+  // Flip Draft → Sent and stamp who/when in a single update, resolving the sender's
+  // display name snapshot from employees so the report reads cleanly even if the
+  // employee record later changes.
+  markReportSent: async (
+    _companyId: string,
+    clientId: string,
+    subId: string,
+    reportId: string,
+    sentByEmployeeId: string,
+  ): Promise<void> => {
+    const now = new Date().toISOString();
+    await updateDoc(
+      slaReportDocument(clientId, subId, reportId),
+      clean({
+        status: 'Sent',
+        sentAt: now,
+        sentBy: sentByEmployeeId,
+        sentByNameSnapshot: await resolveEmployeeName(sentByEmployeeId),
+        updatedAt: now,
+      }),
+    );
+  },
+
+  // ── CRM: custom metric definitions (Phase 4) ─────────────────────────
+  // These mutate the Subscription doc's customMetrics array (single-doc update,
+  // no batch). The report Edit form reads them live off the subscription.
+  addCustomMetric: async (
+    _companyId: string,
+    clientId: string,
+    subId: string,
+    definition: Omit<CustomMetricDefinition, 'id'>,
+  ): Promise<void> => {
+    const ref = subscriptionDocument(clientId, subId);
+    const snapshot = await getDoc(ref);
+    if (!snapshot.exists()) return;
+    const current = (snapshot.data().customMetrics as CustomMetricDefinition[] | undefined) ?? [];
+    const metric: CustomMetricDefinition = { ...definition, id: createId('metric') };
+    await updateDoc(ref, {
+      customMetrics: [...current, clean({ ...metric })],
+      updatedAt: new Date().toISOString(),
+    });
+  },
+  updateCustomMetric: async (
+    _companyId: string,
+    clientId: string,
+    subId: string,
+    metricId: string,
+    patch: Partial<CustomMetricDefinition>,
+  ): Promise<void> => {
+    const ref = subscriptionDocument(clientId, subId);
+    const snapshot = await getDoc(ref);
+    if (!snapshot.exists()) return;
+    const current = (snapshot.data().customMetrics as CustomMetricDefinition[] | undefined) ?? [];
+    const customMetrics = current.map((metric) =>
+      metric.id === metricId ? clean({ ...metric, ...patch }) : metric,
+    );
+    await updateDoc(ref, { customMetrics, updatedAt: new Date().toISOString() });
+  },
+  removeCustomMetric: async (_companyId: string, clientId: string, subId: string, metricId: string): Promise<void> => {
+    const ref = subscriptionDocument(clientId, subId);
+    const snapshot = await getDoc(ref);
+    if (!snapshot.exists()) return;
+    const current = (snapshot.data().customMetrics as CustomMetricDefinition[] | undefined) ?? [];
+    await updateDoc(ref, {
+      customMetrics: current.filter((metric) => metric.id !== metricId),
+      updatedAt: new Date().toISOString(),
+    });
+  },
+  reorderCustomMetrics: async (
+    _companyId: string,
+    clientId: string,
+    subId: string,
+    orderedMetricIds: string[],
+  ): Promise<void> => {
+    const ref = subscriptionDocument(clientId, subId);
+    const snapshot = await getDoc(ref);
+    if (!snapshot.exists()) return;
+    const current = (snapshot.data().customMetrics as CustomMetricDefinition[] | undefined) ?? [];
+    const orderIndex = new Map(orderedMetricIds.map((id, index) => [id, index + 1]));
+    const customMetrics = current.map((metric) =>
+      clean({ ...metric, sortOrder: orderIndex.get(metric.id) ?? metric.sortOrder }),
+    );
+    await updateDoc(ref, { customMetrics, updatedAt: new Date().toISOString() });
+  },
+
+  // ── CRM: invoices (Phase 5) ──────────────────────────────────────────
+  // Per-subscription view: filter the per-client collection by subscriptionId
+  // (equality only → no composite index), sorted client-side by issueDate desc.
+  listInvoicesForSubscription: async (
+    _companyId: string,
+    clientId: string,
+    subId: string,
+  ): Promise<Invoice[]> => {
+    const snapshot = await getDocs(query(invoicesCollection(clientId), where('subscriptionId', '==', subId)));
+    return snapshot.docs
+      .map((item) => docToEntity<Invoice>(item))
+      .sort((a, b) => b.issueDate.localeCompare(a.issueDate));
+  },
+  subscribeToInvoicesForSubscription: (
+    _companyId: string,
+    clientId: string,
+    subId: string,
+    callback: (invoices: Invoice[]) => void,
+  ): (() => void) =>
+    onSnapshot(query(invoicesCollection(clientId), where('subscriptionId', '==', subId)), (snapshot) => {
+      callback(
+        snapshot.docs
+          .map((item) => docToEntity<Invoice>(item))
+          .sort((a, b) => b.issueDate.localeCompare(a.issueDate)),
+      );
+    }),
+  listInvoicesForClient: async (_companyId: string, clientId: string): Promise<Invoice[]> => {
+    const snapshot = await getDocs(invoicesCollection(clientId));
+    return snapshot.docs
+      .map((item) => docToEntity<Invoice>(item))
+      .sort((a, b) => b.issueDate.localeCompare(a.issueDate));
+  },
+  // Cross-client views (Phase 5B): collectionGroup scoped to this tenant by the
+  // denormalized companyId. Needs the invoices CG index (companyId, issueDate desc).
+  listAllInvoices: async (targetCompanyId: string): Promise<Invoice[]> => {
+    const snapshot = await getDocs(
+      query(collectionGroup(requireDb(), 'invoices'), where('companyId', '==', targetCompanyId)),
+    );
+    return snapshot.docs.map((item) => docToEntity<Invoice>(item));
+  },
+  subscribeToAllInvoices: (
+    targetCompanyId: string,
+    callback: (invoices: Invoice[]) => void,
+  ): (() => void) =>
+    onSnapshot(
+      query(collectionGroup(requireDb(), 'invoices'), where('companyId', '==', targetCompanyId)),
+      (snapshot) => {
+        callback(snapshot.docs.map((item) => docToEntity<Invoice>(item)));
+      },
+    ),
+  getInvoice: async (_companyId: string, clientId: string, invoiceId: string): Promise<Invoice | null> => {
+    const snapshot = await getDoc(invoiceDocument(clientId, invoiceId));
+    if (!snapshot.exists()) return null;
+    return { id: snapshot.id, ...(snapshot.data() as Omit<Invoice, 'id'>) };
+  },
+  // Allocate the next per-company sequential invoice number atomically. Year rollover
+  // resets the sequence to 1. Returns INV-YYYY-NNNN.
+  generateInvoiceNumber: async (_companyId: string): Promise<string> =>
+    runTransaction(requireDb(), async (tx) => {
+      const counterRef = invoiceCounterDocument();
+      const snap = await tx.get(counterRef);
+      const currentYear = new Date().getFullYear();
+      const data = snap.exists() ? (snap.data() as InvoiceCounter) : { year: currentYear, nextNumber: 1 };
+      const useNumber = data.year === currentYear ? data.nextNumber : 1;
+      const padded = String(useNumber).padStart(4, '0');
+      tx.set(counterRef, { year: currentYear, nextNumber: useNumber + 1 });
+      return `INV-${currentYear}-${padded}`;
+    }),
+  createInvoice: async (
+    targetCompanyId: string,
+    clientId: string,
+    data: Omit<
+      Invoice,
+      | 'id'
+      | 'companyId'
+      | 'clientId'
+      | 'invoiceNumber'
+      | 'subtotal'
+      | 'taxAmount'
+      | 'total'
+      | 'createdAt'
+      | 'updatedAt'
+    >,
+  ): Promise<Invoice> => {
+    const now = new Date().toISOString();
+    const totals = computeInvoiceTotals(data.lineItems, data.taxRate);
+    const invoiceNumber = await firestoreService.generateInvoiceNumber(targetCompanyId);
+    const invoice: Invoice = {
+      ...data,
+      ...totals,
+      id: createId('inv'),
+      companyId: targetCompanyId,
+      clientId,
+      invoiceNumber,
+      status: data.status ?? 'Draft',
+      createdAt: now,
+      updatedAt: now,
+    };
+    await setDoc(invoiceDocument(clientId, invoice.id), clean({ ...invoice }));
+    return invoice;
+  },
+  // Editing is locked once an invoice leaves Draft. Recomputes totals when line items
+  // or the tax rate change so stored totals always match the inputs.
+  updateInvoice: async (
+    _companyId: string,
+    clientId: string,
+    invoiceId: string,
+    patch: Partial<Invoice>,
+  ): Promise<void> => {
+    const ref = invoiceDocument(clientId, invoiceId);
+    const snapshot = await getDoc(ref);
+    if (!snapshot.exists()) throw new Error('Invoice not found.');
+    const current = snapshot.data() as Invoice;
+    if (current.status !== 'Draft') throw new Error('Only Draft invoices can be edited.');
+    const next: Partial<Invoice> = { ...patch, updatedAt: new Date().toISOString() };
+    if ('lineItems' in patch || 'taxRate' in patch) {
+      const totals = computeInvoiceTotals(patch.lineItems ?? current.lineItems, patch.taxRate ?? current.taxRate);
+      next.lineItems = totals.lineItems;
+      next.subtotal = totals.subtotal;
+      next.taxAmount = totals.taxAmount;
+      next.total = totals.total;
+    }
+    await updateDoc(ref, clean({ ...next }));
+  },
+  deleteInvoice: async (_companyId: string, clientId: string, invoiceId: string): Promise<void> => {
+    const snapshot = await getDoc(invoiceDocument(clientId, invoiceId));
+    if (!snapshot.exists()) return;
+    if ((snapshot.data() as Invoice).status !== 'Draft') throw new Error('Only Draft invoices can be deleted.');
+    await deleteDoc(invoiceDocument(clientId, invoiceId));
+  },
+  markInvoiceSent: async (
+    _companyId: string,
+    clientId: string,
+    invoiceId: string,
+    sentByEmployeeId: string,
+  ): Promise<void> => {
+    const ref = invoiceDocument(clientId, invoiceId);
+    const snapshot = await getDoc(ref);
+    if (!snapshot.exists()) throw new Error('Invoice not found.');
+    if ((snapshot.data() as Invoice).status !== 'Draft') throw new Error('Only Draft invoices can be sent.');
+    const now = new Date().toISOString();
+    await updateDoc(
+      ref,
+      clean({
+        status: 'Sent',
+        sentAt: now,
+        sentBy: sentByEmployeeId,
+        sentByNameSnapshot: await resolveEmployeeName(sentByEmployeeId),
+        updatedAt: now,
+      }),
+    );
+  },
+  markInvoicePaid: async (
+    _companyId: string,
+    clientId: string,
+    invoiceId: string,
+    paidByEmployeeId: string,
+    paymentMethod?: string,
+    paymentReference?: string,
+  ): Promise<void> => {
+    const ref = invoiceDocument(clientId, invoiceId);
+    const snapshot = await getDoc(ref);
+    if (!snapshot.exists()) throw new Error('Invoice not found.');
+    if ((snapshot.data() as Invoice).status !== 'Sent') throw new Error('Only Sent invoices can be marked paid.');
+    const now = new Date().toISOString();
+    await updateDoc(
+      ref,
+      clean({
+        status: 'Paid',
+        paidAt: now,
+        paidBy: paidByEmployeeId,
+        paidByNameSnapshot: await resolveEmployeeName(paidByEmployeeId),
+        paymentMethod: paymentMethod || undefined,
+        paymentReference: paymentReference || undefined,
+        updatedAt: now,
+      }),
+    );
+  },
+  voidInvoice: async (
+    _companyId: string,
+    clientId: string,
+    invoiceId: string,
+    voidedByEmployeeId: string,
+    voidReason: string,
+  ): Promise<void> => {
+    const ref = invoiceDocument(clientId, invoiceId);
+    const snapshot = await getDoc(ref);
+    if (!snapshot.exists()) throw new Error('Invoice not found.');
+    const status = (snapshot.data() as Invoice).status;
+    if (status !== 'Draft' && status !== 'Sent') throw new Error('Only Draft or Sent invoices can be voided.');
+    const now = new Date().toISOString();
+    await updateDoc(
+      ref,
+      clean({
+        status: 'Void',
+        voidedAt: now,
+        voidedBy: voidedByEmployeeId,
+        voidReason: voidReason || undefined,
+        updatedAt: now,
+      }),
+    );
   },
 };
 

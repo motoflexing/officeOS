@@ -260,6 +260,12 @@ service cloud.firestore {
             allow read: if isAdmin(companyId);
             allow write: if isAdmin(companyId);
           }
+
+          // SLA reports (Phase 4) — Admin full CRUD, HR read-only.
+          match /slaReports/{reportId} {
+            allow read: if isAdminOrHr(companyId);
+            allow write: if isAdmin(companyId);
+          }
         }
         match /engagements/{engId} {
           allow read: if isAdminOrHr(companyId);
@@ -269,6 +275,18 @@ service cloud.firestore {
           allow read: if isAdminOrHr(companyId);
           allow write: if isAdmin(companyId);
         }
+
+        // Invoices (Phase 5) — Admin full CRUD, HR read-only.
+        match /invoices/{invoiceId} {
+          allow read: if isAdminOrHr(companyId);
+          allow write: if isAdmin(companyId);
+        }
+      }
+
+      // Invoice-number counter (Phase 5) — Admin only.
+      match /counters/{counterId} {
+        allow read: if isAdmin(companyId);
+        allow write: if isAdmin(companyId);
       }
 
       match /pricingPlans/{planId} {
@@ -312,6 +330,12 @@ service cloud.firestore {
     // Collection-group read for cross-client subscription views (same pattern as the
     // deals CG rule above). Scoped to each doc's denormalized companyId for tenant safety.
     match /{path=**}/subscriptions/{subId} {
+      allow read: if isAdminOrHr(resource.data.companyId);
+    }
+
+    // Collection-group read for the Finance page's cross-client invoice list (Phase 5B).
+    // Same pattern; scoped to each doc's denormalized companyId for tenant safety.
+    match /{path=**}/invoices/{invoiceId} {
       allow read: if isAdminOrHr(resource.data.companyId);
     }
   }

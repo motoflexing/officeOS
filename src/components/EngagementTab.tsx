@@ -1,11 +1,29 @@
-import { Check, Plus, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { Check, GripVertical, Pencil, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { HELPDESK_TOOLS } from '../config/crmOptions';
 import { companyId, isFirebaseConfigured } from '../services/firebase';
 import { firestoreService } from '../services/firestoreService';
 import { storage } from '../services/storage';
 import type {
   Contact,
+  CustomMetricDefinition,
   Employee,
   Engagement,
   EngagementStatus,
@@ -13,8 +31,10 @@ import type {
   HelpdeskAccessStatus,
   HelpdeskTool,
   ShiftPattern,
+  Subscription,
 } from '../types';
 import { CoverageCalendar } from './CoverageCalendar';
+import { CustomKpiModal } from './CustomKpiModal';
 import { EmployeeMultiSelect } from './EmployeeMultiSelect';
 
 // One indirection so call sites are identical in Firebase and localStorage modes.
@@ -38,6 +58,7 @@ const accessStatusClass: Record<HelpdeskAccessStatus, string> = {
 
 export const EngagementTab = ({
   clientId,
+  subscription,
   engagement,
   employees,
   contacts,
@@ -45,6 +66,9 @@ export const EngagementTab = ({
   onToast,
 }: {
   clientId: string;
+  // Custom KPI definitions live on the subscription doc (Phase 4); the subscription
+  // is passed live so the section reflects edits and the report form picks them up.
+  subscription: Subscription;
   engagement: Engagement;
   employees: Employee[];
   contacts: Contact[];
@@ -291,6 +315,9 @@ export const EngagementTab = ({
         </div>
       </Section>
 
+      {/* Custom KPIs (Phase 4) */}
+      <CustomKpiSection clientId={clientId} subscription={subscription} canEdit={canEdit} onToast={onToast} />
+
       {/* Go-Live + Notes */}
       <Section title="Go-Live & Notes">
         <Field label="Go-Live Date">
@@ -340,3 +367,165 @@ const Field = ({ label, children }: { label: string; children: React.ReactNode }
     {children}
   </div>
 );
+
+// ── Custom KPIs (Phase 4) ──────────────────────────────────────────────
+// Definitions live on the subscription doc; values are entered per report. Same
+// @dnd-kit drag-reorder pattern as the Onboarding Checklist.
+const CustomKpiSection = ({
+  clientId,
+  subscription,
+  canEdit,
+  onToast,
+}: {
+  clientId: string;
+  subscription: Subscription;
+  canEdit: boolean;
+  onToast: (message: string) => void;
+}) => {
+  // null = add; a definition = edit. undefined = modal closed.
+  const [editing, setEditing] = useState<CustomMetricDefinition | null | undefined>(undefined);
+
+  const metrics = useMemo(
+    () => (subscription.customMetrics ?? []).slice().sort((a, b) => a.sortOrder - b.sortOrder),
+    [subscription.customMetrics],
+  );
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const handleSave = async (values: { label: string; unit?: string; description?: string }) => {
+    try {
+      if (editing) {
+        await crm.updateCustomMetric(companyId, clientId, subscription.id, editing.id, values);
+        onToast('KPI updated');
+      } else {
+        const nextSort = metrics.reduce((max, metric) => Math.max(max, metric.sortOrder), 0) + 1;
+        await crm.addCustomMetric(companyId, clientId, subscription.id, { ...values, sortOrder: nextSort });
+        onToast('KPI added');
+      }
+      setEditing(undefined);
+    } catch (caught) {
+      onToast(caught instanceof Error ? caught.message : 'Unable to save KPI.');
+    }
+  };
+
+  const remove = (metric: CustomMetricDefinition) => {
+    void crm.removeCustomMetric(companyId, clientId, subscription.id, metric.id);
+  };
+
+  const onDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = metrics.findIndex((metric) => metric.id === active.id);
+    const newIndex = metrics.findIndex((metric) => metric.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+    const reordered = arrayMove(metrics, oldIndex, newIndex);
+    void crm.reorderCustomMetrics(companyId, clientId, subscription.id, reordered.map((metric) => metric.id));
+  };
+
+  return (
+    <Section title="Custom KPIs">
+      <p className="text-sm text-[color:var(--color-text-muted)]">
+        Define client-specific metrics to track in SLA reports.
+      </p>
+
+      {metrics.length === 0 ? (
+        <p className="text-sm text-[color:var(--color-text-muted)]">No custom KPIs defined yet.</p>
+      ) : (
+        <DndContext sensors={canEdit ? sensors : undefined} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+          <SortableContext items={metrics.map((metric) => metric.id)} strategy={verticalListSortingStrategy}>
+            <ul className="space-y-2">
+              {metrics.map((metric) => (
+                <KpiRow
+                  key={metric.id}
+                  metric={metric}
+                  canEdit={canEdit}
+                  onEdit={() => setEditing(metric)}
+                  onRemove={() => remove(metric)}
+                />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
+      )}
+
+      {canEdit ? (
+        <button type="button" className="btn-secondary" onClick={() => setEditing(null)}>
+          <Plus size={16} />
+          Add KPI
+        </button>
+      ) : null}
+
+      {editing !== undefined ? (
+        <CustomKpiModal metric={editing} onClose={() => setEditing(undefined)} onSave={handleSave} />
+      ) : null}
+    </Section>
+  );
+};
+
+const KpiRow = ({
+  metric,
+  canEdit,
+  onEdit,
+  onRemove,
+}: {
+  metric: CustomMetricDefinition;
+  canEdit: boolean;
+  onEdit: () => void;
+  onRemove: () => void;
+}) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: metric.id,
+    disabled: !canEdit,
+  });
+  const style = { transform: CSS.Transform.toString(transform), transition };
+
+  return (
+    <li ref={setNodeRef} style={style} className={`surface flex items-center gap-3 p-3 ${isDragging ? 'opacity-50' : ''}`}>
+      {canEdit ? (
+        <button
+          type="button"
+          {...attributes}
+          {...listeners}
+          aria-label="Reorder"
+          className="cursor-grab touch-none text-[color:var(--color-text-muted)] transition hover:text-[color:var(--color-text-secondary)]"
+        >
+          <GripVertical size={16} />
+        </button>
+      ) : null}
+
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-2">
+          <span className="truncate text-sm font-medium text-[color:var(--color-text-bright)]">{metric.label}</span>
+          {metric.unit ? <span className="text-xs text-[color:var(--color-text-muted)]">{metric.unit}</span> : null}
+        </div>
+        {metric.description ? (
+          <p className="truncate text-xs text-[color:var(--color-text-muted)]">{metric.description}</p>
+        ) : null}
+      </div>
+
+      {canEdit ? (
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={onEdit}
+            aria-label="Edit KPI"
+            className="rounded-lg p-1.5 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-fill-055)] hover:text-[color:var(--color-text-primary)]"
+          >
+            <Pencil size={15} />
+          </button>
+          <button
+            type="button"
+            onClick={onRemove}
+            aria-label="Delete KPI"
+            className="rounded-lg p-1.5 text-[color:var(--color-text-secondary)] transition hover:bg-[var(--color-error-fill-15)] hover:text-[color:var(--color-error-text-300)]"
+          >
+            <Trash2 size={15} />
+          </button>
+        </div>
+      ) : null}
+    </li>
+  );
+};

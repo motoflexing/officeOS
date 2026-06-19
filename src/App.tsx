@@ -10,6 +10,7 @@ import { DeveloperLoginPage } from './pages/DeveloperLoginPage';
 import { DeveloperPanelPage } from './pages/DeveloperPanelPage';
 import { EmployeesPage } from './pages/EmployeesPage';
 import { FeedbackPage } from './pages/FeedbackPage';
+import { FinancePage } from './pages/FinancePage';
 import { HRPanelPage } from './pages/HRPanelPage';
 import { LeavePage } from './pages/LeavePage';
 import { LoginPage } from './pages/LoginPage';
@@ -64,6 +65,7 @@ export default function App() {
         <Route path="/clients" element={<RoleRoute allow={['Admin', 'HR']}><ClientsListPage /></RoleRoute>} />
         <Route path="/clients/pipeline" element={<RoleRoute allow={['Admin', 'HR']}><PipelinePage /></RoleRoute>} />
         <Route path="/clients/renewals" element={<RoleRoute allow={['Admin', 'HR']}><RenewalsPage /></RoleRoute>} />
+        <Route path="/clients/finance" element={<RoleRoute allow={['Admin', 'HR']}><FinancePage /></RoleRoute>} />
         <Route path="/clients/:clientId" element={<RoleRoute allow={['Admin', 'HR']}><ClientDetailPage /></RoleRoute>} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/leave" element={<LeavePage />} />

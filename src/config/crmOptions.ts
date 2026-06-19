@@ -5,6 +5,8 @@ import type {
   DealStage,
   HelpdeskTool,
   Industry,
+  Invoice,
+  InvoiceStatus,
   SubscriptionStatus,
   SupportChannel,
 } from '../types';
@@ -50,4 +52,17 @@ export const renewalDateFor = (startDate: string, cycle: BillingCycle): string |
   if (Number.isNaN(start.getTime())) return undefined;
   start.setDate(start.getDate() + BILLING_CYCLE_DAYS[cycle]);
   return start.toISOString().slice(0, 10);
+};
+
+// ── Invoices (Phase 5) ───────────────────────────────────────────────────
+export const INVOICE_STATUSES: InvoiceStatus[] = ['Draft', 'Sent', 'Paid', 'Void'];
+// Status options for the invoices filter, including the computed 'Overdue' bucket.
+export const INVOICE_FILTER_STATUSES: (InvoiceStatus | 'Overdue')[] = ['Draft', 'Sent', 'Overdue', 'Paid', 'Void'];
+export const PAYMENT_METHODS = ['Wire', 'Stripe', 'Check', 'Other'] as const;
+
+// 'Overdue' is never stored — a Sent invoice past its dueDate is effectively overdue.
+// Use this everywhere the UI displays or filters by status.
+export const getEffectiveStatus = (invoice: Invoice, today: Date = new Date()): InvoiceStatus | 'Overdue' => {
+  if (invoice.status === 'Sent' && new Date(invoice.dueDate) < today) return 'Overdue';
+  return invoice.status;
 };

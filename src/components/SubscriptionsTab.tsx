@@ -22,6 +22,7 @@ const planLabel = (sub: Subscription) => sub.planNameSnapshot ?? (sub.planId ? '
 
 export const SubscriptionsTab = ({
   clientId,
+  clientName,
   subscriptions,
   plans,
   employees,
@@ -32,6 +33,7 @@ export const SubscriptionsTab = ({
   onToast,
 }: {
   clientId: string;
+  clientName: string;
   subscriptions: Subscription[];
   plans: PricingPlan[];
   employees: Employee[];
@@ -210,6 +212,7 @@ export const SubscriptionsTab = ({
         <SubscriptionDetailModal
           subscription={detailSub}
           clientId={clientId}
+          clientName={clientName}
           plans={plans}
           employees={employees}
           contacts={contacts}

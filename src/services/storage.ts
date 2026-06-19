@@ -19,11 +19,14 @@ import type {
   Contact,
   ChecklistItem,
   Conversation,
+  CustomMetricDefinition,
   DailyReport,
   Deal,
   Employee,
   Engagement,
   Interview,
+  Invoice,
+  InvoiceCounter,
   JobOpening,
   LeaveRequest,
   Message,
@@ -31,6 +34,7 @@ import type {
   PricingPlan,
   Role,
   Shift,
+  SlaReport,
   Subscription,
   UserProfile,
 } from '../types';
@@ -128,6 +132,14 @@ const engagementsKey = (companyId: string, clientId: string) => `geekynd:engagem
 // One onboarding checklist per subscription.
 const checklistKey = (companyId: string, clientId: string, subId: string) =>
   `geekynd:checklist:${companyId}:${clientId}:${subId}`;
+// SLA reports per subscription (Phase 4). Custom metric definitions live inside the
+// Subscription record itself (no separate key).
+const slaReportsKey = (companyId: string, clientId: string, subId: string) =>
+  `geekynd:slaReports:${companyId}:${clientId}:${subId}`;
+// Invoices per client (Phase 5) + a denormalized cross-client cache + the number counter.
+const invoicesKey = (companyId: string, clientId: string) => `geekynd:invoices:${companyId}:${clientId}`;
+const invoicesAllKey = (companyId: string) => `geekynd:invoices-all:${companyId}`;
+const invoiceCounterKey = (companyId: string) => `geekynd:counters:invoices:${companyId}`;
 // Shifts per engagement (always viewed scoped to a single engagement).
 const shiftsKey = (companyId: string, clientId: string, engagementId: string) =>
   `geekynd:shifts:${companyId}:${clientId}:${engagementId}`;
@@ -153,6 +165,69 @@ const syncSubscriptionsAll = (companyId: string, clientId: string, clientSubs: S
   const allKey = subscriptionsAllKey(companyId);
   const others = read<Subscription[]>(allKey, []).filter((sub) => sub.clientId !== clientId);
   write(allKey, [...others, ...clientSubs]);
+};
+
+// Same denormalized-cache sync for invoices (mirrors syncSubscriptionsAll).
+const syncInvoicesAll = (companyId: string, clientId: string, clientInvoices: Invoice[]) => {
+  const allKey = invoicesAllKey(companyId);
+  const others = read<Invoice[]>(allKey, []).filter((invoice) => invoice.clientId !== clientId);
+  write(allKey, [...others, ...clientInvoices]);
+};
+
+// Compute subtotal / taxAmount / total from line items + optional tax rate (mirrors
+// computeInvoiceTotals in firestoreService).
+const computeInvoiceTotalsLocal = (
+  lineItems: Invoice['lineItems'],
+  taxRate?: number,
+): { lineItems: Invoice['lineItems']; subtotal: number; taxAmount?: number; total: number } => {
+  const items = lineItems.map((item) => ({ ...item, amount: item.quantity * item.unitPrice }));
+  const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
+  const taxAmount = taxRate ? Math.round(subtotal * (taxRate / 100) * 100) / 100 : undefined;
+  const total = subtotal + (taxAmount ?? 0);
+  return { lineItems: items, subtotal, taxAmount, total };
+};
+
+// Guard the invoice's current status against the allowed set, apply a stamping patch,
+// persist, re-sync the all-cache, and emit. Throws (matching firestoreService) so HR
+// or a direct call can't bypass a transition.
+const transitionInvoiceLocal = (
+  companyId: string,
+  clientId: string,
+  invoiceId: string,
+  allowedFrom: Invoice['status'][],
+  buildPatch: () => Partial<Invoice>,
+  errorMessage: string,
+) => {
+  const key = invoicesKey(companyId, clientId);
+  const all = read<Invoice[]>(key, []);
+  const current = all.find((invoice) => invoice.id === invoiceId);
+  if (!current) throw new Error('Invoice not found.');
+  if (!allowedFrom.includes(current.status)) throw new Error(errorMessage);
+  const next = { ...buildPatch(), updatedAt: new Date().toISOString() };
+  const clientInvoices = all.map((invoice) => (invoice.id === invoiceId ? { ...invoice, ...next } : invoice));
+  write(key, clientInvoices);
+  syncInvoicesAll(companyId, clientId, clientInvoices);
+  emit(key);
+  emit(invoicesAllKey(companyId));
+};
+
+// Read-modify-write the customMetrics array on one subscription record, keeping the
+// subscriptions-all cache in sync and emitting both keys so live subscribers refresh.
+const mutateSubscriptionCustomMetrics = (
+  companyId: string,
+  clientId: string,
+  subId: string,
+  transform: (current: CustomMetricDefinition[]) => CustomMetricDefinition[],
+) => {
+  const key = subscriptionsKey(companyId, clientId);
+  const updatedAt = new Date().toISOString();
+  const clientSubs = read<Subscription[]>(key, []).map((sub) =>
+    sub.id === subId ? { ...sub, customMetrics: transform(sub.customMetrics ?? []), updatedAt } : sub,
+  );
+  write(key, clientSubs);
+  syncSubscriptionsAll(companyId, clientId, clientSubs);
+  emit(key);
+  emit(subscriptionsAllKey(companyId));
 };
 
 // Resolve display-name snapshots from the localStorage mirrors, matching the
@@ -1111,5 +1186,327 @@ export const storage = {
     const items = checklist.items.map((entry) => ({ ...entry, sortOrder: orderIndex.get(entry.id) ?? entry.sortOrder }));
     write(key, { ...checklist, items, updatedAt: new Date().toISOString() });
     emit(key);
+  },
+
+  // ── CRM: SLA reports (Phase 4) ───────────────────────────────────────
+  listReportsForSubscription: async (
+    targetCompanyId: string,
+    clientId: string,
+    subId: string,
+  ): Promise<SlaReport[]> =>
+    read<SlaReport[]>(slaReportsKey(targetCompanyId, clientId, subId), []).sort((a, b) =>
+      b.createdAt.localeCompare(a.createdAt),
+    ),
+  subscribeToReportsForSubscription: (
+    targetCompanyId: string,
+    clientId: string,
+    subId: string,
+    callback: (reports: SlaReport[]) => void,
+  ): (() => void) => {
+    const key = slaReportsKey(targetCompanyId, clientId, subId);
+    const run = () =>
+      callback(read<SlaReport[]>(key, []).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+    run();
+    return subscribeKey(key, run);
+  },
+  getReport: async (
+    targetCompanyId: string,
+    clientId: string,
+    subId: string,
+    reportId: string,
+  ): Promise<SlaReport | null> =>
+    read<SlaReport[]>(slaReportsKey(targetCompanyId, clientId, subId), []).find((r) => r.id === reportId) ?? null,
+  createReport: async (
+    targetCompanyId: string,
+    clientId: string,
+    subId: string,
+    data: Omit<SlaReport, 'id' | 'companyId' | 'clientId' | 'subscriptionId' | 'createdAt' | 'updatedAt'>,
+  ): Promise<SlaReport> => {
+    const now = new Date().toISOString();
+    const report: SlaReport = {
+      ...data,
+      id: createId('report'),
+      companyId: targetCompanyId,
+      clientId,
+      subscriptionId: subId,
+      createdAt: now,
+      updatedAt: now,
+    };
+    const key = slaReportsKey(targetCompanyId, clientId, subId);
+    write(key, [report, ...read<SlaReport[]>(key, [])]);
+    emit(key);
+    return report;
+  },
+  // Mirrors firestoreService.updateSlaReport (renamed to avoid the Daily Reports
+  // `updateReport` collision; keeps the crm indirection's method names identical).
+  updateSlaReport: async (
+    targetCompanyId: string,
+    clientId: string,
+    subId: string,
+    reportId: string,
+    patch: Partial<SlaReport>,
+  ): Promise<void> => {
+    const key = slaReportsKey(targetCompanyId, clientId, subId);
+    const updatedAt = new Date().toISOString();
+    write(
+      key,
+      read<SlaReport[]>(key, []).map((r) => (r.id === reportId ? { ...r, ...patch, updatedAt } : r)),
+    );
+    emit(key);
+  },
+  deleteReport: async (
+    targetCompanyId: string,
+    clientId: string,
+    subId: string,
+    reportId: string,
+  ): Promise<void> => {
+    const key = slaReportsKey(targetCompanyId, clientId, subId);
+    write(key, read<SlaReport[]>(key, []).filter((r) => r.id !== reportId));
+    emit(key);
+  },
+  markReportSent: async (
+    targetCompanyId: string,
+    clientId: string,
+    subId: string,
+    reportId: string,
+    sentByEmployeeId: string,
+  ): Promise<void> => {
+    const key = slaReportsKey(targetCompanyId, clientId, subId);
+    const now = new Date().toISOString();
+    write(
+      key,
+      read<SlaReport[]>(key, []).map((r) =>
+        r.id === reportId
+          ? {
+              ...r,
+              status: 'Sent',
+              sentAt: now,
+              sentBy: sentByEmployeeId,
+              sentByNameSnapshot: resolveEmployeeNameLocal(sentByEmployeeId),
+              updatedAt: now,
+            }
+          : r,
+      ),
+    );
+    emit(key);
+  },
+
+  // ── CRM: custom metric definitions (Phase 4) ─────────────────────────
+  // Mutate the customMetrics array on the Subscription record, then re-sync the
+  // subscriptions-all cache and emit both keys (mirrors updateSubscription).
+  addCustomMetric: async (
+    targetCompanyId: string,
+    clientId: string,
+    subId: string,
+    definition: Omit<CustomMetricDefinition, 'id'>,
+  ): Promise<void> => {
+    const metric: CustomMetricDefinition = { ...definition, id: createId('metric') };
+    mutateSubscriptionCustomMetrics(targetCompanyId, clientId, subId, (current) => [...current, metric]);
+  },
+  updateCustomMetric: async (
+    targetCompanyId: string,
+    clientId: string,
+    subId: string,
+    metricId: string,
+    patch: Partial<CustomMetricDefinition>,
+  ): Promise<void> => {
+    mutateSubscriptionCustomMetrics(targetCompanyId, clientId, subId, (current) =>
+      current.map((metric) => (metric.id === metricId ? { ...metric, ...patch } : metric)),
+    );
+  },
+  removeCustomMetric: async (
+    targetCompanyId: string,
+    clientId: string,
+    subId: string,
+    metricId: string,
+  ): Promise<void> => {
+    mutateSubscriptionCustomMetrics(targetCompanyId, clientId, subId, (current) =>
+      current.filter((metric) => metric.id !== metricId),
+    );
+  },
+  reorderCustomMetrics: async (
+    targetCompanyId: string,
+    clientId: string,
+    subId: string,
+    orderedMetricIds: string[],
+  ): Promise<void> => {
+    const orderIndex = new Map(orderedMetricIds.map((id, index) => [id, index + 1]));
+    mutateSubscriptionCustomMetrics(targetCompanyId, clientId, subId, (current) =>
+      current.map((metric) => ({ ...metric, sortOrder: orderIndex.get(metric.id) ?? metric.sortOrder })),
+    );
+  },
+
+  // ── CRM: invoices (Phase 5) ──────────────────────────────────────────
+  listInvoicesForSubscription: async (
+    targetCompanyId: string,
+    clientId: string,
+    subId: string,
+  ): Promise<Invoice[]> =>
+    read<Invoice[]>(invoicesKey(targetCompanyId, clientId), [])
+      .filter((invoice) => invoice.subscriptionId === subId)
+      .sort((a, b) => b.issueDate.localeCompare(a.issueDate)),
+  subscribeToInvoicesForSubscription: (
+    targetCompanyId: string,
+    clientId: string,
+    subId: string,
+    callback: (invoices: Invoice[]) => void,
+  ): (() => void) => {
+    const key = invoicesKey(targetCompanyId, clientId);
+    const run = () =>
+      callback(
+        read<Invoice[]>(key, [])
+          .filter((invoice) => invoice.subscriptionId === subId)
+          .sort((a, b) => b.issueDate.localeCompare(a.issueDate)),
+      );
+    run();
+    return subscribeKey(key, run);
+  },
+  listInvoicesForClient: async (targetCompanyId: string, clientId: string): Promise<Invoice[]> =>
+    read<Invoice[]>(invoicesKey(targetCompanyId, clientId), []).sort((a, b) =>
+      b.issueDate.localeCompare(a.issueDate),
+    ),
+  listAllInvoices: async (targetCompanyId: string): Promise<Invoice[]> =>
+    read<Invoice[]>(invoicesAllKey(targetCompanyId), []),
+  subscribeToAllInvoices: (
+    targetCompanyId: string,
+    callback: (invoices: Invoice[]) => void,
+  ): (() => void) => {
+    const key = invoicesAllKey(targetCompanyId);
+    const run = () => callback(read<Invoice[]>(key, []));
+    run();
+    return subscribeKey(key, run);
+  },
+  getInvoice: async (targetCompanyId: string, clientId: string, invoiceId: string): Promise<Invoice | null> =>
+    read<Invoice[]>(invoicesKey(targetCompanyId, clientId), []).find((invoice) => invoice.id === invoiceId) ?? null,
+  // Sequential allocation of the next number (single-tab localStorage is fine). Year
+  // rollover resets to 1. Mirrors firestoreService.generateInvoiceNumber.
+  generateInvoiceNumber: async (targetCompanyId: string): Promise<string> => {
+    const key = invoiceCounterKey(targetCompanyId);
+    const currentYear = new Date().getFullYear();
+    const data = read<InvoiceCounter>(key, { year: currentYear, nextNumber: 1 });
+    const useNumber = data.year === currentYear ? data.nextNumber : 1;
+    write(key, { year: currentYear, nextNumber: useNumber + 1 });
+    return `INV-${currentYear}-${String(useNumber).padStart(4, '0')}`;
+  },
+  createInvoice: async (
+    targetCompanyId: string,
+    clientId: string,
+    data: Omit<
+      Invoice,
+      | 'id'
+      | 'companyId'
+      | 'clientId'
+      | 'invoiceNumber'
+      | 'subtotal'
+      | 'taxAmount'
+      | 'total'
+      | 'createdAt'
+      | 'updatedAt'
+    >,
+  ): Promise<Invoice> => {
+    const now = new Date().toISOString();
+    const totals = computeInvoiceTotalsLocal(data.lineItems, data.taxRate);
+    const invoiceNumber = await storage.generateInvoiceNumber(targetCompanyId);
+    const invoice: Invoice = {
+      ...data,
+      ...totals,
+      id: createId('inv'),
+      companyId: targetCompanyId,
+      clientId,
+      invoiceNumber,
+      status: data.status ?? 'Draft',
+      createdAt: now,
+      updatedAt: now,
+    };
+    const key = invoicesKey(targetCompanyId, clientId);
+    const clientInvoices = [invoice, ...read<Invoice[]>(key, [])];
+    write(key, clientInvoices);
+    syncInvoicesAll(targetCompanyId, clientId, clientInvoices);
+    emit(key);
+    emit(invoicesAllKey(targetCompanyId));
+    return invoice;
+  },
+  updateInvoice: async (
+    targetCompanyId: string,
+    clientId: string,
+    invoiceId: string,
+    patch: Partial<Invoice>,
+  ): Promise<void> => {
+    const key = invoicesKey(targetCompanyId, clientId);
+    const all = read<Invoice[]>(key, []);
+    const current = all.find((invoice) => invoice.id === invoiceId);
+    if (!current) throw new Error('Invoice not found.');
+    if (current.status !== 'Draft') throw new Error('Only Draft invoices can be edited.');
+    const next: Partial<Invoice> = { ...patch, updatedAt: new Date().toISOString() };
+    if ('lineItems' in patch || 'taxRate' in patch) {
+      const totals = computeInvoiceTotalsLocal(patch.lineItems ?? current.lineItems, patch.taxRate ?? current.taxRate);
+      next.lineItems = totals.lineItems;
+      next.subtotal = totals.subtotal;
+      next.taxAmount = totals.taxAmount;
+      next.total = totals.total;
+    }
+    const clientInvoices = all.map((invoice) => (invoice.id === invoiceId ? { ...invoice, ...next } : invoice));
+    write(key, clientInvoices);
+    syncInvoicesAll(targetCompanyId, clientId, clientInvoices);
+    emit(key);
+    emit(invoicesAllKey(targetCompanyId));
+  },
+  deleteInvoice: async (targetCompanyId: string, clientId: string, invoiceId: string): Promise<void> => {
+    const key = invoicesKey(targetCompanyId, clientId);
+    const all = read<Invoice[]>(key, []);
+    const current = all.find((invoice) => invoice.id === invoiceId);
+    if (!current) return;
+    if (current.status !== 'Draft') throw new Error('Only Draft invoices can be deleted.');
+    const clientInvoices = all.filter((invoice) => invoice.id !== invoiceId);
+    write(key, clientInvoices);
+    syncInvoicesAll(targetCompanyId, clientId, clientInvoices);
+    emit(key);
+    emit(invoicesAllKey(targetCompanyId));
+  },
+  // Shared transition helper for the storage mirror: guard the current status, apply a
+  // stamping patch, persist, re-sync the all-cache, and emit.
+  markInvoiceSent: async (
+    targetCompanyId: string,
+    clientId: string,
+    invoiceId: string,
+    sentByEmployeeId: string,
+  ): Promise<void> => {
+    transitionInvoiceLocal(targetCompanyId, clientId, invoiceId, ['Draft'], () => ({
+      status: 'Sent',
+      sentAt: new Date().toISOString(),
+      sentBy: sentByEmployeeId,
+      sentByNameSnapshot: resolveEmployeeNameLocal(sentByEmployeeId),
+    }), 'Only Draft invoices can be sent.');
+  },
+  markInvoicePaid: async (
+    targetCompanyId: string,
+    clientId: string,
+    invoiceId: string,
+    paidByEmployeeId: string,
+    paymentMethod?: string,
+    paymentReference?: string,
+  ): Promise<void> => {
+    transitionInvoiceLocal(targetCompanyId, clientId, invoiceId, ['Sent'], () => ({
+      status: 'Paid',
+      paidAt: new Date().toISOString(),
+      paidBy: paidByEmployeeId,
+      paidByNameSnapshot: resolveEmployeeNameLocal(paidByEmployeeId),
+      paymentMethod: paymentMethod || undefined,
+      paymentReference: paymentReference || undefined,
+    }), 'Only Sent invoices can be marked paid.');
+  },
+  voidInvoice: async (
+    targetCompanyId: string,
+    clientId: string,
+    invoiceId: string,
+    voidedByEmployeeId: string,
+    voidReason: string,
+  ): Promise<void> => {
+    transitionInvoiceLocal(targetCompanyId, clientId, invoiceId, ['Draft', 'Sent'], () => ({
+      status: 'Void',
+      voidedAt: new Date().toISOString(),
+      voidedBy: voidedByEmployeeId,
+      voidReason: voidReason || undefined,
+    }), 'Only Draft or Sent invoices can be voided.');
   },
 };
